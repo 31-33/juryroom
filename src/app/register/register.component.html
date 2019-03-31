@@ -1,0 +1,104 @@
+<h1>Register</h1>
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label>
+      Username:
+      <input type="text" formControlName="username" [ngClass]="{ 'is-invalid': submitted && f.username.errors }"/>
+      <div *ngIf="submitted && f.username.errors" class="invalid-feedback">
+        <div *ngIf="f.username.errors.required">Username cannot be blank</div>
+        <div *ngIf="f.username.errors.maxlength">Username cannot be more than 20 characters</div>
+        <div *ngIf="f.username.errors.minlength">Username must be atleast 4 characters long</div>
+      </div>
+    </label>
+  </div>
+  <div>
+    <label>
+      Email Address:
+      <input type="text" formControlName="email" [ngClass]="{ 'is-invalid': submitted && f.email.errors }"/>
+      <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
+        <div *ngIf="f.email.errors.required">You must supply an email address</div>
+        <div *ngIf="f.email.errors.email">Please enter a valid email address</div>
+      </div>
+    </label>
+  </div>
+  <form formGroupName="passwords">
+    <div>
+      <label>
+        Password:
+        <input type="password" formControlName="password" [ngClass]="{ 'is-invalid': submitted && f.passwords.get('password').errors }"/>
+        <div *ngIf="submitted && f.passwords.get('password').errors" class="invalid-feedback">
+          <div *ngIf="f.passwords.get('password').errors.required">Password cannot be blank</div>
+          <div *ngIf="f.passwords.get('password').errors.maxlength">Password cannot be more than 256 characters</div>
+          <div *ngIf="f.passwords.get('password').errors.minlength">Password must be atleast 8 characters long</div>
+        </div>
+      </label>
+    </div>
+    <div>
+      <label>
+        Confirm Password:
+        <input type="password" formControlName="password_confirm" [ngClass]="{ 'is-invalid': submitted && f.passwords.errors }"/>
+        <div *ngIf="submitted && f.passwords.errors" class="invalid-feedback">
+          <div *ngIf="f.passwords">Passwords do not match</div>
+        </div>
+      </label>
+    </div>
+  </form>
+  <div>
+    <label>
+      Full Name:
+      <input type="text" formControlName="fullname" [ngClass]="{ 'is-invalid': submitted && f.fullname.hasError }"/>
+      <div *ngIf="submitted && f.fullname.errors" class="invalid-feedback">
+        <div *ngIf="f.fullname.maxlength">Field must not be more than 20 characters</div>
+      </div>
+    </label>
+  </div>
+  <div>
+    <label>
+      Date of Birth:
+      <input type="date" formControlName="date_of_birth" [ngClass]="{ 'is-invalid': submitted && f.date_of_birth.errors }"/>
+      <div *ngIf="submitted && f.date_of_birth.errors" class="invalid-feedback">
+        <div *ngIf="f.date_of_birth.errors.required">Please supply a date of birth</div>
+      </div>
+    </label>
+  </div>
+  <div>
+    <label>
+      Gender:
+      <input type="text" formControlName="gender" [ngClass]="{ 'is-invalid': submitted && f.gender.errors }"/>
+      <div *ngIf="submitted && f.gender.errors" class="invalid-feedback">
+        <div *ngIf="f.gender.errors.maxlength">Field must not be more than 20 characters</div>
+      </div>
+    </label>
+  </div>
+  <div>
+    <label>
+      Ethnicity:
+      <input type="text" formControlName="ethnicity" [ngClass]="{ 'is-invalid': submitted && f.ethnicity.errors }"/>
+      <div *ngIf="submitted && f.ethnicity.errors" class="invalid-feedback">
+        <div *ngIf="f.ethnicity.errors.maxlength">Field must not be more than 20 characters</div>
+      </div>
+    </label>
+  </div>
+  <div>
+    <label>
+      Religion:
+      <input type="text" formControlName="religion" [ngClass]="{ 'is-invalid': submitted && f.religion.errors }"/>
+      <div *ngIf="submitted && f.religion.errors" class="invalid-feedback">
+        <div *ngIf="f.religion.errors.maxlength">Field must not be more than 20 characters</div>
+      </div>
+    </label>
+  </div>
+  <div>
+    <label>
+      <input type="checkbox" formControlName="tc_agree" [ngClass]="{ 'is-invalid': submitted && f.tc_agree.errors }"/>
+      I agree to the Terms and Conditions
+      <div *ngIf="submitted && f.tc_agree.errors" class="invalid-feedback">
+        <div *ngIf="f.tc_agree.errors.required">Please confirm you have read and accept the terms and conditions</div>
+      </div>
+    </label>
+  </div>
+  <div>
+    <button>Register</button>
+    Already have an account? Click <a [routerLink]="['/login']">here</a> to log in
+  </div>
+</form>

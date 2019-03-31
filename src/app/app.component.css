@@ -1,0 +1,42 @@
+h1 {
+  color: #369;
+  font-family: Arial, Halvetica, sans-serif;
+  font-size: 140%;
+  text-align: center;
+}
+header{
+  position: fixed;
+  left: 0;
+  width: 100%;
+  top: 0;
+  height: 60px;
+  background-color: gray;
+}
+footer {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  bottom: 0;
+  height: 40px;
+  background-color: red;
+}
+.main {
+  margin-top:60px;
+  margin-botton:40px;
+}
+
+.navButtons {
+  position:fixed;
+  right:0;
+  top:0;
+  margin:15px;
+}
+
+::ng-deep .invalid-feedback {
+  color:red;
+  font-size:80%;
+  font-style:italic;
+}
+::ng-deep .is-invalid {
+  border-color:red;
+}
