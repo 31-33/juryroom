@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "client": "cd client && npm start",
-    "server_dev": "cd server && npm dev",
+    "server_dev": "cd server && npm run dev",
     "server_start": "cd server && npm start",
     "dev": "concurrently --kill-others-on-fail \"npm run server_dev\" \"npm run client\"",
     "start": "concurrently --kill-others-on-fail \"npm run server_start\" \"npm run client\""
