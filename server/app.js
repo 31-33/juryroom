@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // setup db connection
 var Db2Store = require('connect-db2')(session);
-var sessionStore = new Db2Store({ dsn: secrets.dbURI });
+var sessionStore = new Db2Store({ dsn: process.env.vcap ? process.env.vcap.dashDB[0].credentials.dsn : secrets.dbURI });
 sessionStore.hasDatabaseTable((err, hasTable) => {
   if(err) {
     console.log("Error checking db for table: " + err);
