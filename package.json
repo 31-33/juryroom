@@ -2,23 +2,20 @@
   "name": "juryroom",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-scripts": "2.1.8"
-  },
   "scripts": {
     "client": "cd client && npm start",
-    "server": "nodemon server.js",
-    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "server_dev": "cd server && npm dev",
+    "server_start": "cd server && npm start",
+    "dev": "concurrently --kill-others-on-fail \"npm run server_dev\" \"npm run client\"",
+    "start": "concurrently --kill-others-on-fail \"npm run server_start\" \"npm run client\""
   },
   "browserslist": [
     ">0.2%",
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "dependencies": {
+    "concurrently": "^4.1.0"
+  }
 }
