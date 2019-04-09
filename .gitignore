@@ -13,6 +13,9 @@
 /*/node_modules
 /node_modules
 
+# build files
+/*/build
+
 # profiling files
 chrome-profiler-events.json
 speed-measure-plugin.json

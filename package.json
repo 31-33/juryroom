@@ -7,7 +7,9 @@
     "server_dev": "cd server && npm run dev",
     "server_start": "cd server && npm start",
     "dev": "concurrently --kill-others-on-fail \"npm run server_dev\" \"npm run client\"",
-    "start": "concurrently --kill-others-on-fail \"npm run server_start\" \"npm run client\""
+    "start": "concurrently --kill-others-on-fail \"npm run server_start\" \"npm run client\"",
+    "install_all": "npm install && cd client && npm install && cd ../server && npm install",
+    "build": "cd client && npm run build && cd ../server && npm build"
   },
   "browserslist": [
     ">0.2%",
