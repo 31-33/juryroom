@@ -1,68 +1,159 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+DEPRECATED. Goodbye, adiós, au revoir, auf Wiedersehen, zàijiàn.
+Time has passed this repo by. Bye!
 
-## Available Scripts
+## feathers-starter-react-redux-login-roles
+Production ready starter package.
+Local auth, roles; React-Router auth.
+Easily use Feathers services with Redux.
 
-In the project directory, you can run:
+> The goal is to support a 100% integration of Feathers and Redux,
+within production quality boilerplate,
+so you can focus on your app development.
+A local auth UI is provided for use,
+and as a working example of Feathers + Redux integration.
 
-### `npm start`
+## <a name="features"></a> Requirements
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+ - Windows or Linux builds now working
+ - Minimum node Version 6.9.0
+ - npm versions (3.10.8)
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+[![Build Status](https://travis-ci.org/eddyystop/feathers-starter-react-redux-login-roles.svg?branch=master)](https://travis-ci.org/eddyystop/feathers-starter-react-redux-login-roles)
 
-### `npm test`
+## <a name="features"></a> Features
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Designed as a foundation for building commercial applications used in production.
+- Local authentication including email verification, forgotten passwords, change email, password, etc.
+- Transactional email notifications.
+- User roles for authorization, including authorization of React routes.
+- UI for user authentication and authorization.
+- Feathers DB and custom services are dispatched to Redux for 100% compatibility.
+- Async server verification for the UI, as well as client-side verification.
+- Share UI verification code between client and server.
+- Hierarchical, dynamic app configuration for server and client.
+- Logging from both server and client.
 
-### `npm run build`
+## <a name="serverContains"></a> Server contains
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- [x] [Feathersjs](https://github.com/feathersjs/feathers) with [Express](https://github.com/expressjs).
+- [x] [Feathers-rest](https://github.com/feathersjs/feathers-rest) to implement a REST API.
+- [x] [Feathers-socketio](https://github.com/feathersjs/feathers-socketio) for socket.io transport.
+- [x] [Feathers-service-verify-reset](https://github.com/eddyystop/feathers-service-verify-reset)
+adds email verification, forgotten password reset, etc. to local feathers-authentication.
+- [x] [Feathers-hooks-validate-joi](https://github.com/eddyystop/feathers-hooks-validate-joi)
+schema validation, sanitization and client notification using
+[Joi](https://github.com/hapijs/joi).
+- [x] [Dotenv](https://github.com/motdotla/dotenv) loads environment variables from `.env`. (1.8k stars)
+- [x] [Envalid](https://github.com/af/envalid) environment variable validation.
+- [x] [Node-config](https://github.com/lorenwest/node-config) node.js application configuration.
+(1.6k stars)
+- [x] [Winston](https://github.com/winstonjs/winston)
+a multi-transport async logging library for node.js. (6.1k stars)
+- [x] [Morgan](https://github.com/expressjs/morgan)
+HTTP request logger middleware for node.js. (1.7k stars)
+- [x] [Feathers-nedb](https://github.com/feathersjs/feathers-nedb).
+You can cleanly and easily [swap databases](http://docs.feathersjs.com/databases/readme.html).
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+You can swap to one or more of these databases with minor code changes:
+Amazon DynamoDB,
+Apache Cassandra,
+ArangoDB,
+Azure Table Storage,
+Google Sheets
+GraphQL,
+LevelDB,
+MariaDB,
+MondoDB,
+MySQL,
+NeDB,
+Neo4j,
+SQLite,
+Oracle,
+OrientDB,
+PostgrSQL,
+Redis,
+RethinkDB,
+Riak,
+SQL Server,
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## <a name="ClientContains"></a> Client contains
 
-### `npm run eject`
+- [x] [React](https://facebook.github.io/react/) & React-dom.
+- [x] [Redux](https://github.com/reactjs/redux).
+- [x] [Redux-auth-wrapper](https://github.com/mjrussell/redux-auth-wrapper)
+for Redux and React-Router permissions. (550 stars)
+- [x] [Redux-form](https://github.com/erikras/redux-form)
+to manage form state in Redux (version 6). (3.5k stars)
+- [x] [Redux DevTools Extension](https://github.com/zalmoxisus/redux-devtools-extension),
+like redux-devtools but perhaps better. (2k stars)
+- [x] [Material-ui](https://github.com/callemall/material-ui)
+implement Google's Material Design. (19k stars)
+- [x] [Feathers-client](https://github.com/feathersjs/feathers-client) using socket.io.
+- [x] [Feathers-reduxify-services](https://github.com/eddyystop/feathers-reduxify-services)
+wrap Feathers services so they work transparently and perfectly with Redux.
+- [x] [Feathers-reduxify-authentication](https://github.com/eddyystop/feathers-reduxify-authentication)
+wrap feathers-client.authentication so it works with Redux and React-Router.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## <a name="clientBuildChain"></a> Client build chain contains
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- [x] [Webpack](https://webpack.github.io)
+- [x] [Babel](https://babeljs.io/)
+- [x] [Postcss-modules](https://github.com/css-modules/postcss-modules)
+scope CSS names locally, and export a map for rendering React components.
+(css-modules 4.7k stars)
+- [x] [Autoprefixer](https://github.com/postcss/autoprefixer)
+add vendor prefixes. (10.7k stars)
+- [x] [Rucksack](https://github.com/simplaio/rucksack)
+a little bag of CSS superpowers, built on PostCSS. (1.5k stars)
+- [x] [Html-webpack-plugin](https://github.com/ampedandwired/html-webpack-plugin)
+simplifies creation of HTML files to serve your webpack bundles. (1.7k stars)
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## <a name="motivation"></a> Motivation
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+A complete, working project on which you can build your own Feathers, React, Redux app.
 
-## Learn More
+The project contains comprehensive local authentication and authorization including user roles.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## <a name="running"></a> Running the starter package
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+`npm install` from root.
 
-### Code Splitting
+#### Linux flavors
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+With Webpack-dev-server:
+- `npm run build:devserver` on one process to start the webpack-dev-server on port 8080.
+- `npm run start:devserver` to start the server on port 3030.
+- Point browser to `localhost:3030` to start app.
 
-### Analyzing the Bundle Size
+Production build:
+- `npm run build`.
+- `npm start`.
+- Point browser to `localhost:3030` to start app.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+#### Windows
 
-### Making a Progressive Web App
+Run the above commends using `win:build:...` and `win:start:...`.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+User authorization features accessible from icon menus on `/user/signin` and `/app`.
 
-### Advanced Configuration
+## <a name="faq"></a> [FAQ.](./doc/FAQ.md)
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+## <a name="customization"></a> [Customization of boilerplate.](./doc/CUSTOMIZATION.md)
 
-### Deployment
+## <a name="processExitCodes"></a> [Process Exit Codes.](./doc/PROCESS_EXIT_CODES.md)
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+## <a name="httpStatusCodes"></a> [HTTP Status Codes.](./doc/HTTP_STATUS_CODES.md)
 
-### `npm run build` fails to minify
+## <a name="contribution"></a> Contributing
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+[Contribute to this repo.](./doc/CONTRIBUTING.md)
+
+[Guide to ideomatic contributing.](https://github.com/jonschlinkert/idiomatic-contributing)
+
+## <a name="changeLog"></a> Change Log
+
+[List of notable changes.](./doc/CHANGELOG.md)
+
+## <a name="license"></a> License
+
+MIT. See LICENSE.

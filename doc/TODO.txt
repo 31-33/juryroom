@@ -1,0 +1,90 @@
+
+DONE - pass message to usernavbar
+DONE - use webpack dev server
+DONE - js map for better source locs
+DONE - Try signing in with the saved JWT.
+DONE - Save current user in store.
+DONE - Authentication and authorization on routes.
+DONE - in users/signin we don't display an err msg when user is not verified. need to reject({ email: 'not verified })'
+DONE - error message on bad sign in as authentication not redux-like
+DONE - ? maybe convert app.authenticate() into a more redux flow.
+This might mean interfacing with app.authenticate via raw HTTP which is not clean.
+DONE - ? use redux-form field array to edit roles
+DONE - make sure user/signin logs out first
+DONE - regex for valid password, email, username, etc in config file.
+DONE - make sure all validations are active common/helpers/usersClientValidations.js
+DONE - make sure all ser validations are active
+DONE - removeVerifications only if client provider and !!forceRemove. then change verifyReset
+DONE - move iff() to common hooks
+DONE - test everything (esp verify-reset) with no pagination on users
+DONE - doc 'unique' call to verify-reset
+DONE - doc ownId in uniqueness
+DONE - doc change to params in verifySignUp
+DONE - server validates and sanitizes params passed to it.
+DONE - add a logger stub so code call call it and be ready for a logger being enabled.
+DONE - external css modules required from songs.
+DONE - generic rtn for middleware, store, etc. just pass it middleware & reducers, get store back.
+DONE - ? How far to go with logging of server, of client? Outside scope of repo?
+If not don't forget to have a reporter for envalid.
+DONE - Reinsert \n for errors on console.
+DONE - move docs into /docs
+DONE - get ./config.js accessible via app.get(...)
+DONE - server serves diff payload depending on NODE_ENV. devserver, dev, prod
+DONE - webpack.config from songs and all that entails.
+DONE - doc validate env variables
+DONE - work on scripts in package.json
+DONE - debugs should be all debug or isomorphic-debug
+DONE - finalize debug() on all server code
+DONE - upgrade to redux-promise-middleware v4.
+DONE - Enhance webpack.config.js to production.
+DONE - Production build.
+DONE - more docs
+DONE - doc webpack.config
+DONE - FAQ to list alternative code commented out.
+By type of change, list modules whose code needs to be uncommented. "Supersize me"?
+
+NO - ? reducer.plugin to remove passwords in forms (no need)
+NO - be able to log ourselves when middleware errors.
+NO - server/middleware/not-found-handler.js should it log?
+NO - /middleware/logger should it log? that logger removed
+
+- Docs on how to configure the package.
+- Doc on what files do what.
+- Cleanup package.json scripts & for production.
+- hot-loader
+- HTTPS
+
+- sample tests
+
+- https https://news.ycombinator.com/item?id=12574510
+- wanna do some HTTP2? https://medium.com/@imjacobclark/http-2-with-node-js-85da17322812#.91d0vhksz
+- check what we log, don't log on server
+- remove spurious uncaught in promise messages. Even necessary? Advisable?
+
+- still need a clean way to intelligently clear no longer needed error msgs from the status bar.
+- get structure for error messages for nested objects, arrays for ekryski
+- users patch hook on server - only for user or admin acct
+- copy sample test code for react, require faking, etc. from songs.
+
+Documentation
+- doc usage from readme in feathers-service-verify-reset src
+
+Maybes
+- decent sample emails, like the verify email one.
+- validate final app config
+
+Potential enhancements
+- wrong permission in React routing signs user out. Display status msg instead.
+- Some changes in user info get user signed out to force in new user info. Can we avoid?
+- validation/sanitization callback for verifyRest routes?
+- ? implement https://medium.freecodecamp.com/internationalization-in-react-7264738274a0#.80b6wylrg
+- ? service for user verification so feathers-client not needed at all. would enable HTTP clinets.
+
+
+https://webpack.github.io/docs/hot-module-replacement-with-webpack.html
+https://github.com/glenjamin/webpack-hot-middleware
+http://matthewlehner.net/react-hot-module-replacement-with-webpack/
+http://matthewlehner.net/react-hot-module-replacement-with-webpack/  <---
+http://andrewhfarmer.com/webpack-hmr-tutorial/
+https://robots.thoughtbot.com/setting-up-webpack-for-react-and-hot-module-replacement
+
