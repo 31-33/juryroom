@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import AccountsUIWrapper from '/imports/ui/AccountsUIWrapper';
 import '/imports/startup/accounts-config';
 import DiscussionThread from '/imports/ui/DiscussionThread';
-import { Icon } from 'semantic-ui-react';
+import { Icon, Container, Divider, Dropdown, Grid, Header, Image, List, Menu, Segment } from 'semantic-ui-react';
 
 
 class App extends Component {
@@ -67,11 +67,21 @@ class App extends Component {
   render() {
     return (
       <div className="container">
-        <header>
-          <h1>JuryRoom</h1>
-          <AccountsUIWrapper />
-        </header>
-        <DiscussionThread comments={this.comments} />
+        <Menu fixed="top" inverted>
+          <Container>
+            <Menu.Item as="a" header>
+              <Icon size="big" name="balance scale"/>
+              JuryRoom
+            </Menu.Item>
+            <Menu.Item as="a">Browse</Menu.Item>
+            <Menu.Item as="a" position="right">
+              <AccountsUIWrapper />
+            </Menu.Item>
+          </Container>
+        </Menu>
+        <Container>
+          <DiscussionThread comments={this.comments} />
+        </Container>
       </div>
     );
   }
