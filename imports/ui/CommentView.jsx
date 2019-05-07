@@ -15,7 +15,7 @@ class CommentView extends Component {
     return this.props.data.children.map(child => {
 
       return (
-        <CommentView data={child}/>
+        <CommentView key={child.id} data={child}/>
       );
     });
   }
@@ -61,7 +61,7 @@ class CommentView extends Component {
           </Comment.Actions>
           { this.props.data.children ?
             (
-            <Comment.Group threaded='true'>
+            <Comment.Group threaded={true}>
               {this.renderChildren()}
             </Comment.Group>
             ) : ''
