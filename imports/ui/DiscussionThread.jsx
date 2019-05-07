@@ -1,11 +1,19 @@
 import React, { Component, createRef } from 'react';
-import { Comment, Container, Rail, Ref, Segment, Sticky } from 'semantic-ui-react';
+import { Button, Comment, Container, Rail, Ref, Segment, Sticky } from 'semantic-ui-react';
 import CommentView from '/imports/ui/CommentView';
 import StarredCommentView from '/imports/ui/StarredCommentView';
+import CommentForm from '/imports/ui/CommentForm';
 
 class DiscussionThread extends Component{
   contextRef = createRef();
 
+  constructor(){
+    super();
+
+    this.state = {
+      replying: false,
+    }
+  }
 
   onCommentStarred = (commentid) => {
     console.log(`user clicked star on comment ${commentid}`)
@@ -13,6 +21,18 @@ class DiscussionThread extends Component{
 
   onCommentVoteCalled = (commentid) => {
     console.log(`user clicked vote on comment ${commentid}`)
+  }
+
+  showCommentForm(){
+    this.setState({
+      replying: true,
+    })
+  }
+
+  closeCommentForm = () => {
+    this.setState({
+      replying: false,
+    })
   }
 
   renderComments(){
@@ -34,6 +54,10 @@ class DiscussionThread extends Component{
           <Segment>
             <Comment.Group threaded={true}>
               {this.renderComments()}
+              {this.state.replying ?
+                (<CommentForm onClose={this.closeCommentForm} />)
+                : (<Button primary onClick={this.showCommentForm.bind(this)}>Post</Button>)
+              }
             </Comment.Group>
             <Rail position='left'>
               <Sticky context={this.contextRef} offset={80}>

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Comment, Icon } from 'semantic-ui-react';
+import CommentForm from '/imports/ui/CommentForm';
 
 class CommentView extends Component {
 
@@ -8,6 +9,7 @@ class CommentView extends Component {
 
     this.state = {
       collapsed: false,
+      reply: false,
     }
   }
 
@@ -30,8 +32,16 @@ class CommentView extends Component {
     });
   }
 
-  reply(){
-    console.log("user clicked reply")
+  onReplyClicked(){
+    this.setState({
+      reply: !this.state.reply,
+    });
+  }
+
+  closeCommentForm = () => {
+    this.setState({
+      reply: false,
+    });
   }
 
   userSelected(){
@@ -54,14 +64,18 @@ class CommentView extends Component {
             {this.props.data.text}
           </Comment.Text>
           <Comment.Actions>
-            <Comment.Action onClick={this.reply.bind(this)}>Reply</Comment.Action>
+            <Comment.Action onClick={this.onReplyClicked.bind(this)}>Reply</Comment.Action>
             <Comment.Action onClick={() => this.props.starCallback(this.props.data.id)}>Star</Comment.Action>
           </Comment.Actions>
+          { this.state.reply ?
+            <CommentForm parentid={this.props.id} onClose={this.closeCommentForm} />
+            : ''
+          }
           { this.props.data.children ?
             (
-            <Comment.Group threaded={true}>
-              {this.renderChildren()}
-            </Comment.Group>
+              <Comment.Group threaded={true}>
+                {this.renderChildren()}
+              </Comment.Group>
             ) : ''
           }
         </Comment.Content>
