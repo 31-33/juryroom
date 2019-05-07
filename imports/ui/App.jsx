@@ -12,127 +12,6 @@ class App extends Component {
     super(props);
   }
 
-  comments = [
-        {
-          id: 0,
-          username: 'bob',
-          time: '(timestamp)',
-          text: 'hello world!',
-          voted: false
-        },
-        {
-          id: 1,
-          time: '(timestamp)',
-          username: 'ann',
-          text: 'hello world!',
-          voted: false,
-          children: [
-            {
-              id: 4,
-              username: 'bob',
-              time: '(timestamp)',
-              text: 'sub-comment1',
-              voted: false
-            },
-            {
-              id: 5,
-              username: 'ann',
-              time: '(timestamp)',
-              text: 'sub-comment2',
-              voted: false
-            },
-            {
-              id: 6,
-              username: 'foo',
-              time: '(timestamp)',
-              text: 'sub-comment3',
-              voted: false
-            },
-            {
-              id: 7,
-              username: 'bob',
-              time: '(timestamp)',
-              text: 'sub-comment4',
-              voted: false,
-              children: [
-                {
-                  id: 10,
-                  username: 'bob',
-                  time: '(timestamp)',
-                  text: 'hello world!',
-                  voted: false
-                },
-                {
-                  id: 11,
-                  time: '(timestamp)',
-                  username: 'ann',
-                  text: 'hello world!',
-                  voted: false,
-                  children: [
-                    {
-                      id: 14,
-                      username: 'bob',
-                      time: '(timestamp)',
-                      text: 'sub-comment1',
-                      voted: false
-                    },
-                    {
-                      id: 15,
-                      username: 'ann',
-                      time: '(timestamp)',
-                      text: 'sub-comment2',
-                      voted: false
-                    },
-                    {
-                      id: 16,
-                      username: 'foo',
-                      time: '(timestamp)',
-                      text: 'sub-comment3',
-                      voted: false
-                    },
-                    {
-                      id: 17,
-                      username: 'bob',
-                      time: '(timestamp)',
-                      text: 'sub-comment4',
-                      voted: false
-                    },
-                  ]
-                },
-                {
-                  id: 12,
-                  username: 'foo',
-                  time: '(timestamp)',
-                  text: 'bar',
-                  voted: false
-                },
-                {
-                  id: 13,
-                  username: 'bob',
-                  time: '(timestamp)',
-                  text: 'test',
-                  voted: false
-                }
-              ]
-            },
-          ]
-        },
-        {
-          id: 12,
-          username: 'foo',
-          time: '(timestamp)',
-          text: 'bar',
-          voted: false
-        },
-        {
-          id: 13,
-          username: 'bob',
-          time: '(timestamp)',
-          text: 'test',
-          voted: false
-        },
-      ];
-
   render() {
     return (
       <div ref={this.contextRef}>
@@ -151,7 +30,7 @@ class App extends Component {
           </Menu>
         </Sticky>
         <Container>
-          <DiscussionThread comments={this.comments} />
+          <DiscussionThread discussion_id="0" />
         </Container>
       </div>
     );

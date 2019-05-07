@@ -17,7 +17,7 @@ class CommentForm extends Component {
   }
 
   submitComment(){
-    console.log(`Submit comment called with text ${this.state.commentText} (parent_id: ${this.props.parentid})`);
+    Meteor.call('comments.insert', this.props.discussion_id, this.props.parent_id ? this.props.parent_id : '', this.state.commentText);
 
     this.setState({
       commentText: "",

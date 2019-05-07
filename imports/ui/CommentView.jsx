@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { withTracker } from 'meteor/react-meteor-data';
+import { Meteor } from 'meteor/meteor';
+import { Comments } from '/imports/api/Comments';
 import { Comment, Icon } from 'semantic-ui-react';
 import CommentForm from '/imports/ui/CommentForm';
 
@@ -11,19 +14,6 @@ class CommentView extends Component {
       collapsed: false,
       reply: false,
     }
-  }
-
-  renderChildren(){
-    return this.props.data.children.map(child => {
-
-      return (
-        <CommentView
-          key={child.id}
-          data={child}
-          starCallback={this.props.starCallback}
-        />
-      );
-    });
   }
 
   collapse(){
@@ -45,7 +35,21 @@ class CommentView extends Component {
   }
 
   userSelected(){
-    console.log(`user clicked on name: ${this.props.data.username}`);
+    console.log(`user clicked on name: ${this.props.data.author.name}`);
+  }
+
+  renderChildren(){
+    return this.props.children.map(child => {
+      return (
+        <CommentView
+          key={child._id}
+          discussion_id={this.props.discussion_id}
+          comment_id={child._id}
+          data={child}
+          starCallback={this.props.starCallback}
+        />
+      );
+    });
   }
 
   render(){
@@ -55,10 +59,10 @@ class CommentView extends Component {
         <Comment.Content>
           <Icon link name={ this.state.collapsed ? 'chevron down' : 'minus' } onClick={this.collapse.bind(this)}/>
           <Comment.Author as='a' onClick={this.userSelected.bind(this)}>
-            {this.props.data.username}
+            {this.props.data.author.name}
           </Comment.Author>
           <Comment.Metadata>
-            <div>{this.props.data.time}</div>
+            <div>{this.props.data.posted_time.toString()}</div>
           </Comment.Metadata>
           <Comment.Text>
             {this.props.data.text}
@@ -68,10 +72,13 @@ class CommentView extends Component {
             <Comment.Action onClick={() => this.props.starCallback(this.props.data.id)}>Star</Comment.Action>
           </Comment.Actions>
           { this.state.reply ?
-            <CommentForm parentid={this.props.id} onClose={this.closeCommentForm} />
+            <CommentForm
+              discussion_id={this.props.discussion_id}
+              parent_id={this.props.data._id}
+              onClose={this.closeCommentForm} />
             : ''
           }
-          { this.props.data.children ?
+          { this.props.children ?
             (
               <Comment.Group threaded={true}>
                 {this.renderChildren()}
@@ -84,4 +91,11 @@ class CommentView extends Component {
   }
 }
 
-export default CommentView;
+export default withTracker(({comment_id}) => {
+  return {
+    children: Comments.find(
+      { parent_id: comment_id },
+      { sort: { posted_time: 1 }},
+    ).fetch(),
+  }
+})(CommentView);
