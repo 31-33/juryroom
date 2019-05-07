@@ -15,7 +15,11 @@ class CommentView extends Component {
     return this.props.data.children.map(child => {
 
       return (
-        <CommentView key={child.id} data={child}/>
+        <CommentView
+          key={child.id}
+          data={child}
+          starCallback={this.props.starCallback}
+        />
       );
     });
   }
@@ -28,10 +32,6 @@ class CommentView extends Component {
 
   reply(){
     console.log("user clicked reply")
-  }
-
-  callVote(){
-    console.log("user called for vote")
   }
 
   userSelected(){
@@ -55,9 +55,7 @@ class CommentView extends Component {
           </Comment.Text>
           <Comment.Actions>
             <Comment.Action onClick={this.reply.bind(this)}>Reply</Comment.Action>
-            { this.props.data.voted ? '' :
-              <Comment.Action onClick={this.callVote.bind(this)}>Call Vote</Comment.Action>
-            }
+            <Comment.Action onClick={() => this.props.starCallback(this.props.data.id)}>Star</Comment.Action>
           </Comment.Actions>
           { this.props.data.children ?
             (
