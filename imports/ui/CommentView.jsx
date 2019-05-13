@@ -5,7 +5,7 @@ import { Comments } from '/imports/api/Comments';
 import { Comment, Icon } from 'semantic-ui-react';
 import CommentForm from '/imports/ui/CommentForm';
 
-class CommentView extends Component {
+class CommentViewTemplate extends Component {
 
   constructor(props){
     super(props);
@@ -39,17 +39,34 @@ class CommentView extends Component {
   }
 
   renderChildren(){
-    return this.props.children.map(child => {
-      return (
-        <CommentView
-          key={child._id}
-          discussion_id={this.props.discussion_id}
-          comment_id={child._id}
-          data={child}
-          starCallback={this.props.starCallback}
-        />
-      );
-    });
+    return this.props.children ? 
+    (
+      <Comment.Group threaded={true}>
+        {
+          this.props.children.map(child => {
+            return (
+              <CommentView
+                key={child._id}
+                discussion_id={this.props.discussion_id}
+                comment_id={child._id}
+                data={child}
+                starCallback={this.props.starCallback}
+              />
+            )
+          })
+        }
+      </Comment.Group>
+    ) : '';
+  }
+
+  renderReplyForm(){
+    return this.state.reply ?
+    (
+      <CommentForm
+        discussion_id={this.props.discussion_id}
+        parent_id={this.props.data._id}
+        onClose={this.closeCommentForm} />
+    ) : '';
   }
 
   render(){
@@ -71,31 +88,24 @@ class CommentView extends Component {
             <Comment.Action onClick={this.onReplyClicked.bind(this)}>Reply</Comment.Action>
             <Comment.Action onClick={() => this.props.starCallback(this.props.data.id)}>Star</Comment.Action>
           </Comment.Actions>
-          { this.state.reply ?
-            <CommentForm
-              discussion_id={this.props.discussion_id}
-              parent_id={this.props.data._id}
-              onClose={this.closeCommentForm} />
-            : ''
-          }
-          { this.props.children ?
-            (
-              <Comment.Group threaded={true}>
-                {this.renderChildren()}
-              </Comment.Group>
-            ) : ''
-          }
+          {this.renderReplyForm()}
+          {this.renderChildren()}
         </Comment.Content>
       </Comment>
     );
   }
 }
-
-export default withTracker(({comment_id}) => {
+const CommentView = withTracker(({discussion_id, comment_id}) => {
+  Meteor.subscribe('comments', discussion_id, comment_id);
   return {
     children: Comments.find(
-      { parent_id: comment_id },
+      { 
+        discussion_id: discussion_id,
+        parent_id: comment_id,
+      },
       { sort: { posted_time: 1 }},
     ).fetch(),
   }
-})(CommentView);
+})(CommentViewTemplate);
+
+export default CommentView;
