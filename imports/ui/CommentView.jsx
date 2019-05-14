@@ -4,6 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { Comments } from '/imports/api/Comments';
 import { Discussions } from '/imports/api/Discussions';
 import { Comment, Icon } from 'semantic-ui-react';
+import Moment from 'react-moment';
 import CommentForm, { openCommentForm } from '/imports/ui/CommentForm';
 
 class CommentViewTemplate extends Component {
@@ -89,7 +90,7 @@ class CommentViewTemplate extends Component {
           </Comment.Author>
           <Comment.Metadata>
             <div>
-              {this.props.data.posted_time.toString()}
+              <Moment fromNow>{this.props.data.posted_time}</Moment>
               &nbsp;
               {this.renderUserReplyingStatus()}
             </div>
