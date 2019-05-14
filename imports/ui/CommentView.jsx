@@ -6,6 +6,7 @@ import { Discussions } from '/imports/api/Discussions';
 import { Comment, Icon } from 'semantic-ui-react';
 import Moment from 'react-moment';
 import CommentForm, { openCommentForm } from '/imports/ui/CommentForm';
+import { starComment } from './StarredCommentView';
 
 class CommentViewTemplate extends Component {
 
@@ -100,7 +101,7 @@ class CommentViewTemplate extends Component {
           </Comment.Text>
           <Comment.Actions>
             <Comment.Action onClick={() => openCommentForm(this.props.discussion_id, this.props.comment_id)}>Reply</Comment.Action>
-            <Comment.Action onClick={() => this.props.starCallback(this.props.data.id)}>Star</Comment.Action>
+            <Comment.Action onClick={() => starComment(this.props.discussion_id, this.props.comment_id)}>Star</Comment.Action>
           </Comment.Actions>
           {this.renderReplyForm()}
           {this.renderChildren()}

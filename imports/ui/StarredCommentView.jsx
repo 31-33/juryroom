@@ -2,23 +2,26 @@ import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Button, Comment, Header, Icon, Segment } from 'semantic-ui-react';
+import { Discussions } from '/imports/api/Discussions';
+import { Comments } from '/imports/api/Comments';
+import Moment from 'react-moment';
 
 class StarredCommentView extends Component {
 
-  renderComments(){
-    const currUserID = this.props.user && this.props.user._id;
-    return this.props.starred
-      .sort((c1, c2) => c2.starredBy.length - c1.starredBy.length)
-      .map(comment => {
-        const userStarred = comment.starredBy.some(user => user.id===currUserID);
+  renderStarredComments(starred){
+    const currUserID = Meteor.userId();
+    return starred.sort((c1, c2) => c2.users.length - c1.users.length)
+      .map(data => {
+        const comment = this.props.comments.find(comment => comment._id === data.comment_id);
+        const userStarred = data.users.some(user => user===currUserID);
         return (
-          <Comment key={comment.id}>
+          <Comment key={data.comment_id}>
             <Comment.Content>
               <Comment.Author as="a">
-                {comment.author}
+                {comment.author.name}
               </Comment.Author>
               <Comment.Metadata>
-                {comment.time}
+                <Moment fromNow>{comment.posted_time}</Moment>
               </Comment.Metadata>
               <Comment.Text>
                 {comment.text}
@@ -34,16 +37,16 @@ class StarredCommentView extends Component {
                     basic: true,
                     color: "yellow",
                     pointing: "left",
-                    content: comment.starredBy.map(user => user.username).join(", "),
+                    content: data.users.map(user => user.name).join(', '),
                   }}
-                  onClick={() => this.props.starCallback(comment.id)}
+                  onClick={() => starComment(this.props.discussion_id, data.comment_id)}
                 />
                 <Button
-                attached="bottom"
+                  attached="bottom"
                   icon="exclamation"
                   color="green"
                   content="Call Vote"
-                  onClick={() => this.props.voteCallback(comment.id)}
+                  onClick={() => callVote(this.props.discussion_id, data.comment_id)}
                 />
               </Comment.Actions>
             </Comment.Content>
@@ -53,20 +56,56 @@ class StarredCommentView extends Component {
   }
 
   render(){
-
-    return (
-      <Segment>
-        <Header>Starred Comments</Header>
-        <Comment.Group>
-          {this.renderComments()}
-        </Comment.Group>
-      </Segment>
-    );
+    if(this.props.discussion_state && this.props.discussion_state.user_data){
+      const starred_comments = [];
+      
+      this.props.discussion_state.user_data.forEach(user => {
+        if(user.starred){
+          const index = starred_comments.findIndex(comment => comment.comment_id === user.starred);
+          if(index < 0){
+            starred_comments.push({
+              comment_id: user.starred,
+              users: [{id: user.id, name: user.name}],
+            })
+          }
+          else{
+            starred_comments[index].users.push({id: user.id, name: user.name});
+          }
+        }
+      })
+      return starred_comments.length > 0 ?
+      (
+        <Segment>
+          <Header>Starred Comments</Header>
+          <Comment.Group>
+            {this.renderStarredComments(starred_comments)}
+          </Comment.Group>
+        </Segment>
+      ) : '';
+    }
+    return '';
   }
 }
 
-export default withTracker(({id}) => {
+export default withTracker(({discussion_id}) => {
+  Meteor.subscribe('comments', discussion_id);
+  Meteor.subscribe('discussions', discussion_id);
+
   return {
-    user: Meteor.user(),
+    discussion_state: Discussions.findOne(
+      { _id: discussion_id },
+      { user_data: 1 }
+    ),
+    comments: Comments.find({
+      discussion_id: discussion_id,
+    }).fetch(),
   }
 })(StarredCommentView);
+
+export function starComment(discussion_id, comment_id){
+  Meteor.call('discussions.star_comment', discussion_id, comment_id);
+}
+
+export function callVote(discussion_id, comment_id){
+  console.log(`${Meteor.userId()} called a vote on comment ${comment_id}`);
+}

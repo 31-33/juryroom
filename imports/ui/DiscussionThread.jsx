@@ -68,11 +68,7 @@ class DiscussionThread extends Component{
             </Comment.Group>
             <Rail position='left'>
               <Sticky context={this.contextRef} offset={80}>
-                <StarredCommentView
-                  starred={[]}
-                  starCallback={this.onCommentStarred}
-                  voteCallback={this.onCommentVoteCalled}
-                />
+                <StarredCommentView discussion_id={this.props.discussion_id} />
               </Sticky>
             </Rail>
             <Rail position='right'>

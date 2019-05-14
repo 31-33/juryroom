@@ -6,6 +6,12 @@ export const Comments = new Mongo.Collection('comments');
 
 if(Meteor.isServer){
   //TODO: ensure current user is within group associated with discussion_id
+  Meteor.publish('comments', (discussion_id) => {
+    return Comments.find({
+      discussion_id: discussion_id,
+    });
+  });
+
   Meteor.publish('comments', (discussion_id, parent_id) => {
     return Comments.find({
       discussion_id: discussion_id,
