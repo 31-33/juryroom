@@ -28,7 +28,7 @@ class CommentViewTemplate extends Component {
   }
 
   renderChildren(){
-    return this.props.children ? 
+    return this.props.children && this.props.children.length > 0 ? 
     (
       <Comment.Group threaded={true}>
         {
