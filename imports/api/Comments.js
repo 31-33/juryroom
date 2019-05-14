@@ -6,9 +6,10 @@ export const Comments = new Mongo.Collection('comments');
 
 if(Meteor.isServer){
   //TODO: ensure current user is within group associated with discussion_id
-  Meteor.publish('comments', (discussion_id) => {
+  Meteor.publish('comments', (discussion_id, parent_id) => {
     return Comments.find({
       discussion_id: discussion_id,
+      parent_id: parent_id,
     });
   });
 }
@@ -19,12 +20,12 @@ Meteor.methods({
     check(parent_id, String);
     check(text, String);
 
-    const username = Meteor.users.findOne({_id: this.userId}).username;
-
     //TODO: ensure current user is participating in discussion_id
     if(!this.userId){
       throw new Meteor.Error('not-authorized');
     }
+
+    const username = Meteor.users.findOne({_id: this.userId}).username;
 
     Comments.insert({
       discussion_id: discussion_id,
