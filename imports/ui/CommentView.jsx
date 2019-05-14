@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Comments } from '/imports/api/Comments';
+import { Discussions } from '/imports/api/Discussions';
 import { Comment, Icon } from 'semantic-ui-react';
-import CommentForm from '/imports/ui/CommentForm';
+import CommentForm, { openCommentForm } from '/imports/ui/CommentForm';
 
 class CommentViewTemplate extends Component {
 
@@ -12,25 +13,12 @@ class CommentViewTemplate extends Component {
 
     this.state = {
       collapsed: false,
-      reply: false,
     }
   }
 
   collapse(){
     this.setState({
       collapsed: !this.state.collapsed,
-    });
-  }
-
-  onReplyClicked(){
-    this.setState({
-      reply: !this.state.reply,
-    });
-  }
-
-  closeCommentForm = () => {
-    this.setState({
-      reply: false,
     });
   }
 
@@ -59,14 +47,35 @@ class CommentViewTemplate extends Component {
     ) : '';
   }
 
+  renderUserReplyingStatus(){
+    if(this.props.discussion_state && this.props.discussion_state.user_data){
+      const replying_users = [];
+      this.props.discussion_state.user_data.forEach(user => {
+        if(user.replying === this.props.comment_id && user.id !== Meteor.userId()){
+          replying_users.push(user.name);
+        }
+      })
+      return replying_users.length > 0 ?
+        (
+          <strong>{replying_users.join(', ')} is replying</strong>
+        ): '';
+    }
+    return '';
+  }
+
   renderReplyForm(){
-    return this.state.reply ?
-    (
-      <CommentForm
-        discussion_id={this.props.discussion_id}
-        parent_id={this.props.data._id}
-        onClose={this.closeCommentForm} />
-    ) : '';
+    if(this.props.discussion_state && this.props.discussion_state.user_data){
+      return this.props.discussion_state.user_data.some(
+        user => user.id === Meteor.userId() && user.replying === this.props.comment_id
+      ) ?
+      (
+        <CommentForm
+          discussion_id={this.props.discussion_id}
+          parent_id={this.props.data._id}
+        />
+      ) : '';
+    }
+    return '';
   }
 
   render(){
@@ -79,13 +88,17 @@ class CommentViewTemplate extends Component {
             {this.props.data.author.name}
           </Comment.Author>
           <Comment.Metadata>
-            <div>{this.props.data.posted_time.toString()}</div>
+            <div>
+              {this.props.data.posted_time.toString()}
+              &nbsp;
+              {this.renderUserReplyingStatus()}
+            </div>
           </Comment.Metadata>
           <Comment.Text>
             {this.props.data.text}
           </Comment.Text>
           <Comment.Actions>
-            <Comment.Action onClick={this.onReplyClicked.bind(this)}>Reply</Comment.Action>
+            <Comment.Action onClick={() => openCommentForm(this.props.discussion_id, this.props.comment_id)}>Reply</Comment.Action>
             <Comment.Action onClick={() => this.props.starCallback(this.props.data.id)}>Star</Comment.Action>
           </Comment.Actions>
           {this.renderReplyForm()}
@@ -97,6 +110,8 @@ class CommentViewTemplate extends Component {
 }
 const CommentView = withTracker(({discussion_id, comment_id}) => {
   Meteor.subscribe('comments', discussion_id, comment_id);
+  Meteor.subscribe('discussions', discussion_id);
+
   return {
     children: Comments.find(
       { 
@@ -105,6 +120,10 @@ const CommentView = withTracker(({discussion_id, comment_id}) => {
       },
       { sort: { posted_time: 1 }},
     ).fetch(),
+    discussion_state: Discussions.findOne(
+      { _id: discussion_id },
+      { user_data: 1 }
+    ),
   }
 })(CommentViewTemplate);
 

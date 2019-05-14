@@ -30,7 +30,7 @@ class App extends Component {
           </Menu>
         </Sticky>
         <Container>
-          <DiscussionThread discussion_id="0" />
+          <DiscussionThread discussion_id='0' />
         </Container>
       </div>
     );

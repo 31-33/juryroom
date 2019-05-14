@@ -2,9 +2,10 @@ import React, { Component, createRef } from 'react';
 import { Button, Comment, Container, Rail, Ref, Segment, Sticky } from 'semantic-ui-react';
 import { Meteor } from 'meteor/meteor';
 import { Comments } from '/imports/api/Comments';
+import { Discussions } from '/imports/api/Discussions';
 import { withTracker } from 'meteor/react-meteor-data';
 import CommentView from '/imports/ui/CommentView';
-import CommentForm from '/imports/ui/CommentForm';
+import CommentForm, { openCommentForm } from '/imports/ui/CommentForm';
 import StarredCommentView from '/imports/ui/StarredCommentView';
 
 class DiscussionThread extends Component{
@@ -12,30 +13,6 @@ class DiscussionThread extends Component{
 
   constructor(){
     super();
-
-    this.state = {
-      replying: false,
-    }
-  }
-
-  onCommentStarred = (commentid) => {
-    console.log(`user clicked star on comment ${commentid}`)
-  }
-
-  onCommentVoteCalled = (commentid) => {
-    console.log(`user clicked vote on comment ${commentid}`)
-  }
-
-  showCommentForm(){
-    this.setState({
-      replying: true,
-    })
-  }
-
-  closeCommentForm = () => {
-    this.setState({
-      replying: false,
-    })
   }
 
   renderComments(){
@@ -46,10 +23,37 @@ class DiscussionThread extends Component{
           discussion_id={this.props.discussion_id}
           comment_id={comment._id}
           data={comment}
-          starCallback={this.onCommentStarred}
         />
       )
     });
+  }
+
+  renderUserReplyingStatus(){
+    if(this.props.discussion_state && this.props.discussion_state.user_data){
+      const replying_users = [];
+      this.props.discussion_state.user_data.forEach(user => {
+        if(user.replying === this.props.discussion_id && user.id !== Meteor.userId()){
+          replying_users.push(user.name);
+        }
+      })
+      return replying_users.length > 0 ?
+        (
+          <Container>
+            <strong>{replying_users.join(', ')} is commenting</strong>
+          </Container>
+        ): '';
+    }
+    return '';
+  }
+
+  renderCommentForm(){
+    return (
+      this.props.discussion_state && 
+      this.props.discussion_state.user_data &&
+      this.props.discussion_state.user_data.some(
+        user => user.id === Meteor.userId() && user.replying === this.props.discussion_id
+      )) ? (<CommentForm discussion_id={this.props.discussion_id} />) :
+      (<Button primary onClick={() => openCommentForm(this.props.discussion_id, this.props.discussion_id)}>Post</Button>);
   }
 
   render(){
@@ -59,13 +63,8 @@ class DiscussionThread extends Component{
           <Segment>
             <Comment.Group threaded={true}>
               {this.renderComments()}
-              {this.state.replying ?
-                (<CommentForm
-                  discussion_id={this.props.discussion_id}
-                  onClose={this.closeCommentForm}
-                />)
-                : (<Button primary onClick={this.showCommentForm.bind(this)}>Post</Button>)
-              }
+              {this.renderUserReplyingStatus()}
+              {this.renderCommentForm()}
             </Comment.Group>
             <Rail position='left'>
               <Sticky context={this.contextRef} offset={80}>
@@ -89,7 +88,8 @@ class DiscussionThread extends Component{
 }
 
 export default withTracker(({discussion_id}) => {
-  Meteor.subscribe("comments", discussion_id);
+  Meteor.subscribe("comments", discussion_id, '');
+  Meteor.subscribe('discussions', discussion_id);
 
   return {
     comments: Comments.find(
@@ -98,5 +98,9 @@ export default withTracker(({discussion_id}) => {
         parent_id: '',
       }
     ).fetch(),
+    discussion_state: Discussions.findOne(
+      { _id: discussion_id },
+      { user_data: 1 }
+    ),
   }
 })(DiscussionThread);

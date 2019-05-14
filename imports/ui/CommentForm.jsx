@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, TextArea, Button } from 'semantic-ui-react';
+import { Form, TextArea, Button, CommentActions } from 'semantic-ui-react';
 
 class CommentForm extends Component {
   constructor(){
@@ -22,7 +22,11 @@ class CommentForm extends Component {
     this.setState({
       commentText: "",
     })
-    this.props.onClose();
+    this.close();
+  }
+
+  close(){
+    openCommentForm(this.props.discussion_id, '');
   }
 
   render(){
@@ -37,11 +41,15 @@ class CommentForm extends Component {
         />
         <Form.Group>
           <Form.Field control={Button} onClick={this.submitComment.bind(this)}>Post</Form.Field>
-          <Form.Field control={Button} onClick={() => this.props.onClose()}>Cancel</Form.Field>
+          <Form.Field control={Button} onClick={this.close.bind(this)}>Cancel</Form.Field>
         </Form.Group>
       </Form>
     );
   }
+}
+
+export function openCommentForm(discussion_id, parent_id) {
+  Meteor.call('discussions.reply', discussion_id, parent_id);
 }
 
 export default CommentForm;
