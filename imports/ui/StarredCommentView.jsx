@@ -13,7 +13,7 @@ class StarredCommentView extends Component {
     return starred.sort((c1, c2) => c2.users.length - c1.users.length)
       .map(data => {
         const comment = this.props.comments.find(comment => comment._id === data.comment_id);
-        const userStarred = data.users.some(user => user===currUserID);
+        const userStarred = data.users.some(user => user.id===currUserID);
         return (
           <Comment key={data.comment_id}>
             <Comment.Content>
