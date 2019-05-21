@@ -56,8 +56,8 @@ class DiscussionThread extends Component{
             <Comment.Group threaded={true}>
               {this.renderComments()}
               {this.renderUserReplyingStatus()}
-              {this.renderCommentForm()}
             </Comment.Group>
+            {this.renderCommentForm()}
             <Rail position='left'>
               <Sticky context={this.contextRef} offset={80}>
                 <StarredCommentView discussion_id={this.props.discussion_id} />
