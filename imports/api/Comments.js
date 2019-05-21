@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import { Discussions } from './Discussions';
 
 export const Comments = new Mongo.Collection('comments');
 
@@ -42,7 +43,8 @@ Meteor.methods({
       collapsed: [],
     });
   },
-  'comments.collapse'(comment_id, collapse) {
+  'comments.collapse'(discussion_id, comment_id, collapse) {
+    check(discussion_id, String);
     check(comment_id, String);
     check(collapse, Boolean);
 
@@ -63,6 +65,19 @@ Meteor.methods({
         { $pull: { collapsed: this.userId }}
       );
     }
-    // TODO: write a record of this action to persistent storage
+    // Write a record of this action to persistent storage
+    Discussions.update(
+      { _id: discussion_id },
+      {
+        $push: {
+          action_collapse: {
+            user_id: this.userId,
+            comment_id: comment_id,
+            collapsed: collapse,
+            date_time: new Date(),
+          }
+        }
+      }
+    )
   }
 });

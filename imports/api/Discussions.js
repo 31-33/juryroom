@@ -24,6 +24,9 @@ if(Meteor.isServer){
       _id: '0',
       active_replies: [],
       user_stars: [],
+      action_star: [],
+      action_reply: [],
+      action_collapse: [],
     });
   }
 }
@@ -33,7 +36,11 @@ Meteor.methods({
     check(users, Array);
 
     const discussion = Discussions.insert({
-      user_data: users,
+      active_replies: [],
+      user_stars: [],
+      action_star: [],
+      action_reply: [],
+      action_collapse: [],
     });
     // TODO: return discussion id
     console.log(discussion._id);
@@ -60,6 +67,20 @@ Meteor.methods({
         }
       }
     );
+
+    // Write this action to persistant storage
+    Discussions.update(
+      { _id: discussion_id },
+      {
+        $push: {
+          action_star: {
+            user_id: this.userId,
+            comment_id: comment_id,
+            date_time: new Date(),
+          }
+        }
+      }
+    )
   },
   'discussions.remove_star'(discussion_id){
     check(discussion_id, String);
@@ -77,6 +98,20 @@ Meteor.methods({
         } 
       }
     )
+
+    // Write to persistant storage
+    Discussions.update(
+      { _id: discussion_id },
+      {
+        $push: {
+          action_star: {
+            user_id: this.userId,
+            comment_id: '',
+            date_time: new Date(),
+          }
+        }
+      }
+    )
   },
   'discussions.reply'(discussion_id, parent_id){
     check(discussion_id, String);
@@ -88,7 +123,7 @@ Meteor.methods({
     }
     
     // Remove any active replies for this user
-    Meteor.call('discussions.closeReply', discussion_id);
+    Meteor.call('discussions.closeReply', discussion_id, false);
 
     // Insert current user replying to specified comment
     Discussions.update(
@@ -102,6 +137,20 @@ Meteor.methods({
         }
       }
     );
+
+    // Persist this action
+    Discussions.update(
+      { _id: discussion_id },
+      {
+        $push: {
+          action_reply: {
+            user_id: this.userId,
+            parent_id: parent_id,
+            date_time: new Date(),
+          }
+        }
+      }
+    )
   },
   'discussions.closeReply'(discussion_id){
     check(discussion_id, String);
@@ -121,5 +170,15 @@ Meteor.methods({
         }
       }
     );
+
+    Discussions.update(
+      { _id: discussion_id },
+      {
+        $push: {
+          user_id: this.userId,
+          date_time: new Date(),
+        }
+      }
+    )
   }
 });

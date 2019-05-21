@@ -14,7 +14,7 @@ class CommentViewTemplate extends Component {
     return this.props.comment.collapsed.includes(Meteor.userId());
   }
   collapse(){
-    Meteor.call('comments.collapse', this.props.comment._id, !this.isCollapsed());
+    Meteor.call('comments.collapse', this.props.discussion_id, this.props.comment._id, !this.isCollapsed());
   }
 
   userSelected(){
