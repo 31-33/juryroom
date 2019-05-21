@@ -175,8 +175,10 @@ Meteor.methods({
       { _id: discussion_id },
       {
         $push: {
-          user_id: this.userId,
-          date_time: new Date(),
+          action_reply: {
+            user_id: this.userId,
+            date_time: new Date(),
+          }
         }
       }
     )
