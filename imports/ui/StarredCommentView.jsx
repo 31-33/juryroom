@@ -92,13 +92,15 @@ export default withTracker(({discussion_id}) => {
 
   const discussion = Discussions.findOne(
     { _id: discussion_id },
-    { _id: 1, active_replies: 0, user_stars: 1 }
+    { fields: { user_stars: 1 } }
   );
+  const starredComments = discussion ? discussion.user_stars.map(star => star.comment_id): [];
   return {
     participants: Meteor.users.find({}).fetch(),
     userStars: discussion ? discussion.user_stars : [], 
     comments: Comments.find({
       discussion_id: discussion_id,
+      _id: { $in: starredComments }
     }).fetch(),
   }
 })(StarredCommentView);

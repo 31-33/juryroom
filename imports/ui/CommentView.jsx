@@ -113,7 +113,11 @@ const CommentView = withTracker(({discussion_id, comment}) => {
 
   const discussion = Discussions.findOne(
     { _id: discussion_id },
-    { _id: 1, active_replies: 1, user_stars: 0 }
+    { fields: {
+        active_replies: 1, 
+        user_stars: 1
+      }
+    }
   );
   return {
     children: Comments.find(

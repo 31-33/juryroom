@@ -7,9 +7,15 @@ export const Discussions = new Mongo.Collection('discussions');
 if(Meteor.isServer){
   //TODO: ensure user is participating in discussion_id
   Meteor.publish('discussions', (discussion_id) => {
-    return Discussions.find({
-      _id: discussion_id,
-    });
+    return Discussions.find(
+      { _id: discussion_id },
+      {
+        fields: {
+          active_replies: 1,
+          user_stars: 1,
+        }
+      }
+    );
   });
 
   // Create discussion 0 for testing purposes

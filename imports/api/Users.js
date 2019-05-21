@@ -8,8 +8,10 @@ if(Meteor.isServer){
             { },
             // Publish only selected fields
             {
-                username: 1,
-                avatar: 1,
+                fields: {
+                    username: 1,
+                    avatar: 1,
+                }
             },
         );
     });

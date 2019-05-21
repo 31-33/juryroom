@@ -82,7 +82,7 @@ export default withTracker(({discussion_id}) => {
 
   const discussion = Discussions.findOne(
     { _id: discussion_id },
-    { _id: 1, active_replies: 1, user_stars: 0 }
+    { fields: { active_replies: 1 } }
   );
   return {
     comments: Comments.find(
