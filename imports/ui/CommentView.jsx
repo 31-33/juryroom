@@ -64,38 +64,40 @@ class CommentViewTemplate extends Component {
   }
 
   render(){
+    const author = this.props.participants.find(user => user._id === this.props.comment.author_id);
     return (
       <Comment collapsed={ this.isCollapsed() }>
         <Comment.Content>
-          <Icon link 
-            name={ this.isCollapsed() ? 'chevron down' : 'minus' } 
-            onClick={this.collapse.bind(this)}
-          />
-          <Comment.Author as='a' onClick={this.userSelected.bind(this)}>
-            {this.props.participants.find(user => user._id === this.props.comment.author_id).username}
-          </Comment.Author>
-          <Comment.Metadata>
-            <div>
-              <Moment fromNow>{this.props.comment.posted_time}</Moment>
-              &nbsp;
-              {this.renderUserReplyingStatus()}
-            </div>
-          </Comment.Metadata>
-          <Comment.Text>
-            {this.props.comment.text}
-          </Comment.Text>
-          <Comment.Actions>
-            <Comment.Action onClick={() => openCommentForm(this.props.discussion_id, this.props.comment._id)}>Reply</Comment.Action>
-            {
-              this.props.starred ? 
-              (
-                <Comment.Action onClick={() => unstarComment(this.props.discussion_id)}>Unstar</Comment.Action>
-              ) :
-              (
-                <Comment.Action onClick={() => starComment(this.props.discussion_id, this.props.comment._id)}>Star</Comment.Action>
-              )
-            }
-          </Comment.Actions>
+            <Icon link 
+              name={ this.isCollapsed() ? 'chevron down' : 'minus' } 
+              onClick={this.collapse.bind(this)}
+            />
+            <Comment.Avatar src={author.avatar ? author.avatar : '/avatar_default.png'}/>
+            <Comment.Author as='a' onClick={this.userSelected.bind(this)}>
+              {author.username}
+            </Comment.Author>
+            <Comment.Metadata>
+              <div>
+                <Moment fromNow>{this.props.comment.posted_time}</Moment>
+                &nbsp;
+                {this.renderUserReplyingStatus()}
+              </div>
+            </Comment.Metadata>
+            <Comment.Text>
+              {this.props.comment.text}
+            </Comment.Text>
+            <Comment.Actions>
+              <Comment.Action onClick={() => openCommentForm(this.props.discussion_id, this.props.comment._id)}>Reply</Comment.Action>
+              {
+                this.props.starred ? 
+                (
+                  <Comment.Action onClick={() => unstarComment(this.props.discussion_id)}>Unstar</Comment.Action>
+                ) :
+                (
+                  <Comment.Action onClick={() => starComment(this.props.discussion_id, this.props.comment._id)}>Star</Comment.Action>
+                )
+              }
+            </Comment.Actions>
           {this.renderReplyForm()}
           {this.renderChildren()}
         </Comment.Content>
