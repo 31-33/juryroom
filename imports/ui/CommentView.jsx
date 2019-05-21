@@ -6,26 +6,19 @@ import { Discussions } from '/imports/api/Discussions';
 import { Comment, Icon } from 'semantic-ui-react';
 import Moment from 'react-moment';
 import CommentForm, { openCommentForm } from '/imports/ui/CommentForm';
-import { starComment } from './StarredCommentView';
+import { starComment, unstarComment } from './StarredCommentView';
 
 class CommentViewTemplate extends Component {
 
-  constructor(props){
-    super(props);
-
-    this.state = {
-      collapsed: false,
-    }
+  isCollapsed(){
+    return this.props.comment.collapsed.includes(Meteor.userId());
   }
-
   collapse(){
-    this.setState({
-      collapsed: !this.state.collapsed,
-    });
+    Meteor.call('comments.collapse', this.props.comment._id, !this.isCollapsed());
   }
 
   userSelected(){
-    console.log(`user clicked on name: ${this.props.data.author.name}`);
+    console.log(`user clicked on name: ${this.props.comment.author_id}`);
   }
 
   renderChildren(){
@@ -38,9 +31,7 @@ class CommentViewTemplate extends Component {
               <CommentView
                 key={child._id}
                 discussion_id={this.props.discussion_id}
-                comment_id={child._id}
-                data={child}
-                starCallback={this.props.starCallback}
+                comment={child}
               />
             )
           })
@@ -50,58 +41,60 @@ class CommentViewTemplate extends Component {
   }
 
   renderUserReplyingStatus(){
-    if(this.props.discussion_state && this.props.discussion_state.user_data){
-      const replying_users = [];
-      this.props.discussion_state.user_data.forEach(user => {
-        if(user.replying === this.props.comment_id && user.id !== Meteor.userId()){
-          replying_users.push(user.name);
-        }
-      })
-      return replying_users.length > 0 ?
-        (
-          <strong>{replying_users.join(', ')} is replying</strong>
-        ): '';
-    }
-    return '';
+    const userList = this.props.replyingUsers
+      .filter(reply => reply.user_id !== Meteor.userId() && reply.parent_id === this.props.comment._id)
+      .map(reply => this.props.participants.find(user => user._id === reply.user_id).username);
+      
+    return userList.length > 0 ?
+      (
+        <strong>
+          {userList.join(', ')} is replying
+        </strong>
+      ): '';
   }
 
   renderReplyForm(){
-    if(this.props.discussion_state && this.props.discussion_state.user_data){
-      return this.props.discussion_state.user_data.some(
-        user => user.id === Meteor.userId() && user.replying === this.props.comment_id
-      ) ?
-      (
-        <CommentForm
-          discussion_id={this.props.discussion_id}
-          parent_id={this.props.data._id}
-        />
-      ) : '';
-    }
-    return '';
+    return this.props.replyingUsers.some(reply => reply.user_id === Meteor.userId() && reply.parent_id === this.props.comment._id) ?
+    (
+      <CommentForm
+        discussion_id={this.props.discussion_id}
+        parent_id={this.props.comment._id}
+      />
+    ) : '';
   }
 
   render(){
-    // <Comment.Avatar src=""/>
     return (
-      <Comment collapsed={ this.state.collapsed }>
+      <Comment collapsed={ this.isCollapsed() }>
         <Comment.Content>
-          <Icon link name={ this.state.collapsed ? 'chevron down' : 'minus' } onClick={this.collapse.bind(this)}/>
+          <Icon link 
+            name={ this.isCollapsed() ? 'chevron down' : 'minus' } 
+            onClick={this.collapse.bind(this)}
+          />
           <Comment.Author as='a' onClick={this.userSelected.bind(this)}>
-            {this.props.data.author.name}
+            {this.props.participants.find(user => user._id === this.props.comment.author_id).username}
           </Comment.Author>
           <Comment.Metadata>
             <div>
-              <Moment fromNow>{this.props.data.posted_time}</Moment>
+              <Moment fromNow>{this.props.comment.posted_time}</Moment>
               &nbsp;
               {this.renderUserReplyingStatus()}
             </div>
           </Comment.Metadata>
           <Comment.Text>
-            {this.props.data.text}
+            {this.props.comment.text}
           </Comment.Text>
           <Comment.Actions>
-            <Comment.Action onClick={() => openCommentForm(this.props.discussion_id, this.props.comment_id)}>Reply</Comment.Action>
-            <Comment.Action onClick={() => starComment(this.props.discussion_id, this.props.comment_id)}>Star</Comment.Action>
+            <Comment.Action onClick={() => openCommentForm(this.props.discussion_id, this.props.comment._id)}>Reply</Comment.Action>
+            {
+              this.props.starred ? 
+              (
+                <Comment.Action onClick={() => unstarComment(this.props.discussion_id)}>Unstar</Comment.Action>
+              ) :
+              (
+                <Comment.Action onClick={() => starComment(this.props.discussion_id, this.props.comment._id)}>Star</Comment.Action>
+              )
+            }
           </Comment.Actions>
           {this.renderReplyForm()}
           {this.renderChildren()}
@@ -110,22 +103,26 @@ class CommentViewTemplate extends Component {
     );
   }
 }
-const CommentView = withTracker(({discussion_id, comment_id}) => {
-  Meteor.subscribe('comments', discussion_id, comment_id);
+const CommentView = withTracker(({discussion_id, comment}) => {
+  Meteor.subscribe('comments', discussion_id, comment._id);
   Meteor.subscribe('discussions', discussion_id);
+  Meteor.subscribe('discussionParticipants');
 
+  const discussion = Discussions.findOne(
+    { _id: discussion_id },
+    { _id: 1, active_replies: 1, user_stars: 0 }
+  );
   return {
     children: Comments.find(
       { 
         discussion_id: discussion_id,
-        parent_id: comment_id,
+        parent_id: comment._id,
       },
       { sort: { posted_time: 1 }},
     ).fetch(),
-    discussion_state: Discussions.findOne(
-      { _id: discussion_id },
-      { user_data: 1 }
-    ),
+    replyingUsers: discussion ? discussion.active_replies : [],
+    starred: discussion ? discussion.user_stars.some(star => star.user_id === Meteor.userId() && star.comment_id === comment._id) : false,
+    participants: Meteor.users.find({}).fetch(),
   }
 })(CommentViewTemplate);
 

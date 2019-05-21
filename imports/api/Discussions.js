@@ -16,7 +16,8 @@ if(Meteor.isServer){
   if(Discussions.find().count() === 0){
     Discussions.insert({
       _id: '0',
-      user_data: []
+      active_replies: [],
+      user_stars: [],
     });
   }
 }
@@ -40,69 +41,79 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized');
     }
 
-    const username = Meteor.users.findOne({_id: this.userId}).username;
+    Meteor.call('discussions.remove_star', discussion_id);
 
-    var updateResult = Discussions.update(
-      { 
-        _id: discussion_id,
-        "user_data.id": this.userId,
-      },
+    Discussions.update(
+      { _id: discussion_id },
       {
-        $set: { "user_data.$.starred": comment_id }
-      }
-    );
-    // Update failed-- user does not exist in user_data set
-    if(!updateResult){
-      Discussions.update(
-        { _id: discussion_id },
-        {
-          $addToSet: {
-            user_data: {
-              id: this.userId,
-              name: username,
-              replying: '',
-              starred: comment_id,
-            }
+        $push: {
+          user_stars: { 
+            user_id: this.userId,
+            comment_id: comment_id,
           }
         }
-      );
-    }
+      }
+    );
   },
-  'discussions.reply'(discussion_id, comment_id){
+  'discussions.remove_star'(discussion_id){
     check(discussion_id, String);
-    check(comment_id, String);
+
+    if(!this.userId){
+      throw new Meteor.Error('not-authorized');
+    }
+    Discussions.update(
+      { _id: discussion_id },
+      { 
+        $pull: { 
+          user_stars: { 
+            user_id: this.userId
+          } 
+        } 
+      }
+    )
+  },
+  'discussions.reply'(discussion_id, parent_id){
+    check(discussion_id, String);
+    check(parent_id, String);
 
     // TODO: ensure current user is participating in discussion
     if(!this.userId){
       throw new Meteor.Error('not-authorized');
     }
     
-    const username = Meteor.users.findOne({_id: this.userId}).username;
+    // Remove any active replies for this user
+    Meteor.call('discussions.closeReply', discussion_id);
 
-    var updateResult = Discussions.update(
-      { 
-        _id: discussion_id,
-        "user_data.id": this.userId,
-      },
+    // Insert current user replying to specified comment
+    Discussions.update(
+      { _id: discussion_id },
       {
-        $set: { "user_data.$.replying": comment_id }
-      }
-    );
-    // Update failed-- user does not exist in user_data set
-    if(!updateResult){
-      Discussions.update(
-        { _id: discussion_id },
-        {
-          $addToSet: {
-            user_data: {
-              id: this.userId,
-              name: username,
-              replying: comment_id,
-              starred: '',
-            }
+        $push: {
+          active_replies: {
+            user_id: this.userId,
+            parent_id: parent_id
           }
         }
-      );
+      }
+    );
+  },
+  'discussions.closeReply'(discussion_id){
+    check(discussion_id, String);
+
+    // TODO: ensure current user is participating in discussion
+    if(!this.userId){
+      throw new Meteor.Error('not-authorized');
     }
+    
+    Discussions.update(
+      { _id: discussion_id },
+      {
+        $pull: {
+          active_replies: {
+            user_id: this.userId
+          }
+        }
+      }
+    );
   }
 });

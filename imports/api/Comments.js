@@ -11,13 +11,6 @@ if(Meteor.isServer){
       discussion_id: discussion_id,
     });
   });
-
-  Meteor.publish('comments', (discussion_id, parent_id) => {
-    return Comments.find({
-      discussion_id: discussion_id,
-      parent_id: parent_id,
-    });
-  });
 }
 
 Meteor.methods({
@@ -31,17 +24,36 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized');
     }
 
-    const username = Meteor.users.findOne({_id: this.userId}).username;
-
     Comments.insert({
       discussion_id: discussion_id,
       parent_id: parent_id,
       posted_time: new Date(),
-      author: {
-        id: this.userId,
-        name: username,
-      },
+      author_id: this.userId,
       text: text,
+      collapsed: [],
     });
   },
+  'comments.collapse'(comment_id, collapse) {
+    check(comment_id, String);
+    check(collapse, Boolean);
+
+    // TODO: ensure current user is participating in discussion_id
+    if(!this.userId){
+      throw new Meteor.Error('not-authorized');
+    }
+
+    if(collapse){
+      Comments.update(
+        { _id: comment_id },
+        { $push: { collapsed: this.userId }}
+      );
+    }
+    else {
+      Comments.update(
+        { _id: comment_id },
+        { $pull: { collapsed: this.userId }}
+      );
+    }
+    // TODO: write a record of this action to persistent storage
+  }
 });

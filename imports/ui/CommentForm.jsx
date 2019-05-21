@@ -26,7 +26,7 @@ class CommentForm extends Component {
   }
 
   close(){
-    openCommentForm(this.props.discussion_id, '');
+    closeCommentForm(this.props.discussion_id, this.props.parent_id);
   }
 
   render(){
@@ -50,6 +50,9 @@ class CommentForm extends Component {
 
 export function openCommentForm(discussion_id, parent_id) {
   Meteor.call('discussions.reply', discussion_id, parent_id);
+}
+export function closeCommentForm(discussion_id) {
+  Meteor.call('discussions.closeReply', discussion_id);
 }
 
 export default CommentForm;

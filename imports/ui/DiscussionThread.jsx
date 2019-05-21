@@ -11,49 +11,41 @@ import StarredCommentView from '/imports/ui/StarredCommentView';
 class DiscussionThread extends Component{
   contextRef = createRef();
 
-  constructor(){
-    super();
-  }
-
   renderComments(){
     return this.props.comments.map(comment =>  {
       return (
         <CommentView
           key={comment._id}
           discussion_id={this.props.discussion_id}
-          comment_id={comment._id}
-          data={comment}
+          comment={comment}
         />
       )
     });
   }
 
   renderUserReplyingStatus(){
-    if(this.props.discussion_state && this.props.discussion_state.user_data){
-      const replying_users = [];
-      this.props.discussion_state.user_data.forEach(user => {
-        if(user.replying === this.props.discussion_id && user.id !== Meteor.userId()){
-          replying_users.push(user.name);
-        }
-      })
-      return replying_users.length > 0 ?
-        (
-          <Container>
-            <strong>{replying_users.join(', ')} is commenting</strong>
-          </Container>
-        ): '';
-    }
-    return '';
+    const userList = this.props.replyingUsers
+      .filter(reply => reply.user_id !== Meteor.userId() && reply.parent_id === '')
+      .map(reply => this.props.participants.find(user => user._id === reply.user_id).username);
+
+    return userList.length > 0 ?
+    (
+      <Container>
+        <strong>{userList.join(', ')} is commenting</strong>
+      </Container>
+    ): '';
   }
 
   renderCommentForm(){
-    return (
-      this.props.discussion_state && 
-      this.props.discussion_state.user_data &&
-      this.props.discussion_state.user_data.some(
-        user => user.id === Meteor.userId() && user.replying === this.props.discussion_id
-      )) ? (<CommentForm discussion_id={this.props.discussion_id} />) :
-      (<Button primary onClick={() => openCommentForm(this.props.discussion_id, this.props.discussion_id)}>Post</Button>);
+    return this.props.replyingUsers.some(reply => reply.user_id === Meteor.userId() && reply.parent_id === '') ?
+      (
+        <CommentForm discussion_id={this.props.discussion_id} />
+      ) :
+      (
+        <Button primary onClick={() => openCommentForm(this.props.discussion_id, '')}>
+            Post
+        </Button>
+      )
   }
 
   render(){
@@ -86,17 +78,21 @@ class DiscussionThread extends Component{
 export default withTracker(({discussion_id}) => {
   Meteor.subscribe("comments", discussion_id, '');
   Meteor.subscribe('discussions', discussion_id);
+  Meteor.subscribe('discussionParticipants');
 
+  const discussion = Discussions.findOne(
+    { _id: discussion_id },
+    { _id: 1, active_replies: 1, user_stars: 0 }
+  );
   return {
     comments: Comments.find(
       {
         discussion_id: discussion_id,
         parent_id: '',
-      }
+      },
+      { sort: { posted_time: 1 } },
     ).fetch(),
-    discussion_state: Discussions.findOne(
-      { _id: discussion_id },
-      { user_data: 1 }
-    ),
+    replyingUsers: discussion ? discussion.active_replies : [],
+    participants: Meteor.users.find({}).fetch(),
   }
 })(DiscussionThread);
