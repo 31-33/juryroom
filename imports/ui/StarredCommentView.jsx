@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
-import { Button, Comment, Header, Icon, Segment } from 'semantic-ui-react';
+import { Button, Comment, Header, Label, Segment } from 'semantic-ui-react';
 import { Discussions } from '/imports/api/Discussions';
 import { Comments } from '/imports/api/Comments';
 import Moment from 'react-moment';
+var scrollToElement = require('scroll-to-element');
 
 class StarredCommentView extends Component {
 
@@ -23,6 +24,12 @@ class StarredCommentView extends Component {
               </Comment.Author>
               <Comment.Metadata>
                   <Moment fromNow>{comment_data.posted_time}</Moment>
+                  <Label basic as="a" onClick={() => 
+                    scrollToElement(`#${starred_comment.comment_id}`,
+                    {
+                      align: "top",
+                      offset: -120,
+                    })}>Show</Label>
               </Comment.Metadata>
               <Comment.Text>
                 {comment_data.text}

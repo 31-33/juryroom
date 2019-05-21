@@ -66,7 +66,7 @@ class CommentViewTemplate extends Component {
   render(){
     const author = this.props.participants.find(user => user._id === this.props.comment.author_id);
     return (
-      <Comment collapsed={ this.isCollapsed() }>
+      <Comment collapsed={ this.isCollapsed() } id={this.props.comment._id}>
         <Comment.Content>
           <Icon link 
             name={ this.isCollapsed() ? 'chevron down' : 'minus' } 
