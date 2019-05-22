@@ -3,7 +3,7 @@ import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Comments } from '/imports/api/Comments';
 import { Discussions } from '/imports/api/Discussions';
-import { Comment, Icon, Divider } from 'semantic-ui-react';
+import { Comment, Icon, Divider, Placeholder } from 'semantic-ui-react';
 import Moment from 'react-moment';
 import CommentForm, { openCommentForm } from '/imports/ui/CommentForm';
 import { starComment, unstarComment } from './StarredCommentView';
@@ -64,52 +64,59 @@ class CommentViewTemplate extends Component {
   }
 
   render(){
-    const author = this.props.participants.find(user => user._id === this.props.comment.author_id);
-    return (
-      <Comment collapsed={ this.isCollapsed() } id={this.props.comment._id}>
-        <Comment.Content>
-          <Icon link 
-            name={ this.isCollapsed() ? 'chevron down' : 'minus' } 
-            onClick={this.collapse.bind(this)}
-          />
-          <Comment.Avatar src={author.avatar ? author.avatar : '/avatar_default.png'}/>
-          <Comment.Author as='a' onClick={this.userSelected.bind(this)}>
-            {author.username}
-          </Comment.Author>
-          <Comment.Metadata>
-            <div>
-              <Moment fromNow>{this.props.comment.posted_time}</Moment>
-              &nbsp;
-              {this.renderUserReplyingStatus()}
-            </div>
-          </Comment.Metadata>
-          <Comment.Text>
-            {this.props.comment.text}
-          </Comment.Text>
-          <Comment.Actions>
-            <Comment.Action onClick={() => openCommentForm(this.props.discussion_id, this.props.comment._id)}>Reply</Comment.Action>
-            {
-              this.props.starred ? 
-              (
-                <Comment.Action onClick={() => unstarComment(this.props.discussion_id)}>Unstar</Comment.Action>
-              ) :
-              (
-                <Comment.Action onClick={() => starComment(this.props.discussion_id, this.props.comment._id)}>Star</Comment.Action>
-              )
-            }
-          </Comment.Actions>
-          {this.renderReplyForm()}
-          {this.renderChildren()}
-          {this.isCollapsed() ? (<Divider clearing hidden />) : ''}
-        </Comment.Content>
-      </Comment>
-    );
+    if(this.props.loaded){
+      const author = this.props.participants.find(user => user._id === this.props.comment.author_id);
+      return (
+        <Comment collapsed={ this.isCollapsed() } id={this.props.comment._id}>
+          <Comment.Content>
+            <Icon link 
+              name={ this.isCollapsed() ? 'chevron down' : 'minus' } 
+              onClick={this.collapse.bind(this)}
+            />
+            <Comment.Avatar src={author.avatar ? author.avatar : '/avatar_default.png'}/>
+            <Comment.Author as='a' onClick={this.userSelected.bind(this)}>
+              {author.username}
+            </Comment.Author>
+            <Comment.Metadata>
+              <div>
+                <Moment fromNow>{this.props.comment.posted_time}</Moment>
+                &nbsp;
+                {this.renderUserReplyingStatus()}
+              </div>
+            </Comment.Metadata>
+            <Comment.Text>
+              {this.props.comment.text}
+            </Comment.Text>
+            <Comment.Actions>
+              <Comment.Action onClick={() => openCommentForm(this.props.discussion_id, this.props.comment._id)}>Reply</Comment.Action>
+              {
+                this.props.starred ? 
+                (
+                  <Comment.Action onClick={() => unstarComment(this.props.discussion_id)}>Unstar</Comment.Action>
+                ) :
+                (
+                  <Comment.Action onClick={() => starComment(this.props.discussion_id, this.props.comment._id)}>Star</Comment.Action>
+                )
+              }
+            </Comment.Actions>
+            {this.renderReplyForm()}
+            {this.renderChildren()}
+            {this.isCollapsed() ? (<Divider clearing hidden />) : ''}
+          </Comment.Content>
+        </Comment>
+      );
+    }
+    else{
+      return (
+        <Placeholder fluid />
+      );
+    }
   }
 }
 const CommentView = withTracker(({discussion_id, comment}) => {
-  Meteor.subscribe('comments', discussion_id, comment._id);
-  Meteor.subscribe('discussions', discussion_id);
-  Meteor.subscribe('discussionParticipants');
+  const commentsSub = Meteor.subscribe('comments', discussion_id, comment._id);
+  const discussionsSub = Meteor.subscribe('discussions', discussion_id);
+  const participantsSub = Meteor.subscribe('discussionParticipants');
 
   const discussion = Discussions.findOne(
     { _id: discussion_id },
@@ -120,13 +127,14 @@ const CommentView = withTracker(({discussion_id, comment}) => {
     }
   );
   return {
+    loaded: commentsSub.ready() && discussionsSub.ready() && participantsSub.ready(),
     children: Comments.find(
       { 
         discussion_id: discussion_id,
         parent_id: comment._id,
       },
       { sort: { posted_time: 1 }},
-    ).fetch(),
+      ).fetch(),
     replyingUsers: discussion ? discussion.active_replies : [],
     starred: discussion ? discussion.user_stars.some(star => star.user_id === Meteor.userId() && star.comment_id === comment._id) : false,
     participants: Meteor.users.find({}).fetch(),
