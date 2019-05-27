@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import { Groups } from '/imports/api/Groups';
 
 export const Discussions = new Mongo.Collection('discussions');
 
 if(Meteor.isServer){
-  //TODO: ensure user is participating in discussion_id
   Meteor.publish('discussions', (discussion_id) => {
     return Discussions.find(
       { _id: discussion_id },
@@ -17,33 +17,31 @@ if(Meteor.isServer){
       }
     );
   });
-
-  // Create discussion 0 for testing purposes
-  if(Discussions.find().count() === 0){
-    Discussions.insert({
-      _id: '0',
-      active_replies: [],
-      user_stars: [],
-      action_star: [],
-      action_reply: [],
-      action_collapse: [],
-    });
-  }
 }
 
 Meteor.methods({
-  'discussions.create'(users){
-    check(users, Array);
+  'discussions.create'(group_id){
+    check(group_id, String);
 
-    const discussion = Discussions.insert({
+    const discussion_id = Discussions.insert({
+      group_id: group_id,
       active_replies: [],
       user_stars: [],
       action_star: [],
       action_reply: [],
       action_collapse: [],
     });
-    // TODO: return discussion id
-    console.log(discussion._id);
+
+    Groups.update(
+      { _id: group_id },
+      { 
+        $push: {
+          discussions: discussion_id
+        }
+      }
+    );
+
+    return discussion_id;
   },
   'discussions.star_comment'(discussion_id, comment_id){
     check(discussion_id, String);
