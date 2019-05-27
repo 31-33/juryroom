@@ -5,8 +5,9 @@ import { Comments } from '/imports/api/Comments';
 import { Discussions } from '/imports/api/Discussions';
 import { Comment, Icon, Divider, Placeholder } from 'semantic-ui-react';
 import Moment from 'react-moment';
-import CommentForm, { openCommentForm } from '/imports/ui/CommentForm';
+import CommentForm, { openCommentForm } from './CommentForm';
 import { starComment, unstarComment } from './StarredCommentView';
+import { Link } from 'react-router-dom';
 
 class CommentViewTemplate extends Component {
 
@@ -73,8 +74,11 @@ class CommentViewTemplate extends Component {
               name={ this.isCollapsed() ? 'chevron down' : 'minus' } 
               onClick={this.collapse.bind(this)}
             />
-            <Comment.Avatar src={author.avatar ? author.avatar : '/avatar_default.png'}/>
-            <Comment.Author as='a' onClick={this.userSelected.bind(this)}>
+            <Comment.Avatar 
+              as={Link} to={`/user/${author._id}`}
+              src={author.avatar ? author.avatar : '/avatar_default.png'}
+              />
+            <Comment.Author as={Link} to={`/user/${author._id}`}>
               {author.username}
             </Comment.Author>
             <Comment.Metadata>

@@ -4,9 +4,9 @@ import { Meteor } from 'meteor/meteor';
 import { Comments } from '/imports/api/Comments';
 import { Discussions } from '/imports/api/Discussions';
 import { withTracker } from 'meteor/react-meteor-data';
-import CommentView from '/imports/ui/CommentView';
-import CommentForm, { openCommentForm } from '/imports/ui/CommentForm';
-import StarredCommentView from '/imports/ui/StarredCommentView';
+import CommentView from './CommentView';
+import CommentForm, { openCommentForm } from './CommentForm';
+import StarredCommentView from './StarredCommentView';
 
 class DiscussionThread extends Component{
   contextRef = createRef();
@@ -50,33 +50,32 @@ class DiscussionThread extends Component{
 
   render(){
     return (
-      <div>
-        <Ref innerRef={this.contextRef}>
-          <Segment>
-            <Comment.Group threaded={true}>
-              {this.renderComments()}
-              {this.renderUserReplyingStatus()}
-            </Comment.Group>
-            {this.renderCommentForm()}
-            <Rail position='left'>
-              <Sticky context={this.contextRef} offset={80}>
-                <StarredCommentView discussion_id={this.props.discussion_id} />
-              </Sticky>
-            </Rail>
-            <Rail position='right'>
-              <Sticky context={this.contextRef} offset={80}>
-                <Segment>Discussion history / navigation bar here</Segment>
-              </Sticky>
-            </Rail>
-          </Segment>
-        </Ref>
-      </div>
+      <Ref innerRef={this.contextRef}>
+        <Segment>
+          <Comment.Group threaded={true}>
+            {this.renderComments()}
+            {this.renderUserReplyingStatus()}
+          </Comment.Group>
+          {this.renderCommentForm()}
+          <Rail position='left'>
+            <Sticky context={this.contextRef} offset={80}>
+              <StarredCommentView discussion_id={this.props.discussion_id} />
+            </Sticky>
+          </Rail>
+          <Rail position='right'>
+            <Sticky context={this.contextRef} offset={80}>
+              <Segment>Discussion history / navigation bar here</Segment>
+            </Sticky>
+          </Rail>
+        </Segment>
+      </Ref>
     );
   }
 }
 
-export default withTracker(({discussion_id}) => {
-  Meteor.subscribe("comments", discussion_id, '');
+export default withTracker(({match}) => {
+  const discussion_id = match.params.discussion_id;
+  Meteor.subscribe('comments', discussion_id, '');
   Meteor.subscribe('discussions', discussion_id);
   Meteor.subscribe('discussionParticipants');
 
@@ -85,6 +84,7 @@ export default withTracker(({discussion_id}) => {
     { fields: { active_replies: 1 } }
   );
   return {
+    discussion_id: discussion_id,
     comments: Comments.find(
       {
         discussion_id: discussion_id,

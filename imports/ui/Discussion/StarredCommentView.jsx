@@ -4,6 +4,7 @@ import { withTracker } from 'meteor/react-meteor-data';
 import { Button, Comment, Header, Label, Segment } from 'semantic-ui-react';
 import { Discussions } from '/imports/api/Discussions';
 import { Comments } from '/imports/api/Comments';
+import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
 var scrollToElement = require('scroll-to-element');
 
@@ -19,7 +20,7 @@ class StarredCommentView extends Component {
         return (
           <Comment key={starred_comment.comment_id}>
             <Comment.Content>
-              <Comment.Author as="a">
+              <Comment.Author as={Link} to={`/user/${author._id}`}>
                 {author.username}
               </Comment.Author>
               <Comment.Metadata>
@@ -66,7 +67,7 @@ class StarredCommentView extends Component {
   }
 
   render(){
-    if(this.props.userStars.length > 0){
+    if(this.props.loaded && this.props.userStars.length > 0){
       const comments = [];
       this.props.userStars.forEach(star => {
         const index = comments.findIndex(comment => comment.comment_id === star.comment_id);
@@ -94,8 +95,8 @@ class StarredCommentView extends Component {
 }
 
 export default withTracker(({discussion_id}) => {
-  Meteor.subscribe('comments', discussion_id);
-  Meteor.subscribe('discussions', discussion_id);
+  const commentsSub = Meteor.subscribe('comments', discussion_id);
+  const discussionSub = Meteor.subscribe('discussions', discussion_id);
 
   const discussion = Discussions.findOne(
     { _id: discussion_id },
@@ -103,6 +104,7 @@ export default withTracker(({discussion_id}) => {
   );
   const starredComments = discussion ? discussion.user_stars.map(star => star.comment_id): [];
   return {
+    loaded: commentsSub.ready() && discussionSub.ready(),
     participants: Meteor.users.find({}).fetch(),
     userStars: discussion ? discussion.user_stars : [], 
     comments: Comments.find({
