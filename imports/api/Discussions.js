@@ -6,9 +6,9 @@ import { Groups } from '/imports/api/Groups';
 export const Discussions = new Mongo.Collection('discussions');
 
 if(Meteor.isServer){
-  Meteor.publish('discussions', (discussion_id) => {
+  Meteor.publish('discussions', () => {
     return Discussions.find(
-      { _id: discussion_id },
+      { },
       {
         fields: {
           active_replies: 1,

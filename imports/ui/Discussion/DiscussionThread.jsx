@@ -76,7 +76,7 @@ class DiscussionThread extends Component{
 export default withTracker(({match}) => {
   const discussion_id = match.params.discussion_id;
   Meteor.subscribe('comments', discussion_id, '');
-  Meteor.subscribe('discussions', discussion_id);
+  Meteor.subscribe('discussions');
   Meteor.subscribe('discussionParticipants');
 
   const discussion = Discussions.findOne(

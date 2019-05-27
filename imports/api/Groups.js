@@ -6,7 +6,7 @@ export const Groups = new Mongo.Collection('groups');
 
 if(Meteor.isServer){
   Meteor.publish('groups', () => {
-    return Discussions.find(
+    return Groups.find(
       { },
       {
         fields: {
