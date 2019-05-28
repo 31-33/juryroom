@@ -77,7 +77,7 @@ export default withTracker(({match}) => {
   const discussion_id = match.params.discussion_id;
   Meteor.subscribe('comments', discussion_id, '');
   Meteor.subscribe('discussions');
-  Meteor.subscribe('discussionParticipants');
+  Meteor.subscribe('users');
 
   const discussion = Discussions.findOne(
     { _id: discussion_id },

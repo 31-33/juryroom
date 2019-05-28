@@ -3,7 +3,7 @@ import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 
 if(Meteor.isServer){
-    Meteor.publish('discussionParticipants', () => {
+    Meteor.publish('users', () => {
         return Meteor.users.find(
             { },
             // Publish only selected fields

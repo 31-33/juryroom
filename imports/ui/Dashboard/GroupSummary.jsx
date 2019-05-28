@@ -48,7 +48,7 @@ class GroupSummary extends Component {
 }
 export default withTracker(({group}) => {
     Meteor.subscribe('discussions');
-    Meteor.subscribe('discussionParticipants');
+    Meteor.subscribe('users');
 
     return {
         participants: Meteor.users.find({ _id: { $in: group.members } }).fetch(),

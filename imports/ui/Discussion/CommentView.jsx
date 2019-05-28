@@ -120,7 +120,7 @@ class CommentViewTemplate extends Component {
 const CommentView = withTracker(({discussion_id, comment}) => {
   const commentsSub = Meteor.subscribe('comments', discussion_id, comment._id);
   const discussionsSub = Meteor.subscribe('discussions', discussion_id);
-  const participantsSub = Meteor.subscribe('discussionParticipants');
+  const participantsSub = Meteor.subscribe('users');
 
   const discussion = Discussions.findOne(
     { _id: discussion_id },
