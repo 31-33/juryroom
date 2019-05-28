@@ -10,6 +10,7 @@ import AccountsUIWrapper from '/imports/ui/AccountsUIWrapper';
 import DiscussionThread from '/imports/ui/Discussion/DiscussionThread';
 import GroupPage from '/imports/ui/Group/GroupPage';
 import UserProfile from '/imports/ui/User/UserProfile';
+import EditProfile from '/imports/ui/User/EditProfile';
 import Dashboard from '/imports/ui/Dashboard/Dashboard';
 
 
@@ -47,6 +48,7 @@ class App extends Component {
                 <Route exact path="/group/:group_id" component={GroupPage} />
                 <Route exact path="/discussion/:discussion_id" component={DiscussionThread} />
                 <Route exact path="/user/:user_id" component={UserProfile} />
+                <Route exact path="/user/:user_id/edit" component={EditProfile} />
                 <Route exact path="/" component={Dashboard} />
               </Switch>
           </Container>
