@@ -4,19 +4,41 @@ import { Meteor } from 'meteor/meteor';
 import { Segment, Header, Button, Form, TextArea } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import { Redirect } from 'react-router-dom';
-import AvatarEditor from 'react-avatar-editor';
 import DayPickerInput from 'react-day-picker/DayPickerInput';
 import 'react-day-picker/lib/style.css';
+import ReactAvatarEditor from 'react-avatar-editor';
 
 class EditProfile extends Component {
 
     constructor(props){
         super(props);
 
+        const { avatar } = props.user || {};
         this.state = {
-            image: '/avatar_default.png',
+            scale: 1,
+            image: avatar ? avatar : '/avatar_default.png',
         }
     }
+
+    componentDidUpdate(prevProps){
+        if(!prevProps.user && this.props.user && this.props.user.avatar){
+            this.setState({
+                image: this.props.user.avatar,
+            });
+        }
+    }
+
+
+    getImage(){
+        return this.editor.getImageScaledToCanvas().toDataURL();
+    }
+
+    saveProfile(){
+        Meteor.call('users.updateProfile', this.getImage(), (err, res) => {
+            this.props.history.push(`/user/${this.props.user_id}`);
+        });
+    }
+
     render(){
         const { username } = this.props.user || {};
         return this.props.user_id === Meteor.userId() ?
@@ -43,19 +65,22 @@ class EditProfile extends Component {
                                 </Form.Group>
                             </Form.Group>
                             <Form.Group grouped as={Segment} floated='right'>
-                                <Form.Field 
-                                    label='Avatar' 
-                                    control={AvatarEditor}
+                                <ReactAvatarEditor
+                                    ref={(editor) => this.editor = editor}
+                                    width={100}
+                                    height={100}
                                     image={this.state.image}
-                                    />
-                                <input type='file' onChange={(e) => this.setState({ image: e.target.files[0] })} />
-                            </Form.Group>
-                            
+                                    scale={parseFloat(this.state.scale)}
+                                />
+                                <div>
+                                    <input type='range' min='0.25' max='4' step='0.05' defaultValue='1' onChange={(e) => this.setState({ scale: parseFloat(e.target.value)})} />
+                                    <input type='file' onChange={(e) => this.setState({ image: e.target.files[0] })} />
+                                </div>
+                            </Form.Group>                          
                         </Segment.Group>
 
-
                         <Form.TextArea label='About' />
-                        <Form.Button>Save</Form.Button>
+                        <Form.Button onClick={this.saveProfile.bind(this)}>Save</Form.Button>
                     </Form>
                 </Segment>
             </Segment>

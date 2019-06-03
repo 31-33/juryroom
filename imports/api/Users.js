@@ -16,3 +16,21 @@ if(Meteor.isServer){
         );
     });
 }
+
+Meteor.methods({
+    'users.updateProfile'(avatar){
+
+        if(!this.userId){
+            throw new Meteor.Error('not-authorized');
+        }
+
+        Meteor.users.update(
+            { _id: this.userId },
+            {
+                $set: {
+                    avatar: avatar,
+                }
+            }
+        );
+    },
+});
