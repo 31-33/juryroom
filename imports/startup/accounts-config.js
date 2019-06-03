@@ -1,20 +1,27 @@
 import { Accounts } from 'meteor/accounts-base';
 import { Meteor } from 'meteor/meteor';
 
-Accounts.ui.config({
-  passwordSignupFields: 'USERNAME_AND_EMAIL'
-})
+if(Meteor.isClient){
+  Accounts.ui.config({
+    passwordSignupFields: 'USERNAME_AND_EMAIL'
+  });
+}
 
 if(Meteor.isServer){
+  Accounts.config({
+    ambiguousErrorMessages: true,
+    sendVerificationEmail: true,
+  });
+
   Accounts.emailTemplates.siteName = 'JuryRoom';
   Accounts.emailTemplates.from = 'JuryRoom Admin <no-reply@juryroom.com>';
   
-  Accounts.emailTemplates.enrollAccount = {
+  Accounts.emailTemplates.verifyEmail = {
     subject(user){
-      return `Welcome to JuryRoom, ${user.profile.name}`;
+      return `Welcome to JuryRoom, ${user.username}`;
     },
     text(user, url){
-      `Hi ${user.profile.name},
+      return `Hi ${user.username},
       Thank you for registering to participate in JuryRoom.
   
       To activate your account, simply click the link below
@@ -30,7 +37,7 @@ if(Meteor.isServer){
       return `JuryRoom Password Reset`;
     },
     text(user, url){
-      `Hi ${user.profile.name},
+      return `Hi ${user.username},
 
       To reset your password, simply click the link below.
       ${url}`
