@@ -18,6 +18,16 @@ if(Meteor.isServer){
     );
   });
 }
+if(Meteor.isClient){
+  Meteor.subscribe('groups');
+}
+
+export function isDiscussionParticipant(user_id, discussion_id){
+  return user_id && Groups.find({
+    members: user_id,
+    discussions: discussion_id,
+  }).count() > 0 ? true : false;
+}
 
 Meteor.methods({
   'discussions.create'(group_id){
@@ -35,7 +45,7 @@ Meteor.methods({
     Groups.update(
       { _id: group_id },
       { 
-        $push: {
+        $addToSet: {
           discussions: discussion_id
         }
       }
@@ -47,8 +57,7 @@ Meteor.methods({
     check(discussion_id, String);
     check(comment_id, String);
 
-    // TODO: ensure current user is participating in discussion
-    if(!this.userId){
+    if(!isDiscussionParticipant(this.userId, discussion_id)){
       throw new Meteor.Error('not-authorized');
     }
 
@@ -57,7 +66,7 @@ Meteor.methods({
     Discussions.update(
       { _id: discussion_id },
       {
-        $push: {
+        $addToSet: {
           user_stars: { 
             user_id: this.userId,
             comment_id: comment_id,
@@ -70,7 +79,7 @@ Meteor.methods({
     Discussions.update(
       { _id: discussion_id },
       {
-        $push: {
+        $addToSet: {
           action_star: {
             user_id: this.userId,
             comment_id: comment_id,
@@ -83,9 +92,10 @@ Meteor.methods({
   'discussions.remove_star'(discussion_id){
     check(discussion_id, String);
 
-    if(!this.userId){
+    if(!isDiscussionParticipant(this.userId, discussion_id)){
       throw new Meteor.Error('not-authorized');
     }
+    
     Discussions.update(
       { _id: discussion_id },
       { 
@@ -101,7 +111,7 @@ Meteor.methods({
     Discussions.update(
       { _id: discussion_id },
       {
-        $push: {
+        $addToSet: {
           action_star: {
             user_id: this.userId,
             comment_id: '',
@@ -115,8 +125,7 @@ Meteor.methods({
     check(discussion_id, String);
     check(parent_id, String);
 
-    // TODO: ensure current user is participating in discussion
-    if(!this.userId){
+    if(!isDiscussionParticipant(this.userId, discussion_id)){
       throw new Meteor.Error('not-authorized');
     }
     
@@ -127,7 +136,7 @@ Meteor.methods({
     Discussions.update(
       { _id: discussion_id },
       {
-        $push: {
+        $addToSet: {
           active_replies: {
             user_id: this.userId,
             parent_id: parent_id
@@ -140,7 +149,7 @@ Meteor.methods({
     Discussions.update(
       { _id: discussion_id },
       {
-        $push: {
+        $addToSet: {
           action_reply: {
             user_id: this.userId,
             parent_id: parent_id,
@@ -153,8 +162,7 @@ Meteor.methods({
   'discussions.closeReply'(discussion_id){
     check(discussion_id, String);
 
-    // TODO: ensure current user is participating in discussion
-    if(!this.userId){
+    if(!isDiscussionParticipant(this.userId, discussion_id)){
       throw new Meteor.Error('not-authorized');
     }
     
@@ -172,7 +180,7 @@ Meteor.methods({
     Discussions.update(
       { _id: discussion_id },
       {
-        $push: {
+        $addToSet: {
           action_reply: {
             user_id: this.userId,
             date_time: new Date(),

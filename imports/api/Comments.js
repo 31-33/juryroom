@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
-import { Discussions } from './Discussions';
+import { Discussions, isDiscussionParticipant } from './Discussions';
 
 export const Comments = new Mongo.Collection('comments');
 
@@ -29,8 +29,7 @@ Meteor.methods({
     check(parent_id, String);
     check(text, String);
 
-    //TODO: ensure current user is participating in discussion_id
-    if(!this.userId){
+    if(!isDiscussionParticipant(this.userId, discussion_id)){
       throw new Meteor.Error('not-authorized');
     }
 
@@ -48,15 +47,14 @@ Meteor.methods({
     check(comment_id, String);
     check(collapse, Boolean);
 
-    // TODO: ensure current user is participating in discussion_id
-    if(!this.userId){
+    if(!isDiscussionParticipant(this.userId, discussion_id)){
       throw new Meteor.Error('not-authorized');
     }
 
     if(collapse){
       Comments.update(
         { _id: comment_id },
-        { $push: { collapsed: this.userId }}
+        { $addToSet: { collapsed: this.userId }}
       );
     }
     else {
@@ -69,7 +67,7 @@ Meteor.methods({
     Discussions.update(
       { _id: discussion_id },
       {
-        $push: {
+        $addToSet: {
           action_collapse: {
             user_id: this.userId,
             comment_id: comment_id,
