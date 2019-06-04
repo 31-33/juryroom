@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Form, TextArea, Button } from 'semantic-ui-react';
+import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
 
 class CommentForm extends Component {
   constructor(){
@@ -35,6 +36,7 @@ class CommentForm extends Component {
         <Form.Field
           label="Message"
           control={TextArea}
+          maxLength={MAX_COMMENT_LENGTH}
           value={this.state.commentText}
           onChange={this.onCommentTextChange.bind(this)}
           placeholder="Type your comment here..."

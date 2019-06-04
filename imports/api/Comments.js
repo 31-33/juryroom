@@ -4,6 +4,7 @@ import { check } from 'meteor/check';
 import { Discussions, isDiscussionParticipant } from './Discussions';
 
 export const Comments = new Mongo.Collection('comments');
+export const MAX_COMMENT_LENGTH = 280;
 
 if(Meteor.isServer){
   //TODO: ensure current user is within group associated with discussion_id
@@ -31,6 +32,10 @@ Meteor.methods({
 
     if(!isDiscussionParticipant(this.userId, discussion_id)){
       throw new Meteor.Error('not-authorized');
+    }
+
+    if(text.length > MAX_COMMENT_LENGTH){
+      throw new Meteor.Error('max-length-exceeded');
     }
 
     Comments.insert({
