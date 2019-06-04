@@ -13,6 +13,7 @@ if(Meteor.isServer){
         fields: {
           active_replies: 1,
           user_stars: 1,
+          created_at: 1,
         }
       }
     );
@@ -34,6 +35,7 @@ Meteor.methods({
     check(group_id, String);
 
     const discussion_id = Discussions.insert({
+      created_at: new Date(),
       group_id: group_id,
       active_replies: [],
       user_stars: [],

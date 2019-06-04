@@ -12,6 +12,7 @@ if(Meteor.isServer){
         fields: {
           members: 1,
           discussions: 1,
+          created_at: 1,
           //TODO: add fields to track scoring
         }
       }
@@ -24,7 +25,8 @@ Meteor.methods({
 
     return Groups.insert({
       members: members,
-      discussions: []
+      discussions: [],
+      created_at: new Date(),
     })
   }
 });
