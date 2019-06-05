@@ -42,8 +42,8 @@ class CommentForm extends Component {
           placeholder="Type your comment here..."
         />
         <Form.Group>
-          <Form.Field control={Button} onClick={this.submitComment.bind(this)}>Post</Form.Field>
-          <Form.Field control={Button} onClick={this.close.bind(this)}>Cancel</Form.Field>
+          <Form.Field control={Button} onClick={this.submitComment.bind(this)} content='Add Reply' labelPosition='left' icon='edit' primary />
+          <Form.Field control={Button} onClick={this.close.bind(this)} content='Cancel' labelPosition='left' icon='cancel' negative/>
         </Form.Group>
       </Form>
     );
