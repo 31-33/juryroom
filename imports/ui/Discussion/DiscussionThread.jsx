@@ -42,9 +42,12 @@ class DiscussionThread extends Component{
         <CommentForm discussion_id={this.props.discussion_id} />
       ) :
       (
-        <Button primary onClick={() => openCommentForm(this.props.discussion_id, '')}>
-            Post
-        </Button>
+        <Button 
+          onClick={() => openCommentForm(this.props.discussion_id, '')}
+          content='Post'
+          labelPosition='left' 
+          icon='edit' 
+          primary/>
       )
   }
 
