@@ -49,15 +49,16 @@ class StarredCommentView extends Component {
                     content: starred_comment.users.map(user_id => this.props.participants.find(user => user._id === user_id).username).join(', ')
                   }}
                   onClick={() => starred ? 
-                    unstarComment(this.props.discussion_id) : 
-                    starComment(this.props.discussion_id, comment_data._id)}
+                    Meteor.call('discussions.remove_star', this.props.discussion_id) : 
+                    Meteor.call('discussions.star_comment', this.props.discussion_id, comment_data._id)
+                  }
                   />
                 <Button
                   attached="bottom"
                   icon="exclamation"
                   color="green"
                   content="Call Vote"
-                  onClick={() => callVote(this.props.discussion_id, comment_data._id)}
+                  onClick={() => console.log(this.props.discussion_id, comment_data._id)}
                   />
               </Comment.Actions>
             </Comment.Content>
@@ -113,15 +114,3 @@ export default withTracker(({discussion_id}) => {
     }).fetch(),
   }
 })(StarredCommentView);
-
-export function starComment(discussion_id, comment_id){
-  Meteor.call('discussions.star_comment', discussion_id, comment_id);
-}
-
-export function unstarComment(discussion_id){
-  Meteor.call('discussions.remove_star', discussion_id);
-}
-
-export function callVote(discussion_id, comment_id){
-  console.log(`${Meteor.userId()} called a vote on comment ${comment_id}`);
-}

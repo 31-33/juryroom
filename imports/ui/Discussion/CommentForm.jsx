@@ -27,7 +27,7 @@ class CommentForm extends Component {
   }
 
   close(){
-    closeCommentForm(this.props.discussion_id, this.props.parent_id);
+    Meteor.call('discussions.closeReply', this.props.discussion_id, this.props.parent_id);
   }
 
   render(){
@@ -42,19 +42,22 @@ class CommentForm extends Component {
           placeholder="Type your comment here..."
         />
         <Form.Group>
-          <Form.Field control={Button} onClick={this.submitComment.bind(this)} content='Add Reply' labelPosition='left' icon='edit' primary />
-          <Form.Field control={Button} onClick={this.close.bind(this)} content='Cancel' labelPosition='left' icon='cancel' negative/>
+          <Form.Field control={Button} 
+            onClick={this.submitComment.bind(this)} 
+            content='Add Reply' 
+            labelPosition='left' 
+            icon='edit' 
+            primary />
+          <Form.Field control={Button} 
+            onClick={this.close.bind(this)} 
+            content='Cancel' 
+            labelPosition='left' 
+            icon='cancel' 
+            negative/>
         </Form.Group>
       </Form>
     );
   }
-}
-
-export function openCommentForm(discussion_id, parent_id) {
-  Meteor.call('discussions.reply', discussion_id, parent_id);
-}
-export function closeCommentForm(discussion_id) {
-  Meteor.call('discussions.closeReply', discussion_id);
 }
 
 export default CommentForm;

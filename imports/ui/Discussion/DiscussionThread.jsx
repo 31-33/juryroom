@@ -43,7 +43,7 @@ class DiscussionThread extends Component{
       ) :
       (
         <Button 
-          onClick={() => openCommentForm(this.props.discussion_id, '')}
+          onClick={() => Meteor.call('discussions.reply', this.props.discussion_id, '')}
           content='Post'
           labelPosition='left' 
           icon='edit' 
