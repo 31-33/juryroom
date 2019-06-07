@@ -14,8 +14,8 @@ class StarredCommentView extends Component {
     return starred
       .sort((c1, c2) => c2.users.length - c1.users.length)
       .map(starred_comment => {
-        const comment_data = this.props.comments.find(comment => comment._id == starred_comment.comment_id);
-        const author = this.props.participants.find(user => user._id === comment_data.author_id);
+        const comment_data = this.props.comments.find(comment => comment._id == starred_comment.comment_id) || {};
+        const author = this.props.participants.find(user => user._id === comment_data.author_id) || {};
         const starred = starred_comment.users.includes(Meteor.userId());
         return (
           <Comment key={starred_comment.comment_id}>
@@ -54,11 +54,12 @@ class StarredCommentView extends Component {
                   }
                   />
                 <Button
+                  disabled={!!this.props.active_vote || !starred_comment.users.some(user => user === Meteor.userId())}
                   attached="bottom"
                   icon="exclamation"
                   color="green"
                   content="Call Vote"
-                  onClick={() => Meteor.call('discussions.callVote', this.props.discussion_id, comment_data._id)}
+                  onClick={() => Meteor.call('discussions.callVote', this.props.discussion_id, comment_data._id, starred_comment.users)}
                   />
               </Comment.Actions>
             </Comment.Content>
@@ -68,30 +69,27 @@ class StarredCommentView extends Component {
   }
 
   render(){
-    if(this.props.loaded && this.props.userStars.length > 0){
-      const comments = [];
-      this.props.userStars.forEach(star => {
-        const index = comments.findIndex(comment => comment.comment_id === star.comment_id);
-        if(index < 0){
-          comments.push({
-            comment_id: star.comment_id,
-            users: [star.user_id],
-          });
-        }
-        else{
-          comments[index].users.push(star.user_id);
-        }
-      });
-      return (
-        <Segment>
-          <Header>Starred Comments</Header>
-          <Comment.Group>
-            {this.renderStarredComments(comments)}
-          </Comment.Group>
-        </Segment>
-      )
-    }
-    else return '';
+    const comments = [];
+    this.props.userStars.forEach(star => {
+      const index = comments.findIndex(comment => comment.comment_id === star.comment_id);
+      if(index < 0){
+        comments.push({
+          comment_id: star.comment_id,
+          users: [star.user_id],
+        });
+      }
+      else{
+        comments[index].users.push(star.user_id);
+      }
+    });
+    return (
+      <Segment>
+        <Header>Starred Comments</Header>
+        <Comment.Group>
+          {this.renderStarredComments(comments)}
+        </Comment.Group>
+      </Segment>
+    )
   }
 }
 
@@ -101,16 +99,21 @@ export default withTracker(({discussion_id}) => {
 
   const discussion = Discussions.findOne(
     { _id: discussion_id },
-    { fields: { user_stars: 1 } }
-  );
-  const starredComments = discussion ? discussion.user_stars.map(star => star.comment_id): [];
+    { fields: 
+      { 
+        user_stars: 1,
+        active_vote: 1,
+      } 
+    }
+  ) || {};
+  const starredComments = (discussion.user_stars || []).map(star => star.comment_id);
   return {
-    loaded: commentsSub.ready() && discussionSub.ready(),
-    participants: Meteor.users.find({}).fetch(),
-    userStars: discussion ? discussion.user_stars : [], 
+    participants: Meteor.users.find({}).fetch() || [],
+    userStars: discussion.user_stars || [], 
     comments: Comments.find({
       discussion_id: discussion_id,
       _id: { $in: starredComments }
     }).fetch(),
+    active_vote: discussion.active_vote,
   }
 })(StarredCommentView);

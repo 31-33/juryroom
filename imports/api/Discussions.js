@@ -13,6 +13,7 @@ if(Meteor.isServer){
       { },
       {
         fields: {
+          group_id: 1,
           active_replies: 1,
           user_stars: 1,
           created_at: 1,
@@ -234,7 +235,9 @@ Meteor.methods({
         $addToSet: {
           votes: vote_id,
         },
-        active_vote: vote_id,
+        $set: {
+          active_vote: vote_id,
+        }
       }
     )
   }

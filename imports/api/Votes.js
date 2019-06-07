@@ -16,8 +16,8 @@ if(Meteor.isServer){
                     discussion_id: 1,
                     comment_id: 1,
                     user_votes: 1,
-                    caller_id: 0,
-                    starred_by: 0,
+                    // caller_id: 0,
+                    // starred_by: 0,
                     date_time: 1,
                 }
             }

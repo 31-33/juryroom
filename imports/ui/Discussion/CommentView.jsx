@@ -3,6 +3,7 @@ import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Comments } from '/imports/api/Comments';
 import { Discussions } from '/imports/api/Discussions';
+import { Votes } from '/imports/api/Votes';
 import { Comment, Icon, Divider, Placeholder, Container, Segment, List, Button, Item, Image, Header } from 'semantic-ui-react';
 import Moment from 'react-moment';
 import CommentForm from './CommentForm';
@@ -49,6 +50,12 @@ class CommentViewTemplate extends Component {
     );
   }
 
+  renderVote(){
+    return this.props.vote && (
+      <Segment attached='bottom'>This comment has been voted upon.</Segment>
+    );
+  }
+
   renderReplyForm(){
     return this.props.userReplies.some(reply => reply.user_id === Meteor.userId() && reply.parent_id === this.props.comment._id) &&
     (
@@ -66,11 +73,12 @@ class CommentViewTemplate extends Component {
         {
           starred.length > 0 && 
           (
-            <Button 
+            <Button
+              disabled={!!this.props.active_vote || !starred.some(star => star.user_id === Meteor.userId())}
               floated='right'
               content='Call Vote'
               color='green'
-              onClick={() => Meteor.call('discussions.callVote', this.props.discussion_id, this.props.comment._id)}
+              onClick={() => Meteor.call('discussions.callVote', this.props.discussion_id, this.props.comment._id, starred.map(star => star.user_id))}
               label={{
                 basic: true,
                 content: 
@@ -132,11 +140,12 @@ class CommentViewTemplate extends Component {
             { 
               starred.length > 0 ?
               (
-                <Segment color='yellow' inverted tertiary>
+                <Segment color='yellow' inverted tertiary attached={this.props.vote && 'top'}>
                   {this.renderContent(starred)}
                 </Segment>
               ) : this.renderContent(starred)
             }
+            {this.renderVote()}
             {this.renderReplyForm()}
             {this.renderChildren()}
             {this.isCollapsed() && (<Divider clearing hidden />)}
@@ -156,14 +165,18 @@ const CommentView = withTracker(({discussion_id, comment}) => {
   const discussionsSub = Meteor.subscribe('discussions', discussion_id);
   const participantsSub = Meteor.subscribe('users');
 
+  Meteor.subscribe('votes');
+
   const discussion = Discussions.findOne(
     { _id: discussion_id },
     { fields: {
         active_replies: 1, 
-        user_stars: 1
+        user_stars: 1,
+        active_vote: 1,
       }
     }
   ) || {};
+
   return {
     loaded: commentsSub.ready() && discussionsSub.ready() && participantsSub.ready(),
     children: Comments.find(
@@ -176,6 +189,8 @@ const CommentView = withTracker(({discussion_id, comment}) => {
     userReplies: discussion.active_replies,
     userStars: discussion.user_stars,
     participants: Meteor.users.find({}).fetch(),
+    vote: Votes.findOne({ comment_id: comment._id }),
+    active_vote: discussion.active_vote,
   }
 })(CommentViewTemplate);
 
