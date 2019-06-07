@@ -58,7 +58,7 @@ class StarredCommentView extends Component {
                   icon="exclamation"
                   color="green"
                   content="Call Vote"
-                  onClick={() => console.log(this.props.discussion_id, comment_data._id)}
+                  onClick={() => Meteor.call('discussions.callVote', this.props.discussion_id, comment_data._id)}
                   />
               </Comment.Actions>
             </Comment.Content>

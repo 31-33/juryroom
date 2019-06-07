@@ -70,7 +70,7 @@ class CommentViewTemplate extends Component {
               floated='right'
               content='Call Vote'
               color='green'
-              onClick={() => console.log(this.props.discussion_id, this.props.comment._id)}
+              onClick={() => Meteor.call('discussions.callVote', this.props.discussion_id, this.props.comment._id)}
               label={{
                 basic: true,
                 content: 

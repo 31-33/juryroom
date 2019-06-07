@@ -2,6 +2,8 @@ import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 import { Groups } from '/imports/api/Groups';
+import { Votes } from '/imports/api/Votes';
+import { comment } from 'postcss';
 
 export const Discussions = new Mongo.Collection('discussions');
 
@@ -14,6 +16,8 @@ if(Meteor.isServer){
           active_replies: 1,
           user_stars: 1,
           created_at: 1,
+          votes: 1,
+          active_vote: 1,
         }
       }
     );
@@ -188,6 +192,49 @@ Meteor.methods({
             date_time: new Date(),
           }
         }
+      }
+    )
+  },
+  'discussions.callVote'(discussion_id, comment_id, starred_users){
+    check(discussion_id, String);
+    check(comment_id, String);
+    check(starred_users, Array);
+
+    if(!isDiscussionParticipant(this.userId, discussion_id)){
+      throw new Meteor.Error('not-authorized');
+    }
+
+    // Prevent vote if one is already active
+    if(Discussions.findOne({ _id: discussion_id }).active_vote){
+      throw new Meteor.Error('vote-already-in-progress');
+    }
+
+    // Restrict calling of vote to starred_users
+    if(!starred_users.includes(this.userId)){
+      throw new Meteor.Error('not-starred');
+    }
+
+    // Check that this comment has not already been voted on
+    if(Votes.findOne({ comment_id: comment_id })){
+      throw new Meteor.Error('already-voted-on');
+    }
+
+    const vote_id = Votes.insert({
+      discussion_id: discussion_id,
+      comment_id: comment_id,
+      user_votes: [],
+      caller_id: this.userId,
+      starred_by: starred_users,
+      date_time: new Date(),
+    })
+
+    Discussions.update(
+      { _id: discussion_id },
+      {
+        $addToSet: {
+          votes: vote_id,
+        },
+        active_vote: vote_id,
       }
     )
   }
