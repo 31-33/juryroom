@@ -121,7 +121,6 @@ Meteor.methods({
         $addToSet: {
           action_star: {
             user_id: this.userId,
-            comment_id: '',
             date_time: new Date(),
           }
         }

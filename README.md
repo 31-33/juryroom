@@ -1,5 +1,10 @@
 # JuryRoom
 
+## Documentation
+- Structure of Data
+
+    See [/imports/api/README.md](/imports/api/README.md)
+
 ## Setup
  - ***Environment Variables***
 
