@@ -125,7 +125,7 @@ class CommentViewTemplate extends Component {
             { 
               starred.length > 0 ?
               (
-                <Segment color='yellow' inverted tertiary attached={this.props.vote && 'top'}>
+                <Segment color='yellow' inverted tertiary attached={this.props.vote && 'top'} clearing>
                   {this.renderContent(starred)}
                 </Segment>
               ) : this.renderContent(starred)
