@@ -7,6 +7,7 @@ import { Votes } from '/imports/api/Votes';
 import { Comment, Icon, Divider, Placeholder, Container, Segment, List, Button, Item, Image, Header } from 'semantic-ui-react';
 import Moment from 'react-moment';
 import CommentForm from './CommentForm';
+import Vote from './Vote';
 import { Link } from 'react-router-dom';
 
 class CommentViewTemplate extends Component {
@@ -47,22 +48,6 @@ class CommentViewTemplate extends Component {
       <strong>
         {userList.join(', ')} is replying
       </strong>
-    );
-  }
-
-  renderVote(){
-    return this.props.vote && (
-      <Segment attached='bottom'>This comment has been voted upon.</Segment>
-    );
-  }
-
-  renderReplyForm(){
-    return this.props.userReplies.some(reply => reply.user_id === Meteor.userId() && reply.parent_id === this.props.comment._id) &&
-    (
-      <CommentForm
-        discussion_id={this.props.discussion_id}
-        parent_id={this.props.comment._id}
-      />
     );
   }
 
@@ -145,8 +130,21 @@ class CommentViewTemplate extends Component {
                 </Segment>
               ) : this.renderContent(starred)
             }
-            {this.renderVote()}
-            {this.renderReplyForm()}
+            {this.props.vote && (
+              <Vote 
+                vote={this.props.vote} 
+                isActive={this.props.vote._id === this.props.active_vote}
+                />
+            )}
+            {this.props.userReplies.some(reply => 
+              reply.user_id === Meteor.userId() && 
+              reply.parent_id === this.props.comment._id) && 
+            (
+              <CommentForm
+                discussion_id={this.props.discussion_id}
+                parent_id={this.props.comment._id}
+              />
+            )}
             {this.renderChildren()}
             {this.isCollapsed() && (<Divider clearing hidden />)}
           </Comment.Content>

@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 import { Groups } from '/imports/api/Groups';
+import { Discussions } from '/imports/api/Discussions';
 
 import { isDiscussionParticipant } from './Discussions';
 
@@ -32,7 +33,7 @@ if(Meteor.isClient){
 Meteor.methods({
     'votes.vote'(vote_id, user_vote){
         check(vote_id, String);
-        check(vote, Boolean);
+        check(user_vote, Boolean);
 
         const curr_vote = Votes.findOne({ _id: vote_id });
 
@@ -47,13 +48,16 @@ Meteor.methods({
         }
 
         // Check vote is active
-        const discussion = Discussions.findOne({ _id: vote.discussion_id });
+        const discussion = Discussions.findOne(
+            { _id: curr_vote.discussion_id },
+            { fields: { active_vote: 1, group_id: 1 } }
+        );
         if(discussion.active_vote !== vote_id){
             throw new Meteor.Error('vote-not-active');
         }
 
         // Check user is part of group
-        const group = Groups.findOne({ discussions: discussion._id });
+        const group = Groups.findOne({ _id: discussion.group_id });
         if(!group || !group.members.includes(this.userId)){
             throw new Meteor.Error('not-authorized');
         }
@@ -72,20 +76,20 @@ Meteor.methods({
 
         // Check if everyone has voted
         if(group.members.every(user => {
-            vote.user_votes.some(vote => vote.user_id === user._id) ||
-            user._id === this.userId
+            return user === this.userId ||
+                curr_vote.user_votes.some(vote => vote.user_id === user)
         })){
-            if(user_vote && vote.uservotes.every(vote => vote)){
-                // TODO: end discussion on vote success
-            }
             Discussions.update(
-                { _id: vote.discussion_id },
+                { _id: curr_vote.discussion_id },
                 {
                     $unset: {
                         active_vote: '',
                     }
                 }
             )
+            if(user_vote && curr_vote.user_votes.every(vote => vote.vote)){
+                // TODO: end discussion on vote success
+            }
         }
     }
 })
