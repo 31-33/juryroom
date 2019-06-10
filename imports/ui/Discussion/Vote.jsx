@@ -59,16 +59,4 @@ class Vote extends Component{
     }
 }
 
-export default withTracker(({vote}) => {
-    Meteor.subscribe('users');
-    Meteor.subscribe('groups');
-
-    const participant_ids = (Groups.findOne(
-        { discussions: vote.discussion_id },
-        { fields: { members: 1 } }
-    ).members || []);
-
-    return {
-        participants: Meteor.users.find({ _id: { $in: participant_ids }}).fetch()
-    }
-})(Vote);
+export default Vote;

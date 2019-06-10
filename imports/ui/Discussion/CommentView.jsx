@@ -16,11 +16,11 @@ class CommentViewTemplate extends Component {
     return this.props.comment.collapsed.includes(Meteor.userId());
   }
   collapse(){
-    Meteor.call('comments.collapse', this.props.discussion_id, this.props.comment._id, !this.isCollapsed());
+    Meteor.call('comments.collapse', this.props.discussion._id, this.props.comment._id, !this.isCollapsed());
   }
 
   renderChildren(){
-    return this.props.children && this.props.children.length > 0 && 
+    return this.props.children.length > 0 && 
     (
       <Comment.Group threaded={true}>
         {
@@ -28,7 +28,8 @@ class CommentViewTemplate extends Component {
             return (
               <CommentView
                 key={child._id}
-                discussion_id={this.props.discussion_id}
+                discussion={this.props.discussion}
+                participants={this.props.participants}
                 comment={child}
               />
             )
@@ -39,7 +40,7 @@ class CommentViewTemplate extends Component {
   }
 
   renderUserReplyingStatus(){
-    const userList = this.props.userReplies
+    const userList = this.props.discussion.active_replies
       .filter(reply => reply.user_id !== Meteor.userId() && reply.parent_id === this.props.comment._id)
       .map(reply => this.props.participants.find(user => user._id === reply.user_id).username);
       
@@ -51,24 +52,24 @@ class CommentViewTemplate extends Component {
     );
   }
 
-  renderContent(starred){
+  renderContent(starredBy){
     const author = this.props.participants.find(user => user._id === this.props.comment.author_id);
     return (
       <Container>
         {
-          starred.length > 0 && 
+          starredBy.length > 0 && 
           (
             <Button
-              disabled={!!this.props.active_vote || !starred.some(star => star.user_id === Meteor.userId())}
+              disabled={!!this.props.discussion.active_vote || !starredBy.some(star => star.user_id === Meteor.userId())}
               floated='right'
               content='Call Vote'
               color='green'
-              onClick={() => Meteor.call('discussions.callVote', this.props.discussion_id, this.props.comment._id, starred.map(star => star.user_id))}
+              onClick={() => Meteor.call('discussions.callVote', this.props.discussion._id, this.props.comment._id, starredBy.map(star => star.user_id))}
               label={{
                 basic: true,
                 content: 
                   <List children={
-                    starred.map(star => {
+                    starredBy.map(star => {
                       const item = this.props.participants.find(user => user._id === star.user_id);
         
                       return (
@@ -101,14 +102,14 @@ class CommentViewTemplate extends Component {
         </Comment.Metadata>
         <Comment.Text content={this.props.comment.text} />
         <Comment.Actions>
-          <Comment.Action onClick={() => Meteor.call('discussions.reply', this.props.discussion_id, this.props.comment._id)} content='Reply' />
+          <Comment.Action onClick={() => Meteor.call('discussions.reply', this.props.discussion._id, this.props.comment._id)} content='Reply' />
           {
-            starred.some(star => star.user_id === Meteor.userId()) ? 
+            starredBy.some(star => star.user_id === Meteor.userId()) ? 
             (
-              <Comment.Action onClick={() => Meteor.call('discussions.remove_star', this.props.discussion_id)} content='Unstar' />
+              <Comment.Action onClick={() => Meteor.call('discussions.remove_star', this.props.discussion._id)} content='Unstar' />
             ) :
             (
-              <Comment.Action onClick={() => Meteor.call('discussions.star_comment', this.props.discussion_id, this.props.comment._id)} content='Star' />
+              <Comment.Action onClick={() => Meteor.call('discussions.star_comment', this.props.discussion._id, this.props.comment._id)} content='Star' />
             )
           }
         </Comment.Actions>
@@ -117,78 +118,54 @@ class CommentViewTemplate extends Component {
   }
 
   render(){
-    const starred = (this.props.userStars || []).filter(star => star.comment_id === this.props.comment._id);
-    if(this.props.loaded){
-      return (
-        <Comment collapsed={ this.isCollapsed() } id={this.props.comment._id}>
-          <Comment.Content>
-            { 
-              starred.length > 0 ?
-              (
-                <Segment color='yellow' inverted tertiary attached={this.props.vote && 'top'} clearing>
-                  {this.renderContent(starred)}
-                </Segment>
-              ) : this.renderContent(starred)
-            }
-            {this.props.vote && (
-              <Vote 
-                vote={this.props.vote} 
-                isActive={this.props.vote._id === this.props.active_vote}
-                />
-            )}
-            {this.props.userReplies.some(reply => 
-              reply.user_id === Meteor.userId() && 
-              reply.parent_id === this.props.comment._id) && 
+    const starredBy = this.props.discussion.user_stars.filter(star => star.comment_id === this.props.comment._id);
+    return (
+      <Comment collapsed={ this.isCollapsed() } id={this.props.comment._id}>
+        <Comment.Content>
+          { 
+            starredBy.length > 0 ?
             (
-              <CommentForm
-                discussion_id={this.props.discussion_id}
-                parent_id={this.props.comment._id}
+              <Segment color='yellow' inverted tertiary attached={this.props.vote && 'top'} clearing>
+                {this.renderContent(starredBy)}
+              </Segment>
+            ) : this.renderContent(starredBy)
+          }
+          {this.props.vote && (
+            <Vote 
+              vote={this.props.vote}
+              participants={this.props.participants}
+              isActive={this.props.vote._id === this.props.discussion.active_vote}
               />
-            )}
-            {this.renderChildren()}
-            {this.isCollapsed() && (<Divider clearing hidden />)}
-          </Comment.Content>
-        </Comment>
-      );
-    }
-    else{
-      return (
-        <Placeholder fluid />
-      );
-    }
+          )}
+          {this.props.discussion.active_replies.some(reply => 
+            reply.user_id === Meteor.userId() && 
+            reply.parent_id === this.props.comment._id) && 
+          (
+            <CommentForm
+              discussion_id={this.props.discussion._id}
+              parent_id={this.props.comment._id}
+            />
+          )}
+          {this.renderChildren()}
+          {this.isCollapsed() && (<Divider clearing hidden />)}
+        </Comment.Content>
+      </Comment>
+    );
   }
 }
-const CommentView = withTracker(({discussion_id, comment}) => {
-  const commentsSub = Meteor.subscribe('comments', discussion_id, comment._id);
-  const discussionsSub = Meteor.subscribe('discussions', discussion_id);
-  const participantsSub = Meteor.subscribe('users');
-
+const CommentView = withTracker(({discussion, comment}) => {
+  Meteor.subscribe('comments', discussion._id);
   Meteor.subscribe('votes');
 
-  const discussion = Discussions.findOne(
-    { _id: discussion_id },
-    { fields: {
-        active_replies: 1, 
-        user_stars: 1,
-        active_vote: 1,
-      }
-    }
-  ) || {};
-
   return {
-    loaded: commentsSub.ready() && discussionsSub.ready() && participantsSub.ready(),
     children: Comments.find(
       { 
-        discussion_id: discussion_id,
+        discussion_id: discussion._id,
         parent_id: comment._id,
       },
       { sort: { posted_time: 1 }},
-      ).fetch(),
-    userReplies: discussion.active_replies,
-    userStars: discussion.user_stars,
-    participants: Meteor.users.find({}).fetch(),
+      ).fetch() || [],
     vote: Votes.findOne({ comment_id: comment._id }),
-    active_vote: discussion.active_vote,
   }
 })(CommentViewTemplate);
 

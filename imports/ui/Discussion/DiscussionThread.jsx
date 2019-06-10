@@ -1,8 +1,9 @@
 import React, { Component, createRef } from 'react';
-import { Button, Comment, Container, Rail, Ref, Segment, Sticky } from 'semantic-ui-react';
+import { Button, Comment, Container, Rail, Ref, Segment, Sticky, Dimmer, Loader } from 'semantic-ui-react';
 import { Meteor } from 'meteor/meteor';
 import { Comments } from '/imports/api/Comments';
 import { Discussions } from '/imports/api/Discussions';
+import { Groups } from '/imports/api/Groups';
 import { withTracker } from 'meteor/react-meteor-data';
 import CommentView from './CommentView';
 import CommentForm, { openCommentForm } from './CommentForm';
@@ -16,7 +17,8 @@ class DiscussionThread extends Component{
       return (
         <CommentView
           key={comment._id}
-          discussion_id={this.props.discussion_id}
+          discussion={this.props.discussion}
+          participants={this.props.participants}
           comment={comment}
         />
       )
@@ -24,7 +26,7 @@ class DiscussionThread extends Component{
   }
 
   renderUserReplyingStatus(){
-    const userList = this.props.replyingUsers
+    const userList = (this.props.discussion.active_replies || [])
       .filter(reply => reply.user_id !== Meteor.userId() && reply.parent_id === '')
       .map(reply => this.props.participants.find(user => user._id === reply.user_id).username);
 
@@ -37,7 +39,7 @@ class DiscussionThread extends Component{
   }
 
   renderCommentForm(){
-    return this.props.replyingUsers.some(reply => reply.user_id === Meteor.userId() && reply.parent_id === '') ?
+    return (this.props.discussion.active_replies || []).some(reply => reply.user_id === Meteor.userId() && reply.parent_id === '') ?
       (
         <CommentForm discussion_id={this.props.discussion_id} />
       ) :
@@ -52,7 +54,9 @@ class DiscussionThread extends Component{
   }
 
   render(){
-    return (
+    console.log(this.props);
+    return (this.props.discussion && this.props.participants) ?
+    (
       <Ref innerRef={this.contextRef}>
         <Segment>
           <Comment.Group threaded={true}>
@@ -62,7 +66,9 @@ class DiscussionThread extends Component{
           {this.renderCommentForm()}
           <Rail position='left'>
             <Sticky context={this.contextRef} offset={80}>
-              <StarredCommentView discussion_id={this.props.discussion_id} />
+              <StarredCommentView 
+                discussion={this.props.discussion}
+                participants={this.props.participants}/>
             </Sticky>
           </Rail>
           <Rail position='right'>
@@ -71,23 +77,35 @@ class DiscussionThread extends Component{
             </Sticky>
           </Rail>
         </Segment>
-      </Ref>
-    );
+        </Ref>
+    ) :
+    (
+      <Segment>
+        <Dimmer active page inverted>
+          <Loader size='large'>Loading</Loader>
+        </Dimmer>
+      </Segment>
+    )
   }
 }
 
 export default withTracker(({match}) => {
   const discussion_id = match.params.discussion_id;
-  Meteor.subscribe('comments', discussion_id, '');
+  Meteor.subscribe('comments', discussion_id);
   Meteor.subscribe('discussions');
-  Meteor.subscribe('users');
+  const usersSub = Meteor.subscribe('users');
+  const groupsSub = Meteor.subscribe('groups');
 
-  const discussion = Discussions.findOne(
-    { _id: discussion_id },
-    { fields: { active_replies: 1 } }
-  );
   return {
-    discussion_id: discussion_id,
+    discussion: Discussions.findOne(
+      { _id: discussion_id },
+      { fields: 
+        { 
+          active_replies: 1,
+          user_stars: 1,
+          active_vote: 1,
+        } 
+      }),
     comments: Comments.find(
       {
         discussion_id: discussion_id,
@@ -95,7 +113,11 @@ export default withTracker(({match}) => {
       },
       { sort: { posted_time: 1 } },
     ).fetch(),
-    replyingUsers: discussion ? discussion.active_replies : [],
-    participants: Meteor.users.find({}).fetch(),
+    participants: 
+      groupsSub.ready() &&
+      usersSub.ready() && 
+      Meteor.users.find({ _id: { 
+        $in: Groups.findOne({ discussions: discussion_id }).members 
+      } }).fetch(),
   }
 })(DiscussionThread);

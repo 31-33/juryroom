@@ -10,13 +10,13 @@ var scrollToElement = require('scroll-to-element');
 
 class StarredCommentView extends Component {
 
-  renderStarredComments(starred){
-    return starred
+  renderStarredComments(starredComments){
+    return starredComments
       .sort((c1, c2) => c2.users.length - c1.users.length)
       .map(starred_comment => {
         const comment_data = this.props.comments.find(comment => comment._id == starred_comment.comment_id) || {};
         const author = this.props.participants.find(user => user._id === comment_data.author_id) || {};
-        const starred = starred_comment.users.includes(Meteor.userId());
+        const isStarred = starred_comment.users.includes(Meteor.userId());
         return (
           <Comment key={starred_comment.comment_id}>
             <Comment.Content>
@@ -40,17 +40,17 @@ class StarredCommentView extends Component {
                   attached="top"
                   icon="star"
                   color="yellow"
-                  content={starred ? "Starred" : "Star"}
-                  basic={!starred}
+                  content={isStarred ? "Starred" : "Star"}
+                  basic={!isStarred}
                   label={{
                     basic: true,
                     color: "yellow",
                     pointing: "left",
                     content: starred_comment.users.map(user_id => this.props.participants.find(user => user._id === user_id).username).join(', ')
                   }}
-                  onClick={() => starred ? 
-                    Meteor.call('discussions.remove_star', this.props.discussion_id) : 
-                    Meteor.call('discussions.star_comment', this.props.discussion_id, comment_data._id)
+                  onClick={() => isStarred ? 
+                    Meteor.call('discussions.remove_star', this.props.discussion._id) : 
+                    Meteor.call('discussions.star_comment', this.props.discussion._id, comment_data._id)
                   }
                   />
                 <Button
@@ -59,7 +59,7 @@ class StarredCommentView extends Component {
                   icon="exclamation"
                   color="green"
                   content="Call Vote"
-                  onClick={() => Meteor.call('discussions.callVote', this.props.discussion_id, comment_data._id, starred_comment.users)}
+                  onClick={() => Meteor.call('discussions.callVote', this.props.discussion._id, comment_data._id, starred_comment.users)}
                   />
               </Comment.Actions>
             </Comment.Content>
@@ -70,7 +70,7 @@ class StarredCommentView extends Component {
 
   render(){
     const comments = [];
-    this.props.userStars.forEach(star => {
+    this.props.discussion.user_stars.forEach(star => {
       const index = comments.findIndex(comment => comment.comment_id === star.comment_id);
       if(index < 0){
         comments.push({
@@ -93,27 +93,12 @@ class StarredCommentView extends Component {
   }
 }
 
-export default withTracker(({discussion_id}) => {
-  const commentsSub = Meteor.subscribe('comments', discussion_id);
-  const discussionSub = Meteor.subscribe('discussions', discussion_id);
-
-  const discussion = Discussions.findOne(
-    { _id: discussion_id },
-    { fields: 
-      { 
-        user_stars: 1,
-        active_vote: 1,
-      } 
-    }
-  ) || {};
-  const starredComments = (discussion.user_stars || []).map(star => star.comment_id);
+export default withTracker(({discussion}) => {
+  Meteor.subscribe('comments', discussion._id);
   return {
-    participants: Meteor.users.find({}).fetch() || [],
-    userStars: discussion.user_stars || [], 
     comments: Comments.find({
-      discussion_id: discussion_id,
-      _id: { $in: starredComments }
+      discussion_id: discussion._id,
+      _id: { $in: discussion.user_stars.map(star => star.comment_id) }
     }).fetch(),
-    active_vote: discussion.active_vote,
   }
 })(StarredCommentView);
