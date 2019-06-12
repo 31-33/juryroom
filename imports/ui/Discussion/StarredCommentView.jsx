@@ -39,7 +39,7 @@ class StarredCommentView extends Component {
                 {author.username}
               </Comment.Author>
               <Comment.Metadata>
-                <Moment fromNow>{commentData.posted_time}</Moment>
+                <Moment fromNow>{commentData.postedTime}</Moment>
                 <Label
                   basic
                   as="a"
