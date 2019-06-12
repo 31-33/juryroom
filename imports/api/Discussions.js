@@ -1,243 +1,301 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
-import { Groups } from '/imports/api/Groups';
-import { Votes } from '/imports/api/Votes';
-import { comment } from 'postcss';
+import Groups from '/imports/api/Groups';
+import Votes from '/imports/api/Votes';
 
-export const Discussions = new Mongo.Collection('discussions');
+const Discussions = new Mongo.Collection('discussions');
+export default Discussions;
 
-if(Meteor.isServer){
-  Meteor.publish('discussions', () => {
-    return Discussions.find(
-      { },
-      {
-        fields: {
-          group_id: 1,
-          active_replies: 1,
-          user_stars: 1,
-          created_at: 1,
-          votes: 1,
-          active_vote: 1,
-        }
-      }
-    );
-  });
+if (Meteor.isServer) {
+  Meteor.publish('discussions', () => Discussions.find(
+    { },
+    {
+      fields: {
+        createdAt: 1,
+        groupId: 1,
+        activeReplies: 1,
+        userStars: 1,
+        votes: 1,
+        activeVote: 1,
+      },
+    },
+  ));
 }
-if(Meteor.isClient){
+if (Meteor.isClient) {
   Meteor.subscribe('groups');
 }
 
-export function isDiscussionParticipant(user_id, discussion_id){
-  return user_id && Groups.find({
-    members: user_id,
-    discussions: discussion_id,
-  }).count() > 0 ? true : false;
+export function isDiscussionParticipant(userId, discussionId) {
+  return !!(userId && Groups.find({
+    members: userId,
+    discussions: discussionId,
+  }).count() > 0);
 }
 
 Meteor.methods({
-  'discussions.create'(group_id){
-    check(group_id, String);
+  'discussions.create'(groupId) {
+    check(groupId, String);
 
-    const discussion_id = Discussions.insert({
+    const discussionId = Discussions.insert({
       created_at: new Date(),
-      group_id: group_id,
-      active_replies: [],
-      user_stars: [],
-      action_star: [],
-      action_reply: [],
-      action_collapse: [],
+      groupId,
+      activeReplies: [],
+      userStars: [],
+      actionStar: [],
+      actionReply: [],
+      actionCollapse: [],
+      votes: [],
     });
 
     Groups.update(
-      { _id: group_id },
-      { 
+      { _id: groupId },
+      {
         $addToSet: {
-          discussions: discussion_id
-        }
-      }
+          discussions: discussionId,
+        },
+      },
     );
 
-    return discussion_id;
+    return discussionId;
   },
-  'discussions.star_comment'(discussion_id, comment_id){
-    check(discussion_id, String);
-    check(comment_id, String);
+  'discussions.star_comment'(discussionId, commentId) {
+    check(discussionId, String);
+    check(commentId, String);
 
-    if(!isDiscussionParticipant(this.userId, discussion_id)){
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
       throw new Meteor.Error('not-authorized');
     }
 
-    Meteor.call('discussions.remove_star', discussion_id);
+    Meteor.call('discussions.remove_star', discussionId);
 
     Discussions.update(
-      { _id: discussion_id },
+      { _id: discussionId },
       {
         $addToSet: {
-          user_stars: { 
-            user_id: this.userId,
-            comment_id: comment_id,
-          }
-        }
-      }
+          userStars: {
+            userId: this.userId,
+            commentId,
+          },
+        },
+      },
     );
 
     // Write this action to persistant storage
     Discussions.update(
-      { _id: discussion_id },
+      { _id: discussionId },
       {
         $addToSet: {
-          action_star: {
-            user_id: this.userId,
-            comment_id: comment_id,
-            date_time: new Date(),
-          }
-        }
-      }
-    )
+          actionStar: {
+            userId: this.userId,
+            commentId,
+            dateTime: new Date(),
+          },
+        },
+      },
+    );
   },
-  'discussions.remove_star'(discussion_id){
-    check(discussion_id, String);
+  'discussions.remove_star'(discussionId) {
+    check(discussionId, String);
 
-    if(!isDiscussionParticipant(this.userId, discussion_id)){
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
       throw new Meteor.Error('not-authorized');
     }
-    
+
     Discussions.update(
-      { _id: discussion_id },
-      { 
-        $pull: { 
-          user_stars: { 
-            user_id: this.userId
-          } 
-        } 
-      }
-    )
+      { _id: discussionId },
+      {
+        $pull: {
+          userStars: {
+            userId: this.userId,
+          },
+        },
+      },
+    );
 
     // Write to persistant storage
     Discussions.update(
-      { _id: discussion_id },
+      { _id: discussionId },
       {
         $addToSet: {
-          action_star: {
-            user_id: this.userId,
-            date_time: new Date(),
-          }
-        }
-      }
-    )
+          actionStar: {
+            userId: this.userId,
+            dateTime: new Date(),
+          },
+        },
+      },
+    );
   },
-  'discussions.reply'(discussion_id, parent_id){
-    check(discussion_id, String);
-    check(parent_id, String);
+  'discussions.reply'(discussionId, parentId) {
+    check(discussionId, String);
+    check(parentId, String);
 
-    if(!isDiscussionParticipant(this.userId, discussion_id)){
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
       throw new Meteor.Error('not-authorized');
     }
-    
+
     // Remove any active replies for this user
-    Meteor.call('discussions.closeReply', discussion_id, false);
+    Meteor.call('discussions.closeReply', discussionId);
 
     // Insert current user replying to specified comment
     Discussions.update(
-      { _id: discussion_id },
+      { _id: discussionId },
       {
         $addToSet: {
-          active_replies: {
-            user_id: this.userId,
-            parent_id: parent_id
-          }
-        }
-      }
+          activeReplies: {
+            userId: this.userId,
+            parentId,
+          },
+        },
+      },
     );
 
     // Persist this action
     Discussions.update(
-      { _id: discussion_id },
+      { _id: discussionId },
       {
         $addToSet: {
-          action_reply: {
-            user_id: this.userId,
-            parent_id: parent_id,
-            date_time: new Date(),
-          }
-        }
-      }
-    )
+          actionReply: {
+            userId: this.userId,
+            parentId,
+            dateTime: new Date(),
+          },
+        },
+      },
+    );
   },
-  'discussions.closeReply'(discussion_id){
-    check(discussion_id, String);
+  'discussions.closeReply'(discussionId) {
+    check(discussionId, String);
 
-    if(!isDiscussionParticipant(this.userId, discussion_id)){
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
       throw new Meteor.Error('not-authorized');
     }
-    
+
     Discussions.update(
-      { _id: discussion_id },
+      { _id: discussionId },
       {
         $pull: {
-          active_replies: {
-            user_id: this.userId
-          }
-        }
-      }
+          activeReplies: {
+            userId: this.userId,
+          },
+        },
+      },
     );
 
     Discussions.update(
-      { _id: discussion_id },
+      { _id: discussionId },
       {
         $addToSet: {
-          action_reply: {
-            user_id: this.userId,
-            date_time: new Date(),
-          }
-        }
-      }
-    )
+          actionReply: {
+            userId: this.userId,
+            dateTime: new Date(),
+          },
+        },
+      },
+    );
   },
-  'discussions.callVote'(discussion_id, comment_id, starred_users){
-    check(discussion_id, String);
-    check(comment_id, String);
-    check(starred_users, Array);
+  'discussions.callVote'(discussionId, commentId, starredUsers) {
+    check(discussionId, String);
+    check(commentId, String);
+    check(starredUsers, Array);
 
-    if(!isDiscussionParticipant(this.userId, discussion_id)){
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
       throw new Meteor.Error('not-authorized');
     }
 
     // Prevent vote if one is already active
-    if(Discussions.findOne({ _id: discussion_id }).active_vote){
+    if (Discussions.findOne({ _id: discussionId }).active_vote) {
       throw new Meteor.Error('vote-already-in-progress');
     }
 
     // Restrict calling of vote to starred_users
-    if(!starred_users.includes(this.userId)){
+    if (!starredUsers.includes(this.userId)) {
       throw new Meteor.Error('not-starred');
     }
 
     // Check that this comment has not already been voted on
-    if(Votes.findOne({ comment_id: comment_id })){
+    if (Votes.findOne({ commentId })) {
       throw new Meteor.Error('already-voted-on');
     }
 
-    const vote_id = Votes.insert({
-      discussion_id: discussion_id,
-      comment_id: comment_id,
-      user_votes: [],
-      caller_id: this.userId,
-      starred_by: starred_users,
-      date_time: new Date(),
-    })
+    const voteId = Votes.insert({
+      commentId,
+      discussionId,
+      userVotes: [],
+      callerId: this.userId,
+      starredBy: starredUsers,
+      calledAt: new Date(),
+    });
 
     Discussions.update(
-      { _id: discussion_id },
+      { _id: discussionId },
       {
         $addToSet: {
-          votes: vote_id,
+          votes: voteId,
         },
         $set: {
-          active_vote: vote_id,
-        }
+          activeVote: voteId,
+        },
+      },
+    );
+  },
+  'votes.vote'(voteId, userVote) {
+    check(voteId, String);
+    check(userVote, Boolean);
+
+    const currVote = Votes.findOne({ _id: voteId });
+
+    // Ensure vote exists
+    if (!currVote) {
+      throw new Meteor.Error('vote-not-found');
+    }
+
+    // Check user has not already voted
+    if (currVote.userVotes.some(vote => vote.userId === this.userId)) {
+      throw new Meteor.Error('already-voted');
+    }
+
+    // Check vote is active
+    const discussion = Discussions.findOne(
+      { _id: currVote.discussionId },
+      { fields: { activeVote: 1, groupId: 1 } },
+    );
+    if (discussion.activeVote !== voteId) {
+      throw new Meteor.Error('vote-not-active');
+    }
+
+    // Check user is part of group
+    const group = Groups.findOne({ _id: discussion.groupId });
+    if (!group || !group.members.includes(this.userId)) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    Votes.update(
+      { _id: voteId },
+      {
+        $addToSet: {
+          userVotes: {
+            userId: this.userId,
+            vote: userVote,
+          },
+        },
+      },
+    );
+
+    // Check if everyone has voted
+    if (group.members.every(user => user === this.userId
+      || currVote.userVotes.some(vote => vote.userId === user))) {
+      Discussions.update(
+        { _id: currVote.discussionId },
+        {
+          $unset: {
+            activeVote: '',
+          },
+        },
+      );
+      if (userVote && currVote.userVotes.every(vote => vote.vote)) {
+        // TODO: end discussion on vote success
       }
-    )
-  }
+    }
+  },
 });

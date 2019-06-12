@@ -1,59 +1,74 @@
 import React, { Component } from 'react';
+import { Meteor } from 'meteor/meteor';
+import PropTypes from 'prop-types';
 import { Form, TextArea, Button } from 'semantic-ui-react';
 import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
 
 class CommentForm extends Component {
-  constructor(){
+  static propTypes = {
+    discussionId: PropTypes.string.isRequired,
+    parentId: PropTypes.string.isRequired,
+  }
+
+  constructor() {
     super();
 
     this.state = {
-      commentText: ""
+      commentText: '',
     };
   }
 
-  onCommentTextChange(e, {value}){
+  onCommentTextChange = (e, { value }) => {
     this.setState({
-      commentText: value
+      commentText: value,
     });
   }
 
-  submitComment(){
-    Meteor.call('comments.insert', this.props.discussion_id, this.props.parent_id ? this.props.parent_id : '', this.state.commentText);
+  submitComment = () => {
+    const { commentText } = this.state;
+    const { discussionId, parentId } = this.props;
+    Meteor.call('comments.insert', discussionId, parentId || '', commentText);
 
     this.setState({
-      commentText: "",
-    })
+      commentText: '',
+    });
     this.close();
   }
 
-  close(){
-    Meteor.call('discussions.closeReply', this.props.discussion_id, this.props.parent_id);
+  close = () => {
+    const { discussionId, parentId } = this.props;
+    Meteor.call('discussions.closeReply', discussionId, parentId);
   }
 
-  render(){
+  render() {
+    const { commentText } = this.state;
     return (
       <Form>
         <Form.Field
           label="Message"
           control={TextArea}
           maxLength={MAX_COMMENT_LENGTH}
-          value={this.state.commentText}
-          onChange={this.onCommentTextChange.bind(this)}
+          value={commentText}
+          onChange={this.onCommentTextChange}
           placeholder="Type your comment here..."
         />
         <Form.Group>
-          <Form.Field control={Button} 
-            onClick={this.submitComment.bind(this)} 
-            content='Add Reply' 
-            labelPosition='left' 
-            icon='edit' 
-            primary />
-          <Form.Field control={Button} 
-            onClick={this.close.bind(this)} 
-            content='Cancel' 
-            labelPosition='left' 
-            icon='cancel' 
-            negative/>
+          <Form.Field
+            control={Button}
+            onClick={this.submitComment}
+            content="Add Reply"
+            labelPosition="left"
+            icon="edit"
+            primary
+          />
+          <Form.Field
+            control={Button}
+            onClick={this.close}
+            content="Cancel"
+            labelPosition="left"
+            icon="cancel"
+            negative
+          />
         </Form.Group>
       </Form>
     );

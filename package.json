@@ -2,6 +2,7 @@
   "name": "juryroom",
   "private": true,
   "scripts": {
+    "lint": "eslint .",
     "start": "meteor run",
     "test": "meteor test --once --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
@@ -13,6 +14,7 @@
     "history": "^4.9.0",
     "meteor-node-stubs": "^0.4.1",
     "moment": "^2.24.0",
+    "prop-types": "^15.7.2",
     "react": "^16.5.0",
     "react-avatar-editor": "^11.0.7",
     "react-day-picker": "^7.3.0",
@@ -24,9 +26,32 @@
     "semantic-ui-react": "^0.86.0"
   },
   "devDependencies": {
+    "@meteorjs/eslint-config-meteor": "^1.0.5",
     "autoprefixer": "^6.3.1",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-import-resolver-meteor": "^0.4.0",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-meteor": "^5.1.0",
+    "eslint-plugin-react": "^7.13.0",
     "postcss": "^6.0.22",
     "postcss-load-config": "^1.2.0"
+  },
+  "eslintConfig": {
+    "extends": "@meteorjs/eslint-config-meteor",
+    "overrides": [
+      {
+        "files": [
+          "*.jsx"
+        ],
+        "rules": {
+          "react/prefer-stateless-function": 0,
+          "import/no-unresolved": 0
+        }
+      }
+    ]
   },
   "postcss": {
     "plugins": {

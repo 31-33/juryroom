@@ -11,7 +11,7 @@ Represents a collection (i.e. group) of users. A group may participate in multip
     _id: String,
     members: [String],
     discussions: [String],
-    created_at: Date,
+    createdAt: Date,
 }
 ```
 
@@ -21,7 +21,7 @@ Represents a collection (i.e. group) of users. A group may participate in multip
 
 `discussions`: *Array of discussion_ids, each corresponding to an entry in the Discussions collection.*
 
-`created_at`: *ISODate object, representing the UTC time this group was created at.*
+`createdAt`: *ISODate object, representing the UTC time this group was created at.*
 
 ---
 ## User
@@ -71,64 +71,66 @@ Represents a discussion thread. A discussion is a conversation between a group o
 ```
 {
     _id: String,
-    created_at: Date,
-    group_id: String,
-    active_replies: [
+    createdAt: Date,
+    groupId: String,
+    activeReplies: [
         {
-            user_id: String,
-            parent_id: String,
+            userId: String,
+            parentId: String,
         },
     ],
-    user_stars: [
+    userStars: [
         {
-            user_id: String,
-            comment_id: String,
+            userId: String,
+            commentId: String,
         },
     ],
-    action_star: [
+    actionStar: [
         {
-            user_id: String,
-            comment_id: String,
-            date_time: Date,
+            userId: String,
+            commentId: String,
+            dateTime: Date,
         },
     ],
-    action_reply: [
+    actionReply: [
         {
-            user_id: String,
-            date_time: Date,
-            parent_id: String?,
+            userId: String,
+            parentId: String?,
+            dateTime: Date,
         },
     ],
-    action_collapse: [
+    actionCollapse: [
         {
-            user_id: String,
-            comment_id: String,
+            userId: String,
+            commentId: String,
             collapsed: Boolean,
-            date_time: Date,
+            dateTime: Date,
         },
     ],
     votes: [String],
-    active_vote: String?,
+    activeVote: String?,
 }
 ```
 
 `_id`: *The unique identifier for this discussion.*
 
-`created_at`: *ISODate object representing the UTC time at which this discussion thread was created.*
+`createdAt`: *ISODate object representing the UTC time at which this discussion thread was created.*
 
-`group_id`: *String which identifies the group which is participating in this discussion.*
+`groupId`: *String which identifies the group which is participating in this discussion.*
 
-`active_replies`: *Stores which replies are currently being replied to (and by which users). `parent_id` may be an empty string, representing a root level comment is being made. This is used to store the current state of new posts/replies—there should only be one entry for each `user_id`.*
+`activeReplies`: *Stores which replies are currently being replied to (and by which users). `parentId` may be an empty string, representing a root level comment is being made. This is used to store the current state of new posts/replies—there should only be one entry for each `userId`.*
 
-`user_stars`: *Stores which comments are currently starred (and by which users). Each user can only have one comment starred at a time, and therefore there should only be one entry for each `user_id`.*
+`userStars`: *Stores which comments are currently starred (and by which users). Each user can only have one comment starred at a time, and therefore there should only be one entry for each `userId`.*
 
-`action_star`: *Stores the full history of every star action made on this discussion thread. A star action consists of the `user_id` who made the action, the `comment_id` of the starred comment (not defined in the case of un-starring), and the `date_time` the action was made at*.
+`actionStar`: *Stores the full history of every star action made on this discussion thread. A star action consists of the `userId` who made the action, the `commentId` of the starred comment (not defined in the case of un-starring), and the `dateTime` the action was made at*.
 
-`action_reply`: *Stores the full history of every active reply made by the user. A reply action consists of the `user_id` who made the action, the `parent_id` of the comment being replied to (an empty string represents a root-level comment, and undefined represents the reply window being closed), and the `date_time` the action was made at.*
+`actionReply`: *Stores the full history of every active reply made by the user. A reply action consists of the `userId` who made the action, the `parentId` of the comment being replied to (an empty string represents a root-level comment, and undefined represents the reply window being closed), and the `dateTime` the action was made at.*
 
-`action_collapse`: *Stores the full history of every comment that was collapsed/uncollapsed by a user participating in this discussion. Consists of the `user_id` making the action, the `comment_id` being collapsed, a boolean (`collapsed`) specifying whether the action was collapsing or uncollapsing the comment, and the `date_time` at which the action was made. **Note: State of which users currently have a comment collapsed is stored on the comment itself.***
+`actionCollapse`: *Stores the full history of every comment that was collapsed/uncollapsed by a user participating in this discussion. Consists of the `userId` making the action, the `commentId` being collapsed, a boolean (`collapsed`) specifying whether the action was collapsing or uncollapsing the comment, and the `dateTime` at which the action was made. **Note: State of which users currently have a comment collapsed is stored on the comment itself.***
 
 `votes`: *Stores a collection of votes made within this discussion. Each item in this collection is a string, which uniquely identifies an entry in the Votes collection. More detail about the vote may be found there.*
+
+`activeVote`: *The currently active vote for this discussion. Undefined if/when no active vote is taking place.*
 
 ---
 ## Scenario
@@ -145,28 +147,28 @@ Represents a single post within a discussion thread. May be posted at the root l
 ```
 {
     _id: String,
-    discussion_id: String,
-    parent_id: String,
-    posted_time: Date,
-    author_id: String,
+    discussionId: String,
+    parentId: String,
+    postedTime: Date,
+    authorId: String,
     text: String,
-    collapsed: [String],
+    collapsedBy: [String],
 }
 ```
 
 `_id`: *The unique identifier for this comment.*
 
-`discussion_id`: *Uniquely identifies the entry in the Discussions collection, to which this comment belongs.*
+`discussionId`: *Uniquely identifies the entry in the Discussions collection, to which this comment belongs.*
 
-`parent_id`: *Uniquely identifies another entry within the Comments collection, to which this comment is a reply to. This field may also be an empty string, representing comments which are posted at the root-level.*
+`parentId`: *Uniquely identifies another entry within the Comments collection, to which this comment is a reply to. This field may also be an empty string, representing comments which are posted at the root-level.*
 
-`posted_time`: *ISODate object representing the UTC time when this comment was posted.*
+`postedTime`: *ISODate object representing the UTC time when this comment was posted.*
 
-`author_id`: *Stores the unique identifier for the user who posted this comment.*
+`authorId`: *Stores the unique identifier for the user who posted this comment.*
 
 `text`: *Stores the text/content of this comment. **Note: maximum length can be configured within `/imports/api/Comments.js`, currently set to 280 characters.***
 
-`collapsed`: *A collection of user_id's who currently have this comment collapsed.*
+`collapsedBy`: *A collection of user id's who currently have this comment collapsed.*
 
 ---
 ## Vote
@@ -175,32 +177,32 @@ Represents a vote. Users may call for a vote upon comments they have starred, an
 ```
 {
     _id: String,
-    comment_id: String,
-    discussion_id: String,
-    user_votes: [
+    commentId: String,
+    discussionId: String,
+    userVotes: [
         {
-            user_id: String,
+            userId: String,
             vote: Boolean,
         },
     ],
-    caller_id: String,
-    starred_by: [String],
-    date_time: Date,
+    callerId: String,
+    starredBy: [String],
+    dateTime: Date,
 }
 ```
 
 `_id`: *Uniquely identifies this vote.*
 
-`comment_id`: *Identifies the comment which this vote was called upon.*
+`commentId`: *Identifies the comment which this vote was called upon.*
 
-`discussion_id`: *Identifies the discussion which this vote (and associated comment) exist within.*
+`discussionId`: *Identifies the discussion which this vote (and associated comment) exist within.*
 
-`user_votes`: *Array storing the user votes that have been made upon this collection. Each entry consists of the `user_id` making the vote, and a boolean `vote` (true=agree, false=disagree) they made.*
+`userVotes`: *Array storing the user votes that have been made upon this collection. Each entry consists of the `userId` making the vote, and a boolean `vote` (true=agree, false=disagree) they made.*
 
-`caller_id`: *Stores the id of the user who called the vote.*
+`callerId`: *Stores the id of the user who called the vote.*
 
-`starred_by`: *A collection containing the ids of the users who had this comment starred at the time when a vote was called.*
+`starredBy`: *A collection containing the ids of the users who had this comment starred at the time when a vote was called.*
 
-`date_time`: *ISODate object storing the UTC time when this vote was called.*
+`calledAt`: *ISODate object storing the UTC time when this vote was called.*
 
 ---
