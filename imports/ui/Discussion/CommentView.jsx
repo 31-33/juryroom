@@ -147,8 +147,8 @@ class CommentViewTemplate extends Component {
       <Comment collapsed={this.isCollapsed()} id={comment._id}>
         <Comment.Content>
           {
-            starredBy.length > 0 ? (
-              <Segment color="yellow" inverted tertiary attached={vote && 'top'} clearing>
+            (starredBy.length > 0 || vote) ? (
+              <Segment color="yellow" inverted={starredBy.length > 0} tertiary attached={vote && 'top'} clearing>
                 {this.renderContent(starredBy)}
               </Segment>
             ) : this.renderContent(starredBy)

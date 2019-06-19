@@ -19,7 +19,7 @@ class Vote extends Component {
     render() {
       const { vote, isActive, participants } = this.props;
       return (
-        <Segment attached="bottom">
+        <Segment attached="bottom" secondary>
           {(isActive && !vote.userVotes.some(v => v.userId === Meteor.userId())) ? (
             <Button.Group>
               <Button
