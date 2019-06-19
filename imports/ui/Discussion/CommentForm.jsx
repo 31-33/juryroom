@@ -5,9 +5,13 @@ import { Form, TextArea, Button } from 'semantic-ui-react';
 import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
 
 class CommentForm extends Component {
+  static defaultProps = {
+    parentId: false,
+  }
+
   static propTypes = {
     discussionId: PropTypes.string.isRequired,
-    parentId: PropTypes.string.isRequired,
+    parentId: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   }
 
   constructor() {

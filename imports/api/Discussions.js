@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import _ from 'lodash';
+import ScenarioSets from '/imports/api/ScenarioSets';
 import Groups from '/imports/api/Groups';
 import Votes from '/imports/api/Votes';
 
@@ -14,6 +16,7 @@ if (Meteor.isServer) {
       fields: {
         createdAt: 1,
         groupId: 1,
+        scenarioId: 1,
         activeReplies: 1,
         userStars: 1,
         votes: 1,
@@ -24,21 +27,36 @@ if (Meteor.isServer) {
 }
 if (Meteor.isClient) {
   Meteor.subscribe('groups');
+  Meteor.subscribe('scenarioSets');
 }
 
 export function isDiscussionParticipant(userId, discussionId) {
   return !!(userId && Groups.find({
     members: userId,
-    discussions: discussionId,
+    discussions: { $elemMatch: { discussionId } },
   }).count() > 0);
 }
 
-Meteor.methods({
-  'discussions.create'(groupId) {
-    check(groupId, String);
+export function startNext(groupId) {
+  if (!Meteor.isServer) {
+    return;
+  }
+  check(groupId, String);
 
-    const discussionId = Discussions.insert({
-      created_at: new Date(),
+  const group = Groups.findOne({ _id: groupId });
+  const scenarioSet = ScenarioSets.findOne({ _id: group.scenarioSetId });
+  const remainingScenarios = scenarioSet.scenarios.filter(
+    scenario => !group.discussions.some(discussion => discussion.scenarioId === scenario),
+  );
+
+  if (remainingScenarios.length === 0) {
+    // TODO: handle last discussion in set completed...
+  } else {
+    const newScenarioId = scenarioSet.ordered
+      ? remainingScenarios[0] : _.sample(remainingScenarios);
+    const newDiscussionId = Discussions.insert({
+      createdAt: new Date(),
+      scenarioId: newScenarioId,
       groupId,
       activeReplies: [],
       userStars: [],
@@ -46,18 +64,40 @@ Meteor.methods({
       actionReply: [],
       actionCollapse: [],
       votes: [],
+      status: 'active',
     });
 
     Groups.update(
       { _id: groupId },
       {
         $addToSet: {
-          discussions: discussionId,
+          discussions: {
+            scenarioId: newScenarioId,
+            discussionId: newDiscussionId,
+          },
         },
       },
     );
+  }
+}
 
-    return discussionId;
+Meteor.methods({
+  'groups.create'(members, scenarioSetId) {
+    check(members, Array);
+    check(scenarioSetId, String);
+
+    // TODO: verify calling user is has permission to create new groups
+
+    const groupId = Groups.insert({
+      members,
+      scenarioSetId,
+      discussions: [],
+      calledAt: new Date(),
+    });
+
+    if (Meteor.isServer) {
+      startNext(groupId);
+    }
   },
   'discussions.star_comment'(discussionId, commentId) {
     check(discussionId, String);
@@ -294,7 +334,13 @@ Meteor.methods({
         },
       );
       if (userVote && currVote.userVotes.every(vote => vote.vote)) {
-        // TODO: end discussion on vote success
+        Discussions.update(
+          { _id: currVote.discussionId },
+          {
+            $set: { status: 'finished' },
+          },
+        );
+        startNext(group._id);
       }
     }
   },

@@ -137,7 +137,9 @@ export default withTracker(({ match }) => {
       && usersSub.ready()
       && Meteor.users.find({
         _id: {
-          $in: Groups.findOne({ discussions: discussionId }).members,
+          $in: Groups.findOne(
+            { discussions: { $elemMatch: { discussionId } } },
+          ).members,
         },
       }).fetch(),
   };

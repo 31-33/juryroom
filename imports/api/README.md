@@ -10,6 +10,7 @@ Represents a collection (i.e. group) of users. A group may participate in multip
 {
     _id: String,
     members: [String],
+    scenarioSetId: String,
     discussions: [String],
     createdAt: Date,
 }
@@ -17,9 +18,11 @@ Represents a collection (i.e. group) of users. A group may participate in multip
 
 `_id`: *The unique indentifier for the group within this collection.*
 
-`members`: *Array of user_id's, each corresponding to an entry in the Users collection.*
+`members`: *Array of user id's, each corresponding to an entry in the Users collection.*
 
-`discussions`: *Array of discussion_ids, each corresponding to an entry in the Discussions collection.*
+`scenarioSetId`: *The set of scenarios that this group is to discuss.*
+
+`discussions`: *Array of objects, each representing a discussion carried out by this group. Each entry in this array stores the `scenarioId` and the `discussionId` for the discussion.*
 
 `createdAt`: *ISODate object, representing the UTC time this group was created at.*
 
@@ -71,6 +74,7 @@ Represents a discussion thread. A discussion is a conversation between a group o
 ```
 {
     _id: String,
+    scenarioId: String,
     createdAt: Date,
     groupId: String,
     activeReplies: [
@@ -109,10 +113,13 @@ Represents a discussion thread. A discussion is a conversation between a group o
     ],
     votes: [String],
     activeVote: String?,
+    status: String,
 }
 ```
 
 `_id`: *The unique identifier for this discussion.*
+
+`scenarioId`: *Identifier for the scenario for this discussion.*
 
 `createdAt`: *ISODate object representing the UTC time at which this discussion thread was created.*
 
@@ -132,13 +139,77 @@ Represents a discussion thread. A discussion is a conversation between a group o
 
 `activeVote`: *The currently active vote for this discussion. Undefined if/when no active vote is taking place.*
 
+`status`: *String representing the state the discussion is currently in. Possible values are `active` when discussion is in progress, `voting` when a vote is in progress (this should restrict other actions), and `finished` when the discussion is completed.*
+
+---
+## Topic
+Represents a broad category for discussion scenarios (i.e., politics, sport, religion, etc)
+
+```
+{
+    _id: String,
+    title: String,
+}
+```
+
+`_id`: *The unique identifier for this topic.*
+
+`title`: *The name of this topic.*
+
 ---
 ## Scenario
 Represents a scenario, or a starting point for a discussion. 
 
 ```
-    TODO: implement Scenario collection
+{
+    _id: String,
+    topicId: String,
+    title: String,
+    description: String,
+    createdAt: Date,
+    status: String,
+}
 ```
+
+`_id`: *The unique identifier for this scenario.*
+
+`topicId`: *The id for the topic that this scenario falls under.*
+
+`title`: *The title for this scenario.*
+
+`description`: *A slightly more detailed description of this scenario.*
+
+`createdAt`: *ISODate object representing the date/time this scenario was submitted at.*
+
+`status`: *The status of this scenario. Expected values are `active` or `pending`.*
+
+---
+## SecenarioSet
+Represents a (potentially ordered) sequence of scenarios. A group participates in a **single** `ScenarioSet`, which is a fixed set of scenarios. A scenario may belong to multiple ScenarioSets.
+
+```
+{
+    _id: String,
+    title: String,
+    description: String,
+    scenarios: [String],
+    ordered: Boolean,
+    createdAt: Date,
+    status: String,
+}
+```
+
+`_id`: *The unique identifier for this set of scenarios. This is the field that is supplied when a new group is created.*
+
+`title`: *The title for this set of scenarios.*
+
+`description`: *A brief description of this scenario-set.*
+
+`scenarios`: *The collection of scenarios that are part of this set. This is stored as an array of scenario ids.*
+
+`ordered`: *Boolean field representing whether or not this scenario set is ordered. If true, groups will proceed through the scenarios in the order of appearance in the `scenarios` field. If false, scenarios will be randomly selected from the remaining list until all have been completed.
+
+`status`: *The status of this scenario-set. Expected values are `active`, `pending`, and `archived`.*
 
 ---
 ## Comments

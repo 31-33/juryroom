@@ -59,6 +59,8 @@ export default withTracker(({ group }) => {
 
   return {
     participants: Meteor.users.find({ _id: { $in: group.members } }).fetch(),
-    discussions: Discussions.find({ _id: { $in: group.discussions } }).fetch(),
+    discussions: Discussions.find(
+      { _id: { $in: group.discussions.map(discussion => discussion.discussionId) } },
+    ).fetch(),
   };
 })(GroupSummary);
