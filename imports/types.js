@@ -3,7 +3,10 @@ import PropTypes from 'prop-types';
 const GroupPropType = PropTypes.shape({
   _id: PropTypes.string.isRequired,
   members: PropTypes.arrayOf(PropTypes.string).isRequired,
-  discussions: PropTypes.arrayOf(PropTypes.string).isRequired,
+  discussions: PropTypes.arrayOf(PropTypes.shape({
+    discussionId: PropTypes.string.isRequired,
+    scenarioId: PropTypes.string.isRequired,
+  })).isRequired,
 });
 
 const CommentPropType = PropTypes.shape({
@@ -37,6 +40,26 @@ const VotePropType = PropTypes.shape({
   })).isRequired,
 });
 
+const ScenarioPropType = PropTypes.shape({
+  _id: PropTypes.string.isRequired,
+  topicId: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  createdAt: PropTypes.objectOf(Date).isRequired,
+  status: PropTypes.string.isRequired,
+});
+
+const ScenarioSetPropType = PropTypes.shape({
+  _id: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  scenarios: PropTypes.arrayOf(PropTypes.string).isRequired,
+  ordered: PropTypes.bool.isRequired,
+  createdAt: PropTypes.objectOf(PropTypes.bool).isRequired,
+  status: PropTypes.string.isRequired,
+});
+
 export {
-  CommentPropType, DiscussionPropType, UserPropType, GroupPropType, VotePropType,
+  CommentPropType, DiscussionPropType,
+  UserPropType, GroupPropType, VotePropType,
+  ScenarioPropType, ScenarioSetPropType,
 };

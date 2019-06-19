@@ -2,11 +2,11 @@ import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 
-const ScenariosSets = new Mongo.Collection('scenarioSets');
-export default ScenariosSets;
+const ScenarioSets = new Mongo.Collection('scenarioSets');
+export default ScenarioSets;
 
 if (Meteor.isServer) {
-  Meteor.publish('scenarioSets', () => ScenariosSets.find(
+  Meteor.publish('scenarioSets', () => ScenarioSets.find(
     {},
     {
       fields: {
@@ -14,6 +14,8 @@ if (Meteor.isServer) {
         description: 1,
         scenarios: 1,
         ordered: 1,
+        createdAt: 1,
+        status: 1,
       },
     },
   ));
@@ -26,11 +28,12 @@ Meteor.methods({
     check(scenarios, Array);
     check(ordered, Boolean);
 
-    return ScenariosSets.insert({
+    return ScenarioSets.insert({
       title,
       description,
       scenarios,
       ordered,
+      createdAt: new Date(),
       status: 'active',
     });
   },

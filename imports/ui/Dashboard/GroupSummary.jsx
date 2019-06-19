@@ -1,38 +1,55 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Segment, List, Container } from 'semantic-ui-react';
+import {
+  Segment, List, Container, Header,
+} from 'semantic-ui-react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
-import Discussions from '/imports/api/Discussions';
+import ScenarioSets from '/imports/api/ScenarioSets';
 import DiscussionSummary from './DiscussionSummary';
-import { GroupPropType, DiscussionPropType, UserPropType } from '/imports/types';
+import { GroupPropType, ScenarioSetPropType, UserPropType } from '/imports/types';
 
 class GroupSummary extends Component {
+  static defaultProps = {
+    scenarioSet: false,
+  }
+
   static propTypes = {
     group: GroupPropType.isRequired,
-    discussions: PropTypes.arrayOf(DiscussionPropType).isRequired,
+    scenarioSet: PropTypes.oneOfType([ScenarioSetPropType, PropTypes.bool]),
     participants: PropTypes.arrayOf(UserPropType).isRequired,
   }
 
   render() {
-    const { group, discussions, participants } = this.props;
+    const { group, scenarioSet, participants } = this.props;
     return (
       <List.Item>
         <List.Content>
           <Segment.Group horizontal>
             <Container fluid>
-              <List selection divided>
-                <List.Header>Discussions</List.Header>
-                {
-                  discussions.map(discussion => (
-                    <DiscussionSummary
-                      key={discussion._id}
-                      discussion={discussion}
-                    />
-                  ))
-                }
-              </List>
+              <Segment attached="top">
+                {scenarioSet && (
+                  <Header
+                    content={scenarioSet.title}
+                    subheader={scenarioSet.description}
+                  />
+                )}
+              </Segment>
+              <Segment attached="bottom">
+                <List selection divided animated>
+                  <List.Header>Discussions</List.Header>
+                  {
+                    group.discussions.map(discussion => (
+                      <DiscussionSummary
+                        key={discussion.discussionId}
+                        discussionId={discussion.discussionId}
+                        scenarioId={discussion.scenarioId}
+                      />
+                    ))
+                  }
+                </List>
+              </Segment>
             </Container>
             <Segment compact>
               <List selection>
@@ -54,13 +71,11 @@ class GroupSummary extends Component {
   }
 }
 export default withTracker(({ group }) => {
-  Meteor.subscribe('discussions');
+  Meteor.subscribe('scenarioSets');
   Meteor.subscribe('users');
 
   return {
     participants: Meteor.users.find({ _id: { $in: group.members } }).fetch(),
-    discussions: Discussions.find(
-      { _id: { $in: group.discussions.map(discussion => discussion.discussionId) } },
-    ).fetch(),
+    scenarioSet: ScenarioSets.findOne({ _id: group.scenarioSetId }),
   };
 })(GroupSummary);
