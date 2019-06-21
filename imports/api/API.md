@@ -107,6 +107,38 @@ Creates a new set of scenarios, with the supplied `title`, `description`, and se
 Sets the users avatar to the supplied `avatar` value (may be a url or a base64-encoded image).
 
 ---
+```javascript
+'roles.setAdmin'(userIds: String | Array<String>)
+```
+Adds the `admin` role to each of the supplied users.
+
+Throws an error if the current user does not have the admin role.
+
+---
+```javascript
+'roles.setPermission_createScenario'(userIds: String | Array<String>, set: Boolean)
+```
+Used to add or remove the `'create-scenario'` role from the specified user(s). This role allows users to create new scenarios.
+
+Throws an error if the current user does not have the admin role.
+
+---
+```javascript
+'roles.setPermission_createScenarioSet'(userIds: String | Array<String>, set: Boolean)
+```
+Used to add or remove the `'create-scenario-set'` role from the specified user(s). This role allows users to create new sets of scenarios.
+
+Throws an error if the current user does not have the admin role.
+
+---
+```javascript
+'roles.setPermission_createGroup'(userIds: String | Array<String>, set: Boolean)
+```
+Used to add or remove the `'create-group' role from the specified user(s). This role allows users to start new 'games', by creating groups of users with an associated scenario set for discussion.
+
+Throws an error if the current user does not have the admin role.
+
+---
 ## Publications and Subscriptions
 ---
 ```javascript
