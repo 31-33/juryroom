@@ -8,6 +8,7 @@ import { Router, Route, Switch } from 'react-router';
 import history from 'history';
 
 import '/imports/startup/accounts-config';
+import '/imports/api/Roles';
 import AccountsUIWrapper from '/imports/ui/AccountsUIWrapper';
 import DiscussionThread from '/imports/ui/Discussion/DiscussionThread';
 import GroupPage from '/imports/ui/Group/GroupPage';

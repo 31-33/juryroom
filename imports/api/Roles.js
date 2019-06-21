@@ -10,7 +10,7 @@ Meteor.methods({
   'roles.setAdmin'(userIds) {
     check(userIds, Match.OneOf(String, Array));
 
-    if (!this.userId || !Roles.userISInRole(this.userId, 'admin')) {
+    if (!this.userId || !Roles.userIsInRole(this.userId, 'admin')) {
       throw new Meteor.Error('not-authorized');
     }
 

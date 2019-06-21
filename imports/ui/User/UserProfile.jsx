@@ -7,6 +7,7 @@ import {
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { UserPropType } from '/imports/types';
+import ModifyUserPermissions from './ModifyUserPermissions';
 
 class UserProfile extends Component {
   static defaultProps = {
@@ -52,6 +53,7 @@ class UserProfile extends Component {
             </Item.Content>
           </Item>
         </Item.Group>
+        <ModifyUserPermissions user={user} />
       </Segment>
     );
   }

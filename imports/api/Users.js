@@ -9,6 +9,7 @@ if (Meteor.isServer) {
       fields: {
         username: 1,
         avatar: 1,
+        roles: 1,
       },
     },
   ));
