@@ -1,0 +1,151 @@
+# Meteor API
+## Meteor Methods
+```javascript
+'comments.insert'(discussionId: String, parentId: String, text: String)
+```
+Creates a new entry in the `comments` collection, under the specified discussion with the supplied text. `parentId` should be `''` if the comment is at the root level, otherwise it should be the `commentId` of a comment within the same discussion, which this comment is a reply to.
+
+An error will be thrown if the user is not a member of the supplied discussion, or if the comment text exceeds the maximum length (280 char).
+
+---
+```javascript
+'comments.collapse'(discussionId: String, commentId: String, collapse: Boolean)
+```
+Used to collapse and uncollapse (i.e. hide content and replies) the specified comment.
+
+Throws an error if the user is not a member of the specified discussion.
+
+---
+```javascript
+'groups.create'(members: Array<String>, scenarioSetId: String)
+```
+Creates a new group, with the supplied `members` array of userId's as members of the group. The supplied `scenarioSetId` specifies the collection of discussions that this group shall discuss.
+
+// TODO: throw error if user calling this method does not have required permissions (i.e. only admins can create groups), or remove entirely in favour of an automated matchmaking system.
+
+---
+```javascript
+'discussions.star_comment'(discussionId: String, commentId: String)
+```
+Marks the specified comment as starred within the current discussion. As each user may only have one comment per discussion starred at a time, any previously starred comments will be unstarred.
+
+An error will be thrown if the user is not a member of the specified discussion.
+
+---
+```javascript
+'discussions.remove_star'(discussionId: String)
+```
+Removes the user's star from the specified discussion, if one exists.
+
+Throws an error if the user is not a member of the specified discussion.
+
+---
+```javascript
+'discussions.reply'(discussionId: String, parentId: String)
+```
+Marks the current user as replying to the specified comment (`parentId`) within the specified discussion. This information is used to display which users are actively replying to other comments, as well as rendering the comment-posting form on the users client.
+
+As the user may only be replying to one comment at a time, this method will overwrite any previous calls.
+
+Throws an error if the user is not a member of the specified discussion.
+
+---
+```javascript
+'discussions.closeReply'(discussionId: String)
+```
+Signifies that the user is no longer replying to any comment within the specified discussion.
+
+Throws an error if the user is not a member of the specified discussion.
+
+---
+```javascript
+'discussions.callVote'(discussionId: String, commentId: String)
+```
+Used to start a vote on the specified comment within the specified discussion.
+
+Throws an error if:
+  - The user is not a member of the specified discussion
+  - The user does not have the comment starred
+  - The comment has already been voted upon
+  - The discussion is not in the active state (i.e., a vote is already in progress, or the discussion has finished)
+
+---
+```javascript
+'votes.vote'(voteId: String, userVote: Boolean)
+```
+Marks the user's vote (either `true` to agree, or `false` to disagree) for the specified vote.
+
+Each time this method is called, it checks whether the other members of the group have casted their vote. Upon the last member casting their vote, the vote will be closed. If the vote was successful (all members agree), then the discussion will be marked as finished, and the next discussion created.
+
+Throws an error if:
+  - The specified `voteId` does not exist
+  - The user has already voted on this vote
+  - The vote is not the active vote for this discussion
+  - The user is not a member of the group participating in this discussion
+
+---
+```javascript
+'scenarios.create'(topicId: String, title: String, description: String)
+```
+Creates a new scenario under the specified topic, with the supplied `title` and `description`.
+
+// TODO: check that the user has permission to create scenarios. If open to the public, we should set status to `'pending'`, and require admin/moderator approval.
+
+---
+```javascript
+'scenarioSets.create'(title: String, description: String, scenarios: Array<String>, ordered: Boolean)
+```
+Creates a new set of scenarios, with the supplied `title`, `description`, and set of scenario ids supplied in the `scenarios` array. The contents of this array should be valid scenario id's, that are in the active state.
+
+// TODO: check that the user has permission to create scenarioSets. If open to the public, we should set status to `'pending'`, and require admin/moderator approval.
+
+---
+```javascript
+'users.updateProfile'(avatar: String)
+```
+// TODO: update this method to store user demographic information
+Sets the users avatar to the supplied `avatar` value (may be a url or a base64-encoded image).
+
+---
+## Publications and Subscriptions
+---
+```javascript
+Meteor.subscribe('comments', discussionId);
+```
+Subscribes to all comments within the specified discussion.
+
+---
+```javascript
+Meteor.subscribe('groups');
+```
+
+---
+```javascript
+Meteor.subscribe('discussions');
+```
+
+---
+```javascript
+Meteor.subscribe('scenarios');
+```
+
+---
+```javascript
+Meteor.subscribe('scenarioSets');
+```
+
+---
+```javascript
+Meteor.subscribe('topics');
+```
+
+---
+```javascript
+Meteor.subscribe('users');
+```
+
+---
+```javascript
+Meteor.subscribe('votes', discussionId);
+```
+Subscribes to all votes associated with the specified discussion.

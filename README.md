@@ -5,6 +5,10 @@
 
     See [/imports/api/README.md](/imports/api/README.md)
 
+- Meteor Methods API & Publications/Subscriptions
+
+    See [/imports/api/API.md](/imports/api/API.md)
+
 ## Setup
  - ***Environment Variables***
 

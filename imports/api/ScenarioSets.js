@@ -28,6 +28,9 @@ Meteor.methods({
     check(scenarios, Array);
     check(ordered, Boolean);
 
+    // TODO: check the user has permission to create scenarioSets
+    // TODO: ensure that all scenarios in the supplied array exist, and are in the active state.
+
     return ScenarioSets.insert({
       title,
       description,
