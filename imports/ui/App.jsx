@@ -15,7 +15,9 @@ import GroupPage from '/imports/ui/Group/GroupPage';
 import UserProfile from '/imports/ui/User/UserProfile';
 import EditProfile from '/imports/ui/User/EditProfile';
 import Dashboard from '/imports/ui/Dashboard/Dashboard';
-
+import BrowseScenarios from '/imports/ui/Scenario/BrowseScenarios';
+import CreateScenario from '/imports/ui/Scenario/CreateScenario';
+import ScenarioView from '/imports/ui/Scenario/ScenarioView';
 
 class App extends Component {
   contextRef = createRef();
@@ -52,6 +54,9 @@ class App extends Component {
               <Route exact path="/discussion/:discussionId" component={DiscussionThread} />
               <Route exact path="/user/:userId" component={UserProfile} />
               <Route exact path="/user/:userId/edit" component={EditProfile} />
+              <Route exact path="/scenarios" component={BrowseScenarios} />
+              <Route exact path="/scenarios/create" component={CreateScenario} />
+              <Route exact path="/scenarios/:scenarioId" component={ScenarioView} />
               <Route exact path="/" component={Dashboard} />
             </Switch>
           </Container>

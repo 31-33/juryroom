@@ -40,6 +40,11 @@ const VotePropType = PropTypes.shape({
   })).isRequired,
 });
 
+const TopicPropType = PropTypes.shape({
+  _id: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+});
+
 const ScenarioPropType = PropTypes.shape({
   _id: PropTypes.string.isRequired,
   topicId: PropTypes.string.isRequired,
@@ -61,5 +66,5 @@ const ScenarioSetPropType = PropTypes.shape({
 export {
   CommentPropType, DiscussionPropType,
   UserPropType, GroupPropType, VotePropType,
-  ScenarioPropType, ScenarioSetPropType,
+  TopicPropType, ScenarioPropType, ScenarioSetPropType,
 };
