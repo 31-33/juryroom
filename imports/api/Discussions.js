@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import { Roles } from 'meteor/alanning:roles';
 import _ from 'lodash';
 import ScenarioSets from '/imports/api/ScenarioSets';
 import Groups from '/imports/api/Groups';
@@ -86,7 +87,9 @@ Meteor.methods({
     check(members, Array);
     check(scenarioSetId, String);
 
-    // TODO: verify calling user is has permission to create new groups
+    if (!Roles.userIsInRole(this.userId, ['admin', 'create-group'])) {
+      throw new Meteor.Error('not-authorized');
+    }
 
     const groupId = Groups.insert({
       members,

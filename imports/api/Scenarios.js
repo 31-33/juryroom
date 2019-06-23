@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import { Roles } from 'meteor/alanning:roles';
 
 const Scenarios = new Mongo.Collection('scenarios');
 export default Scenarios;
@@ -26,8 +27,10 @@ Meteor.methods({
     check(title, String);
     check(description, String);
 
-    // TODO: ensure this method is only called by users with permission to create scenarios
-    // TODO: if open to public, set status to 'pending' and have moderators approve new scenarios
+    if (!Roles.userIsInRole(this.userId, ['admin', 'create-scenario'])) {
+      throw new Error('not-authorized');
+    }
+
     return Scenarios.insert({
       topicId,
       title,

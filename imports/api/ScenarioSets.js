@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import { Roles } from 'meteor/alanning:roles';
 
 const ScenarioSets = new Mongo.Collection('scenarioSets');
 export default ScenarioSets;
@@ -28,8 +29,9 @@ Meteor.methods({
     check(scenarios, Array);
     check(ordered, Boolean);
 
-    // TODO: check the user has permission to create scenarioSets
-    // TODO: ensure that all scenarios in the supplied array exist, and are in the active state.
+    if (!Roles.userIsInRole(this.userId, ['admin', 'create-scenario-set'])) {
+      throw new Meteor.Error('not-authorized');
+    }
 
     return ScenarioSets.insert({
       title,

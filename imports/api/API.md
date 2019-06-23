@@ -21,7 +21,7 @@ Throws an error if the user is not a member of the specified discussion.
 ```
 Creates a new group, with the supplied `members` array of userId's as members of the group. The supplied `scenarioSetId` specifies the collection of discussions that this group shall discuss.
 
-// TODO: throw error if user calling this method does not have required permissions (i.e. only admins can create groups), or remove entirely in favour of an automated matchmaking system.
+Throws error if user calling this method does not have required permissions (i.e. `admin` or `create-group` role)
 
 ---
 ```javascript
@@ -89,7 +89,7 @@ Throws an error if:
 ```
 Creates a new scenario under the specified topic, with the supplied `title` and `description`.
 
-// TODO: check that the user has permission to create scenarios. If open to the public, we should set status to `'pending'`, and require admin/moderator approval.
+Throws an error if the user does not have the required permissions (`admin` or `create-scenario` role).
 
 ---
 ```javascript
@@ -97,7 +97,7 @@ Creates a new scenario under the specified topic, with the supplied `title` and 
 ```
 Creates a new set of scenarios, with the supplied `title`, `description`, and set of scenario ids supplied in the `scenarios` array. The contents of this array should be valid scenario id's, that are in the active state.
 
-// TODO: check that the user has permission to create scenarioSets. If open to the public, we should set status to `'pending'`, and require admin/moderator approval.
+Throws an error if the user does not have the required permissions (`admin` or `create-scenario-set` role).
 
 ---
 ```javascript
