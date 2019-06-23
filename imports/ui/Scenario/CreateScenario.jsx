@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import {
-  Container, Header, Segment, Form, Message,
+  Container, Header, Segment, Form,
 } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import { TopicPropType } from '/imports/types';
@@ -15,6 +15,9 @@ class CreateScenario extends Component {
 
   static propTypes = {
     topics: PropTypes.oneOfType([PropTypes.arrayOf(TopicPropType), PropTypes.bool]),
+    history: PropTypes.shape({
+      push: PropTypes.func.isRequired,
+    }).isRequired,
   }
 
   constructor(props) {
@@ -22,7 +25,7 @@ class CreateScenario extends Component {
     this.state = {
       title: '',
       description: '',
-      topicId: '',
+      selectedTopic: '',
     };
   }
 
