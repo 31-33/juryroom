@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
+import { Roles } from 'meteor/alanning:roles';
 import { withTracker } from 'meteor/react-meteor-data';
 import ScenarioSets from '/imports/api/ScenarioSets';
 import PropTypes from 'prop-types';
 import { ScenarioSetPropType } from '/imports/types';
 import {
-  Container, Header, Segment, List,
+  Container, Header, Segment, List, Button,
 } from 'semantic-ui-react';
 
 export function renderScenarioSetSummary(set) {
@@ -28,10 +29,11 @@ class BrowseScenarioSets extends Component {
 
   static propTypes = {
     scenarioSets: PropTypes.oneOfType([PropTypes.arrayOf(ScenarioSetPropType), PropTypes.bool]),
+    canCreateNew: PropTypes.bool.isRequired,
   }
 
   render() {
-    const { scenarioSets } = this.props;
+    const { scenarioSets, canCreateNew } = this.props;
 
     return (
       <Container>
@@ -39,8 +41,14 @@ class BrowseScenarioSets extends Component {
           as={Segment}
           size="huge"
           attached="top"
-          content="Browse Scenario Sets"
-        />
+        >
+          Browse Scenario Sets
+          {canCreateNew && (
+            <Container>
+              <Button content="Create New" as={Link} to="/sets/create" color="green" />
+            </Container>
+          )}
+        </Header>
         <List
           as={Segment}
           attached="bottom"
@@ -59,5 +67,6 @@ export default withTracker(() => {
 
   return {
     scenarioSets: ScenarioSets.find({ status: 'active' }).fetch(),
+    canCreateNew: Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario-set']),
   };
 })(BrowseScenarioSets);
