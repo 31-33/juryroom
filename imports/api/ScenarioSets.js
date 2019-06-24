@@ -17,6 +17,7 @@ if (Meteor.isServer) {
         ordered: 1,
         createdAt: 1,
         status: 1,
+        submittedBy: 1,
       },
     },
   ));
@@ -40,6 +41,7 @@ Meteor.methods({
       ordered,
       createdAt: new Date(),
       status: 'active',
+      submittedBy: this.userId,
     });
   },
 });

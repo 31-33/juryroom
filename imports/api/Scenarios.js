@@ -16,6 +16,7 @@ if (Meteor.isServer) {
         description: 1,
         createdAt: 1,
         status: 1,
+        submittedBy: 1,
       },
     },
   ));
@@ -37,6 +38,7 @@ Meteor.methods({
       description,
       createdAt: new Date(),
       status: 'active',
+      submittedBy: this.userId,
     });
   },
 

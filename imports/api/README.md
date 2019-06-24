@@ -13,6 +13,7 @@ Represents a collection (i.e. group) of users. A group may participate in multip
     scenarioSetId: String,
     discussions: [String],
     createdAt: Date,
+    createdBy: [String],
 }
 ```
 
@@ -25,6 +26,8 @@ Represents a collection (i.e. group) of users. A group may participate in multip
 `discussions`: *Array of objects, each representing a discussion carried out by this group. Each entry in this array stores the `scenarioId` and the `discussionId` for the discussion.*
 
 `createdAt`: *ISODate object, representing the UTC time this group was created at.*
+
+`createdBy`: *The userId of the user who created this group.*
 
 ---
 ## User
@@ -168,6 +171,7 @@ Represents a scenario, or a starting point for a discussion.
     description: String,
     createdAt: Date,
     status: String,
+    submittedBy: String,
 }
 ```
 
@@ -183,6 +187,8 @@ Represents a scenario, or a starting point for a discussion.
 
 `status`: *The status of this scenario. Expected values are `active` or `pending`.*
 
+`submittedBy`: *The userId of the user who submitted this scenario.*
+
 ---
 ## SecenarioSet
 Represents a (potentially ordered) sequence of scenarios. A group participates in a **single** `ScenarioSet`, which is a fixed set of scenarios. A scenario may belong to multiple ScenarioSets.
@@ -196,6 +202,7 @@ Represents a (potentially ordered) sequence of scenarios. A group participates i
     ordered: Boolean,
     createdAt: Date,
     status: String,
+    submittedBy: String,
 }
 ```
 
@@ -210,6 +217,8 @@ Represents a (potentially ordered) sequence of scenarios. A group participates i
 `ordered`: *Boolean field representing whether or not this scenario set is ordered. If true, groups will proceed through the scenarios in the order of appearance in the `scenarios` field. If false, scenarios will be randomly selected from the remaining list until all have been completed.
 
 `status`: *The status of this scenario-set. Expected values are `active`, `pending`, and `archived`.*
+
+`submittedBy`: *The userId of the user who submitted this ScenarioSet*
 
 ---
 ## Comments

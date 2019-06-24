@@ -12,7 +12,7 @@ if (Meteor.isServer) {
         members: 1,
         scenarioSetId: 1,
         discussions: 1,
-        calledAt: 1,
+        createdAt: 1,
         // TODO: add fields to track scoring
       },
     },

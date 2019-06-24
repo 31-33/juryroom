@@ -95,7 +95,8 @@ Meteor.methods({
       members,
       scenarioSetId,
       discussions: [],
-      calledAt: new Date(),
+      createdAt: new Date(),
+      createdBy: this.userId,
     });
 
     if (Meteor.isServer) {
