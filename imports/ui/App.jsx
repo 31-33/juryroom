@@ -18,6 +18,9 @@ import Dashboard from '/imports/ui/Dashboard/Dashboard';
 import BrowseScenarios from '/imports/ui/Scenario/BrowseScenarios';
 import CreateScenario from '/imports/ui/Scenario/CreateScenario';
 import ScenarioView from '/imports/ui/Scenario/ScenarioView';
+import BrowseScenarioSets from '/imports/ui/ScenarioSet/BrowseScenarioSets';
+import CreateScenarioSet from '/imports/ui/ScenarioSet/CreateScenarioSet';
+import ScenarioSetView from '/imports/ui/ScenarioSet/ScenarioSetView';
 
 class App extends Component {
   contextRef = createRef();
@@ -57,6 +60,9 @@ class App extends Component {
               <Route exact path="/scenarios" component={BrowseScenarios} />
               <Route exact path="/scenarios/create" component={CreateScenario} />
               <Route exact path="/scenarios/:scenarioId" component={ScenarioView} />
+              <Route exact path="/sets" component={BrowseScenarioSets} />
+              <Route exact path="/sets/create" component={CreateScenarioSet} />
+              <Route exact path="/sets/:scenarioSetId" component={ScenarioSetView} />
               <Route exact path="/" component={Dashboard} />
             </Switch>
           </Container>
