@@ -102,6 +102,8 @@ Meteor.methods({
     if (Meteor.isServer) {
       startNext(groupId);
     }
+
+    return groupId;
   },
   'discussions.star_comment'(discussionId, commentId) {
     check(discussionId, String);

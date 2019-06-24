@@ -11,7 +11,8 @@ import '/imports/startup/accounts-config';
 import '/imports/api/Roles';
 import AccountsUIWrapper from '/imports/ui/AccountsUIWrapper';
 import DiscussionThread from '/imports/ui/Discussion/DiscussionThread';
-import GroupPage from '/imports/ui/Group/GroupPage';
+import GroupView from '/imports/ui/Group/GroupView';
+import CreateGroup from '/imports/ui/Group/CreateGroup';
 import UserProfile from '/imports/ui/User/UserProfile';
 import EditProfile from '/imports/ui/User/EditProfile';
 import Dashboard from '/imports/ui/Dashboard/Dashboard';
@@ -53,7 +54,6 @@ class App extends Component {
           </Sticky>
           <Container>
             <Switch>
-              <Route exact path="/group/:groupId" component={GroupPage} />
               <Route exact path="/discussion/:discussionId" component={DiscussionThread} />
               <Route exact path="/user/:userId" component={UserProfile} />
               <Route exact path="/user/:userId/edit" component={EditProfile} />
@@ -63,6 +63,8 @@ class App extends Component {
               <Route exact path="/sets" component={BrowseScenarioSets} />
               <Route exact path="/sets/create" component={CreateScenarioSet} />
               <Route exact path="/sets/:scenarioSetId" component={ScenarioSetView} />
+              <Route exact path="/groups/create" component={CreateGroup} />
+              <Route exact path="/groups/:groupId" component={GroupView} />
               <Route exact path="/" component={Dashboard} />
             </Switch>
           </Container>
