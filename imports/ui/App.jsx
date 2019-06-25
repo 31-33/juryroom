@@ -2,7 +2,7 @@ import React, { Component, createRef } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Link } from 'react-router-dom';
 import {
-  Container, Icon, Menu, Sticky,
+  Container, Icon, Menu, Sticky, Dropdown,
 } from 'semantic-ui-react';
 import { Router, Route, Switch } from 'react-router';
 import history from 'history';
@@ -39,16 +39,24 @@ class App extends Component {
                   <Icon size="big" name="balance scale" />
                   JuryRoom
                 </Menu.Item>
-                {
-                  Meteor.userId() && (
-                    <Menu.Item as={Link} to={`/user/${Meteor.userId()}`}>
-                      Profile
-                    </Menu.Item>
-                  )
-                }
-                <Menu.Item as="a" position="right">
-                  <AccountsUIWrapper />
-                </Menu.Item>
+                <Dropdown item text="Browse">
+                  <Dropdown.Menu>
+                    <Dropdown.Item content="Scenarios" as={Link} to="/scenarios" />
+                    <Dropdown.Item content="Sets" as={Link} to="/sets" />
+                  </Dropdown.Menu>
+                </Dropdown>
+                <Menu inverted floated="right">
+                  {
+                    Meteor.userId() && (
+                      <Menu.Item as={Link} to={`/user/${Meteor.userId()}`}>
+                        Profile
+                      </Menu.Item>
+                    )
+                  }
+                  <Menu.Item as="a">
+                    <AccountsUIWrapper />
+                  </Menu.Item>
+                </Menu>
               </Container>
             </Menu>
           </Sticky>
