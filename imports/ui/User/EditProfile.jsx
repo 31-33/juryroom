@@ -4,13 +4,13 @@ import { Meteor } from 'meteor/meteor';
 import {
   Segment, Header, Form,
 } from 'semantic-ui-react';
-import { Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import DayPickerInput from 'react-day-picker/DayPickerInput';
 import 'react-day-picker/lib/style.css';
 import ReactAvatarEditor from 'react-avatar-editor';
 import { UserPropType } from '/imports/types';
+import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
 
 class EditProfile extends Component {
   static defaultProps = {
@@ -65,7 +65,12 @@ class EditProfile extends Component {
     const { image, scale } = this.state;
     const { user, userId } = this.props;
     const { username } = user || {};
-    return userId === Meteor.userId() ? (
+
+    if (userId !== Meteor.userId()) {
+      return <NotAuthorizedPage />;
+    }
+
+    return (
       <Segment>
         <Header attached="top">
           {username || ''}
@@ -107,7 +112,7 @@ class EditProfile extends Component {
           </Form>
         </Segment>
       </Segment>
-    ) : <Redirect to={`/user/${userId}`} />;
+    );
   }
 }
 

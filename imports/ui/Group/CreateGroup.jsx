@@ -7,6 +7,8 @@ import ScenarioSets from '/imports/api/ScenarioSets';
 import {
   Container, Segment, Header, Form,
 } from 'semantic-ui-react';
+import { Roles } from 'meteor/alanning:roles';
+import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
 
 class CreateGroup extends Component {
   static propTypes = {
@@ -28,6 +30,11 @@ class CreateGroup extends Component {
   render() {
     const { scenarioSets, users, history } = this.props;
     const { members, selectedSet } = this.state;
+
+    if (!Meteor.user() === null && !Roles.userIsInRole(Meteor.userId(), ['admin', 'create-group'])) {
+      return <NotAuthorizedPage />;
+    }
+
     return (
       <Container>
         <Header

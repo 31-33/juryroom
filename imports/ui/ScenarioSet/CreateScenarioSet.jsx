@@ -8,6 +8,8 @@ import {
 } from 'semantic-ui-react';
 import Scenarios from '/imports/api/Scenarios';
 import Topics from '/imports/api/Topics';
+import { Roles } from 'meteor/alanning:roles';
+import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
 
 class CreateScenarioSet extends Component {
   static defaultProps = {
@@ -37,6 +39,10 @@ class CreateScenarioSet extends Component {
     const {
       title, description, selectedScenarios, ordered,
     } = this.state;
+
+    if (Meteor.user() === null && !Roles.userIsInRole(Meteor.user(), ['admin', 'create-scenario-set'])) {
+      return <NotAuthorizedPage />;
+    }
 
     return (
       <Container>
