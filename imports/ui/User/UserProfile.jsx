@@ -8,6 +8,8 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { UserPropType } from '/imports/types';
 import ModifyUserPermissions from './ModifyUserPermissions';
+import LoadingPage from '/imports/ui/Error/LoadingPage';
+import NotFoundPage from '/imports/ui/Error/NotFoundPage';
 
 class UserProfile extends Component {
   static defaultProps = {
@@ -19,14 +21,20 @@ class UserProfile extends Component {
     location: PropTypes.shape({
       pathname: PropTypes.string.isRequired,
     }).isRequired,
+    loaded: PropTypes.bool.isRequired,
   }
 
   render() {
-    const { user, location } = this.props;
-    if (!user) {
-      // TODO: user not found
-      return '';
+    const { user, location, loaded } = this.props;
+
+    if (!loaded) {
+      return <LoadingPage />;
     }
+
+    if (!user) {
+      return <NotFoundPage />;
+    }
+
     const { _id, username, avatar } = user;
     return (
       <Segment>
@@ -60,9 +68,10 @@ class UserProfile extends Component {
 }
 
 export default withTracker(({ match }) => {
-  Meteor.subscribe('users');
+  const usersSub = Meteor.subscribe('users');
 
   return {
+    loaded: usersSub.ready(),
     user: Meteor.users.findOne({ _id: match.params.userId }),
   };
 })(UserProfile);

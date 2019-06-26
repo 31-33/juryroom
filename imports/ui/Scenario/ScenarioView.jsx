@@ -5,8 +5,10 @@ import PropTypes from 'prop-types';
 import Scenarios from '/imports/api/Scenarios';
 import { ScenarioPropType } from '/imports/types';
 import {
-  Segment, Dimmer, Loader, Header,
+  Segment, Header,
 } from 'semantic-ui-react';
+import LoadingPage from '/imports/ui/Error/LoadingPage';
+import NotFoundPage from '/imports/ui/Error/NotFoundPage';
 
 class ScenarioView extends Component {
   static defaultProps = {
@@ -15,33 +17,37 @@ class ScenarioView extends Component {
 
   static propTypes = {
     scenario: PropTypes.oneOfType([ScenarioPropType, PropTypes.bool]),
+    loaded: PropTypes.bool.isRequired,
   }
 
   render() {
-    const { scenario } = this.props;
-    return scenario
-      ? (
-        <Segment>
-          <Header
-            content={scenario.title}
-            subheader={scenario.description}
-          />
-        </Segment>
-      ) : (
-        <Segment>
-          <Dimmer active page inverted>
-            <Loader size="large">Loading</Loader>
-          </Dimmer>
-        </Segment>
-      );
+    const { scenario, loaded } = this.props;
+
+    if (!loaded) {
+      return <LoadingPage />;
+    }
+
+    if (!scenario) {
+      return <NotFoundPage />;
+    }
+
+    return (
+      <Segment>
+        <Header
+          content={scenario.title}
+          subheader={scenario.description}
+        />
+      </Segment>
+    );
   }
 }
 
 export default withTracker(({ match }) => {
   const { scenarioId } = match.params;
-  Meteor.subscribe('scenarios');
+  const scenariosSub = Meteor.subscribe('scenarios');
 
   return {
+    loaded: scenariosSub.ready(),
     scenario: Scenarios.findOne({ _id: scenarioId }),
   };
 })(ScenarioView);

@@ -15,6 +15,8 @@ import StarredCommentView from './StarredCommentView';
 import {
   CommentPropType, DiscussionPropType, UserPropType, ScenarioPropType,
 } from '/imports/types';
+import NotFoundPage from '/imports/ui/Error/NotFoundPage';
+import LoadingPage from '/imports/ui/Error/LoadingPage';
 
 class DiscussionThread extends Component {
   static defaultProps = {
@@ -28,6 +30,7 @@ class DiscussionThread extends Component {
     discussion: PropTypes.oneOfType([DiscussionPropType, PropTypes.bool]),
     participants: PropTypes.oneOfType([PropTypes.arrayOf(UserPropType), PropTypes.bool]),
     scenario: PropTypes.oneOfType([ScenarioPropType, PropTypes.bool]),
+    loaded: PropTypes.bool.isRequired,
   }
 
   contextRef = createRef();
@@ -77,8 +80,19 @@ class DiscussionThread extends Component {
   }
 
   render() {
-    const { discussion, participants, scenario } = this.props;
-    return (discussion && participants) ? (
+    const {
+      discussion, participants, scenario, loaded,
+    } = this.props;
+
+    if (!loaded) {
+      return <LoadingPage />;
+    }
+
+    if (!discussion) {
+      return <NotFoundPage />;
+    }
+
+    return (
       <Ref innerRef={this.contextRef}>
         <Segment>
           {scenario && (
@@ -109,12 +123,6 @@ class DiscussionThread extends Component {
           </Rail>
         </Segment>
       </Ref>
-    ) : (
-      <Segment>
-        <Dimmer active page inverted>
-          <Loader size="large">Loading</Loader>
-        </Dimmer>
-      </Segment>
     );
   }
 }
@@ -123,9 +131,9 @@ export default withTracker(({ match }) => {
   const { discussionId } = match.params;
   Meteor.subscribe('comments', discussionId);
   Meteor.subscribe('discussions');
+  Meteor.subscribe('scenarios');
   const usersSub = Meteor.subscribe('users');
   const groupsSub = Meteor.subscribe('groups');
-  const scenariosSub = Meteor.subscribe('scenarios');
 
   const discussion = Discussions.findOne(
     { _id: discussionId },
@@ -141,6 +149,7 @@ export default withTracker(({ match }) => {
   );
 
   return {
+    loaded: usersSub.ready() && groupsSub.ready(),
     discussion,
     comments: Comments.find(
       {
@@ -151,11 +160,10 @@ export default withTracker(({ match }) => {
     ).fetch(),
     scenario:
       discussion
-      && scenariosSub.ready()
       && Scenarios.findOne({ _id: discussion.scenarioId }),
     participants:
-      groupsSub.ready()
-      && usersSub.ready()
+      discussion
+      && groupsSub.ready()
       && Meteor.users.find({
         _id: {
           $in: Groups.findOne(

@@ -14,6 +14,8 @@ import Scenarios from '/imports/api/Scenarios';
 import Topics from '/imports/api/Topics';
 import Groups from '/imports/api/Groups';
 import { renderScenarioSummary } from '/imports/ui/Scenario/BrowseScenarios';
+import LoadingPage from '/imports/ui/Error/LoadingPage';
+import NotFoundPage from '/imports/ui/Error/NotFoundPage';
 
 class ScenarioSetView extends Component {
   static defaultProps = {
@@ -25,13 +27,23 @@ class ScenarioSetView extends Component {
     scenarios: PropTypes.arrayOf(ScenarioPropType).isRequired,
     topics: PropTypes.arrayOf(TopicPropType).isRequired,
     groups: PropTypes.arrayOf(GroupPropType).isRequired,
+    loaded: PropTypes.bool.isRequired,
   }
 
   render() {
     const {
-      scenarioSet, scenarios, topics, groups,
+      scenarioSet, scenarios, topics, groups, loaded,
     } = this.props;
-    return scenarioSet && (
+
+    if (!loaded) {
+      return <LoadingPage />;
+    }
+
+    if (!scenarioSet) {
+      return <NotFoundPage />;
+    }
+
+    return (
       <Container>
         <Header
           as={Segment}
@@ -87,7 +99,7 @@ class ScenarioSetView extends Component {
 
 export default withTracker(({ match }) => {
   const { scenarioSetId } = match.params;
-  Meteor.subscribe('scenarioSets');
+  const scenarioSetsSub = Meteor.subscribe('scenarioSets');
   Meteor.subscribe('scenarios');
   Meteor.subscribe('topics');
   Meteor.subscribe('groups');
@@ -95,6 +107,7 @@ export default withTracker(({ match }) => {
   const scenarioSet = ScenarioSets.findOne({ _id: scenarioSetId });
 
   return {
+    loaded: scenarioSetsSub.ready(),
     scenarioSet,
     scenarios: Scenarios.find(
       { _id: { $in: scenarioSet ? scenarioSet.scenarios : [] } },
