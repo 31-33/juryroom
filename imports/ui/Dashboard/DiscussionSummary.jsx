@@ -24,8 +24,8 @@ class DiscussionSummary extends Component {
   render() {
     const { discussion, scenario, commentCount } = this.props;
     return (discussion && scenario) ? (
-      <List.Item>
-        <List.Content as={Link} to={`/discussion/${discussion._id}`}>
+      <List.Item as={Link} to={`/discussion/${discussion._id}`}>
+        <List.Content>
           <Header content={scenario.title} subheader={scenario.description} />
           {`Comments: ${commentCount}`}
         </List.Content>
