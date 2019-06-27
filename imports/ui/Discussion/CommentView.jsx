@@ -163,7 +163,7 @@ class CommentViewTemplate extends Component {
           {discussion.activeReplies.some(reply => reply.userId === Meteor.userId()
             && reply.parentId === comment._id) && (
             <CommentForm
-              discussionId={discussion._id}
+              discussion={discussion}
               parentId={comment._id}
             />
           )}

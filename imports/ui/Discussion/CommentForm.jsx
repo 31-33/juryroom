@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
-import { Form, TextArea, Button } from 'semantic-ui-react';
+import { DiscussionPropType } from '/imports/types';
+import {
+  Form, TextArea, Button, Statistic,
+} from 'semantic-ui-react';
 import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
 
 class CommentForm extends Component {
@@ -10,7 +13,7 @@ class CommentForm extends Component {
   }
 
   static propTypes = {
-    discussionId: PropTypes.string.isRequired,
+    discussion: DiscussionPropType.isRequired,
     parentId: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   }
 
@@ -30,8 +33,8 @@ class CommentForm extends Component {
 
   submitComment = () => {
     const { commentText } = this.state;
-    const { discussionId, parentId } = this.props;
-    Meteor.call('comments.insert', discussionId, parentId || '', commentText);
+    const { discussion, parentId } = this.props;
+    Meteor.call('comments.insert', discussion._id, parentId || '', commentText);
 
     this.setState({
       commentText: '',
@@ -40,22 +43,26 @@ class CommentForm extends Component {
   }
 
   close = () => {
-    const { discussionId, parentId } = this.props;
-    Meteor.call('discussions.closeReply', discussionId, parentId);
+    const { discussion, parentId } = this.props;
+    Meteor.call('discussions.closeReply', discussion._id, parentId);
   }
 
   render() {
+    const { discussion } = this.props;
     const { commentText } = this.state;
+    const commentLengthLimit = discussion.commentLengthLimit || MAX_COMMENT_LENGTH;
+
     return (
       <Form>
         <Form.Field
           label="Message"
           control={TextArea}
-          maxLength={MAX_COMMENT_LENGTH}
+          maxLength={commentLengthLimit}
           value={commentText}
           onChange={this.onCommentTextChange}
           placeholder="Type your comment here..."
         />
+        <Statistic content={`${commentText.length}/${commentLengthLimit}`} floated="right" />
         <Form.Group>
           <Form.Field
             control={Button}

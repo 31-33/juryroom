@@ -9,6 +9,7 @@ import {
 } from 'semantic-ui-react';
 import { Roles } from 'meteor/alanning:roles';
 import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
+import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
 
 class CreateGroup extends Component {
   static propTypes = {
@@ -22,6 +23,7 @@ class CreateGroup extends Component {
     this.state = {
       selectedSet: '',
       members: [],
+      commentLengthLimit: MAX_COMMENT_LENGTH,
     };
   }
 
@@ -29,7 +31,7 @@ class CreateGroup extends Component {
 
   render() {
     const { scenarioSets, users, history } = this.props;
-    const { members, selectedSet } = this.state;
+    const { members, selectedSet, commentLengthLimit } = this.state;
 
     if (!Meteor.user() === null && !Roles.userIsInRole(Meteor.userId(), ['admin', 'create-group'])) {
       return <NotAuthorizedPage />;
@@ -76,6 +78,14 @@ class CreateGroup extends Component {
             name="members"
             onChange={this.handleChange}
           />
+          <Form.Input
+            label="Max Comment Length"
+            type="number"
+            value={commentLengthLimit}
+            onInput={({ target }) => this.setState({
+              commentLengthLimit: parseInt(target.value, 10) || commentLengthLimit,
+            })}
+          />
           <Form.Button
             content="Submit"
             onClick={() => selectedSet && members.length > 1
@@ -83,6 +93,7 @@ class CreateGroup extends Component {
                 'groups.create',
                 members,
                 selectedSet,
+                commentLengthLimit,
                 (event, groupId) => history.push(`/groups/${groupId}`),
               )}
           />

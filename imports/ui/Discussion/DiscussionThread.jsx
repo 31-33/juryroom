@@ -1,6 +1,6 @@
 import React, { Component, createRef } from 'react';
 import {
-  Button, Comment, Container, Rail, Ref, Segment, Sticky, Dimmer, Loader, Header,
+  Button, Comment, Container, Rail, Ref, Segment, Sticky, Header,
 } from 'semantic-ui-react';
 import { Meteor } from 'meteor/meteor';
 import Comments from '/imports/api/Comments';
@@ -66,7 +66,7 @@ class DiscussionThread extends Component {
     const { discussion } = this.props;
     return (discussion.activeReplies || []).some(reply => reply.userId === Meteor.userId() && reply.parentId === '')
       ? (
-        <CommentForm discussionId={discussion._id} />
+        <CommentForm discussion={discussion} />
       )
       : (
         <Button
@@ -144,6 +144,7 @@ export default withTracker(({ match }) => {
         activeReplies: 1,
         userStars: 1,
         activeVote: 1,
+        commentLengthLimit: 1,
       },
     },
   );

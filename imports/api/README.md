@@ -29,6 +29,8 @@ Represents a collection (i.e. group) of users. A group may participate in multip
 
 `createdBy`: *The userId of the user who created this group.*
 
+`commentLengthLimit`: *The maximum number of characters that can be in a single comment, for this groups discussions. This value is then copied onto each new discussion as they are created.*
+
 ---
 ## User
 Represents a user of the system. This stores objects created by the Meteor `accounts-password` package, and extends it to store additional information, such as demographic information, and user performance metrics.
@@ -117,6 +119,7 @@ Represents a discussion thread. A discussion is a conversation between a group o
     votes: [String],
     activeVote: String?,
     status: String,
+    commentLengthLimit: Number,
 }
 ```
 
@@ -143,6 +146,8 @@ Represents a discussion thread. A discussion is a conversation between a group o
 `activeVote`: *The currently active vote for this discussion. Undefined if/when no active vote is taking place.*
 
 `status`: *String representing the state the discussion is currently in. Possible values are `active` when discussion is in progress, `voting` when a vote is in progress (this should restrict other actions), and `finished` when the discussion is completed.*
+
+`commentLengthLimit`: *The maximum number of characters that a comment on this discussion may contain.*
 
 ---
 ## Topic

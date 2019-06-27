@@ -22,6 +22,7 @@ if (Meteor.isServer) {
         userStars: 1,
         votes: 1,
         activeVote: 1,
+        commentLengthLimit: 1,
       },
     },
   ));
@@ -66,6 +67,7 @@ export function startNext(groupId) {
       actionCollapse: [],
       votes: [],
       status: 'active',
+      commentLengthLimit: group.commentLengthLimit,
     });
 
     Groups.update(
@@ -83,9 +85,10 @@ export function startNext(groupId) {
 }
 
 Meteor.methods({
-  'groups.create'(members, scenarioSetId) {
+  'groups.create'(members, scenarioSetId, commentLengthLimit) {
     check(members, Array);
     check(scenarioSetId, String);
+    check(commentLengthLimit, Number);
 
     if (!Roles.userIsInRole(this.userId, ['admin', 'create-group'])) {
       throw new Meteor.Error('not-authorized');
@@ -97,6 +100,7 @@ Meteor.methods({
       discussions: [],
       createdAt: new Date(),
       createdBy: this.userId,
+      commentLengthLimit,
     });
 
     if (Meteor.isServer) {
