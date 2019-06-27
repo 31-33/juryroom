@@ -34,6 +34,11 @@ Meteor.methods({
     check(parentId, String);
     check(text, String);
 
+    const discussion = Discussions.findOne({ _id: discussionId });
+    if (!discussion || discussion.status !== 'active') {
+      throw new Meteor.Error('discussion-not-active');
+    }
+
     if (!isDiscussionParticipant(this.userId, discussionId)) {
       throw new Meteor.Error('not-authorized');
     }

@@ -22,6 +22,7 @@ if (Meteor.isServer) {
         userStars: 1,
         votes: 1,
         activeVote: 1,
+        status: 1,
         commentLengthLimit: 1,
       },
     },
@@ -117,6 +118,11 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized');
     }
 
+    const discussion = Discussions.findOne({ _id: discussionId });
+    if (!discussion || discussion.status !== 'active') {
+      throw new Meteor.Error('discussion-not-active');
+    }
+
     Meteor.call('discussions.remove_star', discussionId);
 
     Discussions.update(
@@ -127,15 +133,6 @@ Meteor.methods({
             userId: this.userId,
             commentId,
           },
-        },
-      },
-    );
-
-    // Write this action to persistant storage
-    Discussions.update(
-      { _id: discussionId },
-      {
-        $addToSet: {
           actionStar: {
             userId: this.userId,
             commentId,
@@ -150,6 +147,11 @@ Meteor.methods({
 
     if (!isDiscussionParticipant(this.userId, discussionId)) {
       throw new Meteor.Error('not-authorized');
+    }
+
+    const discussion = Discussions.findOne({ _id: discussionId });
+    if (!discussion || discussion.status !== 'active') {
+      throw new Meteor.Error('discussion-not-active');
     }
 
     Discussions.update(
@@ -184,6 +186,11 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized');
     }
 
+    const discussion = Discussions.findOne({ _id: discussionId });
+    if (!discussion || discussion.status !== 'active') {
+      throw new Meteor.Error('discussion-not-active');
+    }
+
     // Remove any active replies for this user
     Meteor.call('discussions.closeReply', discussionId);
 
@@ -196,15 +203,6 @@ Meteor.methods({
             userId: this.userId,
             parentId,
           },
-        },
-      },
-    );
-
-    // Persist this action
-    Discussions.update(
-      { _id: discussionId },
-      {
-        $addToSet: {
           actionReply: {
             userId: this.userId,
             parentId,
@@ -229,12 +227,6 @@ Meteor.methods({
             userId: this.userId,
           },
         },
-      },
-    );
-
-    Discussions.update(
-      { _id: discussionId },
-      {
         $addToSet: {
           actionReply: {
             userId: this.userId,
@@ -347,7 +339,10 @@ Meteor.methods({
         Discussions.update(
           { _id: currVote.discussionId },
           {
-            $set: { status: 'finished' },
+            $set: {
+              status: 'finished',
+              activeReplies: [],
+            },
           },
         );
         startNext(group._id);
