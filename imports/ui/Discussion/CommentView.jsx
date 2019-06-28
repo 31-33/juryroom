@@ -7,6 +7,7 @@ import {
   Comment, Icon, Divider, Container, Segment, List, Button, Item,
 } from 'semantic-ui-react';
 import Moment from 'react-moment';
+import Linkify from 'react-linkify';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CommentForm from './CommentForm';
@@ -125,7 +126,11 @@ class CommentViewTemplate extends Component {
             {this.renderUserReplyingStatus()}
           </div>
         </Comment.Metadata>
-        <Comment.Text content={comment.text} />
+        <Comment.Text>
+          <Linkify>
+            {comment.text}
+          </Linkify>
+        </Comment.Text>
         <Comment.Actions>
           <Comment.Action onClick={() => Meteor.call('discussions.reply', discussion._id, comment._id)} content="Reply" />
           {
