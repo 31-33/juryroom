@@ -5,10 +5,11 @@ import PropTypes from 'prop-types';
 import Scenarios from '/imports/api/Scenarios';
 import { ScenarioPropType } from '/imports/types';
 import {
-  Segment, Header,
+  Segment, Container,
 } from 'semantic-ui-react';
 import LoadingPage from '/imports/ui/Error/LoadingPage';
 import NotFoundPage from '/imports/ui/Error/NotFoundPage';
+import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
 class ScenarioView extends Component {
   static defaultProps = {
@@ -32,12 +33,15 @@ class ScenarioView extends Component {
     }
 
     return (
-      <Segment>
-        <Header
-          content={scenario.title}
-          subheader={scenario.description}
-        />
-      </Segment>
+      <Container>
+        <Segment attached="top">
+          <HeaderWithInfoMessage
+            header={scenario.title}
+            subheader={scenario.description}
+            infoMessage="This page shows information about the selected scenario."
+          />
+        </Segment>
+      </Container>
     );
   }
 }

@@ -12,6 +12,7 @@ import {
 import Groups from '/imports/api/Groups';
 import Scenarios from '/imports/api/Scenarios';
 import Discussions from '/imports/api/Discussions';
+import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
 class Group extends Component {
   static defaultProps = {
@@ -32,12 +33,12 @@ class Group extends Component {
 
     return group && (
       <Container>
-        <Header
-          as={Segment}
-          attached="top"
-          size="huge"
-          content="View Group"
-        />
+        <Segment attached="top">
+          <HeaderWithInfoMessage
+            header="View Group"
+            infoMessage="This page shows information about the selected group"
+          />
+        </Segment>
         <Segment attached="bottom">
           <Header attached="top" content="Members" />
           <List

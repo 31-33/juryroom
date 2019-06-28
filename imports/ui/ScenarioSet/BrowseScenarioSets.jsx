@@ -7,8 +7,9 @@ import ScenarioSets from '/imports/api/ScenarioSets';
 import PropTypes from 'prop-types';
 import { ScenarioSetPropType } from '/imports/types';
 import {
-  Container, Header, Segment, List, Button,
+  Container, Segment, List, Button,
 } from 'semantic-ui-react';
+import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
 export function renderScenarioSetSummary(set) {
   return (
@@ -37,18 +38,15 @@ class BrowseScenarioSets extends Component {
 
     return (
       <Container>
-        <Header
-          as={Segment}
-          size="huge"
-          attached="top"
-        >
-          Browse Scenario Sets
+        <Segment attached="top">
+          <HeaderWithInfoMessage
+            header="Browse Scenario Sets"
+            infoMessage="This page contains the list of Scenario Sets."
+          />
           {canCreateNew && (
-            <Container>
-              <Button content="Create New" as={Link} to="/sets/create" color="green" />
-            </Container>
+            <Button content="Create New" as={Link} to="/sets/create" color="green" />
           )}
-        </Header>
+        </Segment>
         <List
           as={Segment}
           attached="bottom"

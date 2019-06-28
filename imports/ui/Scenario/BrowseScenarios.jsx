@@ -4,13 +4,14 @@ import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Roles } from 'meteor/alanning:roles';
 import {
-  Container, Segment, Header, Dropdown, List, Button,
+  Container, Segment, Header, List, Button, Form, Grid,
 } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import { TopicPropType, ScenarioPropType } from '/imports/types';
 
 import Topics from '/imports/api/Topics';
 import Scenarios from '/imports/api/Scenarios';
+import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
 export function renderScenarioSummary(scenario, topic) {
   // TODO: fetch statistics about this scenario
@@ -43,41 +44,47 @@ class BrowseScenario extends Component {
     };
   }
 
-  renderTopicSelection() {
-    const { topics } = this.props;
-    return (
-      <Segment floated="right" basic>
-        Filter Topics
-        &nbsp;
-        <Dropdown
-          loading={!topics}
-          multiple
-          selection
-          options={topics ? topics.map(topic => ({
-            key: topic._id,
-            text: topic.title,
-            value: topic._id,
-          })) : []}
-          onChange={(event, selection) => this.setState({ selectedTopics: selection.value })}
-        />
-      </Segment>
-    );
-  }
-
   render() {
     const { canCreateNew, scenarios, topics } = this.props;
     const { selectedTopics } = this.state;
     return (
       <Container>
-        <Header attached="top" as={Segment} clearing size="huge">
-          Browse Scenarios
-          {this.renderTopicSelection()}
-          {canCreateNew && (
-            <Container>
-              <Button content="Create New" as={Link} to="/scenarios/create" color="green" />
-            </Container>
-          )}
-        </Header>
+        <Segment attached="top" clearing>
+          <HeaderWithInfoMessage
+            header="Browse Scenarios"
+            infoMessage="This page contains the list of scenarios."
+          />
+          <Grid>
+            <Grid.Column floated="left" width={4} verticalAlign="bottom">
+              {canCreateNew && (
+                <Button
+                  content="Create New"
+                  as={Link}
+                  to="/scenarios/create"
+                  color="green"
+                  floated="left"
+                />
+              )}
+            </Grid.Column>
+            <Grid.Column floated="right" width={4} stretched>
+              <Form.Dropdown
+                label="Filter Topics"
+                fluid
+                loading={!topics}
+                multiple
+                selection
+                options={topics ? topics.map(topic => ({
+                  key: topic._id,
+                  text: topic.title,
+                  value: topic._id,
+                })) : []}
+                onChange={(event, selection) => this.setState({
+                  selectedTopics: selection.value,
+                })}
+              />
+            </Grid.Column>
+          </Grid>
+        </Segment>
         <List
           as={Segment}
           attached="bottom"

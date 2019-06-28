@@ -16,6 +16,7 @@ import Groups from '/imports/api/Groups';
 import { renderScenarioSummary } from '/imports/ui/Scenario/BrowseScenarios';
 import LoadingPage from '/imports/ui/Error/LoadingPage';
 import NotFoundPage from '/imports/ui/Error/NotFoundPage';
+import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
 class ScenarioSetView extends Component {
   static defaultProps = {
@@ -45,13 +46,13 @@ class ScenarioSetView extends Component {
 
     return (
       <Container>
-        <Header
-          as={Segment}
-          size="huge"
-          attached="top"
-          content={scenarioSet.title}
-          subheader={scenarioSet.description}
-        />
+        <Segment attached="top">
+          <HeaderWithInfoMessage
+            header={scenarioSet.title}
+            subheader={scenarioSet.description}
+            infoMessage="This page shows details about the selected scenario set, such as the scenarios contained within the set."
+          />
+        </Segment>
         <Segment attached="bottom">
           <Header
             attached="top"

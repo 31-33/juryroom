@@ -4,12 +4,13 @@ import { withTracker } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import { ScenarioPropType, TopicPropType } from '/imports/types';
 import {
-  Container, Segment, Header, Form, Item, Button,
+  Container, Segment, Form, Item, Button,
 } from 'semantic-ui-react';
 import Scenarios from '/imports/api/Scenarios';
 import Topics from '/imports/api/Topics';
 import { Roles } from 'meteor/alanning:roles';
 import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
+import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
 class CreateScenarioSet extends Component {
   static defaultProps = {
@@ -46,12 +47,12 @@ class CreateScenarioSet extends Component {
 
     return (
       <Container>
-        <Header
-          as={Segment}
-          size="huge"
-          attached="top"
-          content="Create New Scenario Set"
-        />
+        <Segment attached="top">
+          <HeaderWithInfoMessage
+            header="Create New Scenario Set"
+            infoMessage="From this page, new scenarios can be created."
+          />
+        </Segment>
         <Form
           as={Segment}
           attached="bottom"

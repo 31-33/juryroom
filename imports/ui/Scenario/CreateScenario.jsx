@@ -2,13 +2,14 @@ import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import {
-  Container, Header, Segment, Form,
+  Container, Segment, Form,
 } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import { TopicPropType } from '/imports/types';
 import Topics from '/imports/api/Topics';
 import { Roles } from 'meteor/alanning:roles';
 import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
+import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
 class CreateScenario extends Component {
   static defaultProps = {
@@ -43,13 +44,12 @@ class CreateScenario extends Component {
 
     return (
       <Container>
-        <Header
-          attached="top"
-          content="Create New Scenario"
-          size="huge"
-          as={Segment}
-          clearing
-        />
+        <Segment attached="top">
+          <HeaderWithInfoMessage
+            header="Create New Scenario"
+            infoMessage="From this page, new scenarios may be created"
+          />
+        </Segment>
         <Form
           as={Segment}
           attached="bottom"

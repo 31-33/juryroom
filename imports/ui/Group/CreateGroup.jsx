@@ -5,11 +5,12 @@ import PropTypes from 'prop-types';
 import { ScenarioSetPropType, UserPropType } from '/imports/types';
 import ScenarioSets from '/imports/api/ScenarioSets';
 import {
-  Container, Segment, Header, Form,
+  Container, Segment, Form,
 } from 'semantic-ui-react';
 import { Roles } from 'meteor/alanning:roles';
 import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
 import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
+import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
 class CreateGroup extends Component {
   static propTypes = {
@@ -39,12 +40,12 @@ class CreateGroup extends Component {
 
     return (
       <Container>
-        <Header
-          as={Segment}
-          attached="top"
-          size="huge"
-          content="Create New Group"
-        />
+        <Segment attached="top">
+          <HeaderWithInfoMessage
+            header="Create New Group"
+            infoMessage="From this page, new groups can be created."
+          />
+        </Segment>
         <Form
           as={Segment}
           attached="bottom"
