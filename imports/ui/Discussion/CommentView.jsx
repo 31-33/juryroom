@@ -78,7 +78,9 @@ class CommentViewTemplate extends Component {
           starredBy.length > 0 && (
             <Button
               disabled={!!discussion.activeVote
-                || !starredBy.some(star => star.userId === Meteor.userId())}
+                || !starredBy.some(star => star.userId === Meteor.userId())
+                || discussion.votes.some(vote => vote.commentId === comment._id)
+                || discussion.status !== 'active'}
               floated="right"
               content="Call Vote"
               color="green"
@@ -178,6 +180,7 @@ const CommentView = withTracker(({ discussion, comment }) => {
   Meteor.subscribe('comments', discussion._id);
   Meteor.subscribe('votes', discussion._id);
 
+  const commentVote = discussion.votes.find(vote => vote.commentId === comment._id);
   return {
     children: Comments.find(
       {
@@ -186,7 +189,7 @@ const CommentView = withTracker(({ discussion, comment }) => {
       },
       { sort: { postedTime: 1 } },
     ).fetch() || [],
-    vote: Votes.findOne({ commentId: comment._id }),
+    vote: commentVote && Votes.findOne({ _id: commentVote.voteId }),
   };
 })(CommentViewTemplate);
 

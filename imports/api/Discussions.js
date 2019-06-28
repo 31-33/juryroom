@@ -273,7 +273,10 @@ Meteor.methods({
       { _id: discussionId },
       {
         $addToSet: {
-          votes: voteId,
+          votes: {
+            voteId,
+            commentId,
+          },
         },
         $set: {
           activeVote: voteId,

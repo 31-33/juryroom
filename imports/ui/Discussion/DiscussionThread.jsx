@@ -143,8 +143,10 @@ export default withTracker(({ match }) => {
         scenarioId: 1,
         activeReplies: 1,
         userStars: 1,
+        votes: 1,
         activeVote: 1,
         commentLengthLimit: 1,
+        status: 1,
       },
     },
   );

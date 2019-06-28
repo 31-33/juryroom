@@ -116,7 +116,12 @@ Represents a discussion thread. A discussion is a conversation between a group o
             dateTime: Date,
         },
     ],
-    votes: [String],
+    votes: [
+        {
+            voteId: String,
+            commentId: String,
+        },
+    ],
     activeVote: String?,
     status: String,
     commentLengthLimit: Number,
@@ -141,7 +146,7 @@ Represents a discussion thread. A discussion is a conversation between a group o
 
 `actionCollapse`: *Stores the full history of every comment that was collapsed/uncollapsed by a user participating in this discussion. Consists of the `userId` making the action, the `commentId` being collapsed, a boolean (`collapsed`) specifying whether the action was collapsing or uncollapsing the comment, and the `dateTime` at which the action was made. **Note: State of which users currently have a comment collapsed is stored on the comment itself.***
 
-`votes`: *Stores a collection of votes made within this discussion. Each item in this collection is a string, which uniquely identifies an entry in the Votes collection. More detail about the vote may be found there.*
+`votes`: *Stores a collection of votes made within this discussion. Each entry refers to a separate vote that takes place within this discussion, and includes the `voteId` of the entry in the Votes collection for this vote, and the `commentId` for the comment that was voted upon.*
 
 `activeVote`: *The currently active vote for this discussion. Undefined if/when no active vote is taking place.*
 

@@ -20,7 +20,11 @@ const CommentPropType = PropTypes.shape({
 
 const DiscussionPropType = PropTypes.shape({
   _id: PropTypes.string.isRequired,
-  votes: PropTypes.arrayOf(PropTypes.string),
+  votes: PropTypes.arrayOf(PropTypes.shape({
+    voteId: PropTypes.string.isRequired,
+    commentId: PropTypes.string.isRequired,
+  })).isRequired,
+  status: PropTypes.string.isRequired,
 });
 
 const UserPropType = PropTypes.shape({
