@@ -17,6 +17,14 @@ Throws an error if the user is not a member of the specified discussion.
 
 ---
 ```javascript
+'comments.generateDiscussion'(discussionId: String, numComments: Number, replyProbability: Number)
+```
+Used to generate a sample discussion using filler text, with the specified number of comments. The `replyProbability` must be a number in the range [0,1], and determines the shape of the discussion (a value of 0 results in all comments at root level, whereas a value of 1 results in a single chain of replies).
+
+Throws an error if the user is not an admin, and a member of the specified discussion.
+
+---
+```javascript
 'groups.create'(members: Array<String>, scenarioSetId: String)
 ```
 Creates a new group, with the supplied `members` array of userId's as members of the group. The supplied `scenarioSetId` specifies the collection of discussions that this group shall discuss.

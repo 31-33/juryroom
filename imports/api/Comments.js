@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
+import { Roles } from 'meteor/alanning:roles';
 import { Mongo } from 'meteor/mongo';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
+import { LoremIpsum } from 'lorem-ipsum';
 import Discussions, { isDiscussionParticipant } from './Discussions';
 
 const Comments = new Mongo.Collection('comments');
@@ -47,7 +49,7 @@ Meteor.methods({
       throw new Meteor.Error('max-length-exceeded');
     }
 
-    Comments.insert({
+    return Comments.insert({
       discussionId,
       parentId,
       postedTime: new Date(),
@@ -90,5 +92,49 @@ Meteor.methods({
         },
       },
     );
+  },
+  'comments.generateDiscussion'(discussionId, numComments, replyProbability) {
+    check(discussionId, String);
+    check(numComments, Number);
+    check(replyProbability, Match.Where((prob) => {
+      check(prob, Number);
+      return prob >= 0 && prob <= 1;
+    }));
+
+    if (!Roles.userIsInRole(this.userId, 'admin')) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
+      throw new Meteor.Error('not-authorized');
+    }
+    const lorem = new LoremIpsum({
+      wordsPerSentence: {
+        min: 10,
+        max: 100,
+      },
+    });
+
+    const parentStack = [];
+
+    for (let i = 0; i < numComments; i += 1) {
+      const parentId = parentStack.length > 0
+        ? parentStack[parentStack.length - 1]
+        : '';
+      const commentId = Comments.insert({
+        discussionId,
+        parentId,
+        postedTime: new Date(),
+        authorId: this.userId,
+        text: lorem.generateSentences(1),
+        collapsedBy: [],
+      });
+
+      if (Math.random() < replyProbability) {
+        parentStack.push(commentId);
+      } else if (parentStack.length > 0 && Math.random() > replyProbability) {
+        parentStack.pop();
+      }
+    }
   },
 });
