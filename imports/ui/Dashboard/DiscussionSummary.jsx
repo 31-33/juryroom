@@ -36,8 +36,6 @@ class DiscussionSummary extends Component {
 
 export default withTracker(({ discussionId, scenarioId }) => {
   Meteor.subscribe('comments', discussionId);
-  Meteor.subscribe('discussions');
-  Meteor.subscribe('scenarios');
 
   return {
     discussion: Discussions.findOne({ _id: discussionId }),

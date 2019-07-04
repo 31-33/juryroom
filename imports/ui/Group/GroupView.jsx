@@ -86,11 +86,6 @@ class Group extends Component {
 
 export default withTracker(({ match }) => {
   const { groupId } = match.params;
-  Meteor.subscribe('groups');
-  Meteor.subscribe('users');
-  Meteor.subscribe('discussions');
-  Meteor.subscribe('scenarios');
-
   const group = Groups.findOne({ _id: groupId });
 
   return {

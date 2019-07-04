@@ -60,11 +60,7 @@ class BrowseScenarioSets extends Component {
   }
 }
 
-export default withTracker(() => {
-  Meteor.subscribe('scenarioSets');
-
-  return {
-    scenarioSets: ScenarioSets.find({ status: 'active' }).fetch(),
-    canCreateNew: Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario-set']),
-  };
-})(BrowseScenarioSets);
+export default withTracker(() => ({
+  scenarioSets: ScenarioSets.find({ status: 'active' }).fetch(),
+  canCreateNew: Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario-set']),
+}))(BrowseScenarioSets);

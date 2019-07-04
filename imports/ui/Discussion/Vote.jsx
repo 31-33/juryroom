@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {
   Segment, Button, List, Image,
 } from 'semantic-ui-react';
@@ -42,7 +42,7 @@ export function renderUserVotes(vote, users, size = 'mini') {
   );
 }
 
-class Vote extends Component {
+class Vote extends PureComponent {
     static propTypes = {
       vote: VotePropType.isRequired,
       isActive: PropTypes.bool.isRequired,

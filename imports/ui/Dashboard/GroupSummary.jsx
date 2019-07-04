@@ -70,12 +70,7 @@ class GroupSummary extends Component {
     );
   }
 }
-export default withTracker(({ group }) => {
-  Meteor.subscribe('scenarioSets');
-  Meteor.subscribe('users');
-
-  return {
-    participants: Meteor.users.find({ _id: { $in: group.members } }).fetch(),
-    scenarioSet: ScenarioSets.findOne({ _id: group.scenarioSetId }),
-  };
-})(GroupSummary);
+export default withTracker(({ group }) => ({
+  participants: Meteor.users.find({ _id: { $in: group.members } }).fetch(),
+  scenarioSet: ScenarioSets.findOne({ _id: group.scenarioSetId }),
+}))(GroupSummary);

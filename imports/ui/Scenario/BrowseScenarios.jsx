@@ -104,13 +104,8 @@ class BrowseScenario extends Component {
   }
 }
 
-export default withTracker(() => {
-  Meteor.subscribe('topics');
-  Meteor.subscribe('scenarios');
-
-  return {
-    topics: Topics.find({}).fetch(),
-    scenarios: Scenarios.find({ status: 'active' }).fetch(),
-    canCreateNew: Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario']),
-  };
-})(BrowseScenario);
+export default withTracker(() => ({
+  topics: Topics.find({}).fetch(),
+  scenarios: Scenarios.find({ status: 'active' }).fetch(),
+  canCreateNew: Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario']),
+}))(BrowseScenario);

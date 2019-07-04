@@ -117,8 +117,6 @@ class EditProfile extends Component {
 }
 
 export default withTracker(({ match }) => {
-  Meteor.subscribe('users');
-
   const { userId } = match.params;
   return {
     userId,

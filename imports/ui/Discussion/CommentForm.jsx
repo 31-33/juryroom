@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
 import { DiscussionPropType } from '/imports/types';
@@ -7,7 +7,7 @@ import {
 } from 'semantic-ui-react';
 import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
 
-class CommentForm extends Component {
+class CommentForm extends PureComponent {
   static defaultProps = {
     parentId: false,
   }

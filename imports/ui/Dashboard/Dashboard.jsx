@@ -29,12 +29,8 @@ class Dashboard extends Component {
   }
 }
 
-export default withTracker(() => {
-  Meteor.subscribe('groups');
-
-  return {
-    groups: Groups.find(
-      { members: `${Meteor.userId()}` },
-    ).fetch(),
-  };
-})(Dashboard);
+export default withTracker(() => ({
+  groups: Groups.find(
+    { members: `${Meteor.userId()}` },
+  ).fetch(),
+}))(Dashboard);

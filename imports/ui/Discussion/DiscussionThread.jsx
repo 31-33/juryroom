@@ -1,4 +1,4 @@
-import React, { Component, createRef } from 'react';
+import React, { PureComponent, createRef } from 'react';
 import {
   Button, Comment, Container, Rail, Ref, Segment, Sticky, Header,
 } from 'semantic-ui-react';
@@ -18,7 +18,7 @@ import {
 import NotFoundPage from '/imports/ui/Error/NotFoundPage';
 import LoadingPage from '/imports/ui/Error/LoadingPage';
 
-class DiscussionThread extends Component {
+class DiscussionThread extends PureComponent {
   static defaultProps = {
     discussion: false,
     participants: false,
@@ -30,7 +30,6 @@ class DiscussionThread extends Component {
     discussion: PropTypes.oneOfType([DiscussionPropType, PropTypes.bool]),
     participants: PropTypes.oneOfType([PropTypes.arrayOf(UserPropType), PropTypes.bool]),
     scenario: PropTypes.oneOfType([ScenarioPropType, PropTypes.bool]),
-    loaded: PropTypes.bool.isRequired,
   }
 
   contextRef = createRef();
@@ -81,12 +80,8 @@ class DiscussionThread extends Component {
 
   render() {
     const {
-      discussion, participants, scenario, loaded,
+      discussion, participants, scenario,
     } = this.props;
-
-    if (!loaded) {
-      return <LoadingPage />;
-    }
 
     if (!discussion) {
       return <NotFoundPage />;
@@ -130,10 +125,7 @@ class DiscussionThread extends Component {
 export default withTracker(({ match }) => {
   const { discussionId } = match.params;
   Meteor.subscribe('comments', discussionId);
-  Meteor.subscribe('discussions');
-  Meteor.subscribe('scenarios');
-  const usersSub = Meteor.subscribe('users');
-  const groupsSub = Meteor.subscribe('groups');
+  Meteor.subscribe('votes', discussionId);
 
   const discussion = Discussions.findOne(
     { _id: discussionId },
@@ -152,7 +144,6 @@ export default withTracker(({ match }) => {
   );
 
   return {
-    loaded: usersSub.ready() && groupsSub.ready(),
     discussion,
     comments: Comments.find(
       {
@@ -166,7 +157,6 @@ export default withTracker(({ match }) => {
       && Scenarios.findOne({ _id: discussion.scenarioId }),
     participants:
       discussion
-      && groupsSub.ready()
       && Meteor.users.find({
         _id: {
           $in: Groups.findOne(

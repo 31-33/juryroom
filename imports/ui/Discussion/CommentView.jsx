@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import Comments from '/imports/api/Comments';
@@ -16,7 +16,7 @@ import {
   DiscussionPropType, CommentPropType, UserPropType, VotePropType,
 } from '/imports/types';
 
-class CommentViewTemplate extends Component {
+class CommentViewTemplate extends PureComponent {
   static defaultProps = {
     vote: false,
   }
@@ -71,7 +71,9 @@ class CommentViewTemplate extends Component {
   }
 
   renderContent(starredBy) {
-    const { participants, comment, discussion } = this.props;
+    const {
+      participants, comment, discussion, vote,
+    } = this.props;
     const author = participants.find(user => user._id === comment.authorId);
     return (
       <Container>
@@ -80,7 +82,7 @@ class CommentViewTemplate extends Component {
             <Button
               disabled={!!discussion.activeVote
                 || !starredBy.some(star => star.userId === Meteor.userId())
-                || discussion.votes.some(vote => vote.commentId === comment._id)
+                || !vote
                 || discussion.status !== 'active'}
               floated="right"
               content="Call Vote"
@@ -181,21 +183,15 @@ class CommentViewTemplate extends Component {
     );
   }
 }
-const CommentView = withTracker(({ discussion, comment }) => {
-  Meteor.subscribe('comments', discussion._id);
-  Meteor.subscribe('votes', discussion._id);
-
-  const commentVote = discussion.votes.find(vote => vote.commentId === comment._id);
-  return {
-    children: Comments.find(
-      {
-        discussionId: discussion._id,
-        parentId: comment._id,
-      },
-      { sort: { postedTime: 1 } },
-    ).fetch() || [],
-    vote: commentVote && Votes.findOne({ _id: commentVote.voteId }),
-  };
-})(CommentViewTemplate);
+const CommentView = withTracker(({ discussion, comment }) => ({
+  children: Comments.find(
+    {
+      discussionId: discussion._id,
+      parentId: comment._id,
+    },
+    { sort: { postedTime: 1 } },
+  ).fetch() || [],
+  vote: Votes.findOne({ commentId: comment._id }),
+}))(CommentViewTemplate);
 
 export default CommentView;

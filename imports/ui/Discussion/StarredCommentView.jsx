@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import {
@@ -16,20 +16,25 @@ import { renderUserVotes } from '/imports/ui/Discussion/Vote';
 
 const scrollToElement = require('scroll-to-element');
 
-class StarredCommentView extends Component {
+class StarredCommentView extends PureComponent {
   static defaultProps = {
     activeVote: false,
   }
 
   static propTypes = {
     discussion: DiscussionPropType.isRequired,
-    comments: PropTypes.arrayOf(CommentPropType).isRequired,
+    comments: PropTypes.oneOfType([PropTypes.arrayOf(CommentPropType), PropTypes.bool]).isRequired,
     participants: PropTypes.arrayOf(UserPropType).isRequired,
     activeVote: PropTypes.oneOfType([VotePropType, PropTypes.bool]),
   }
 
   renderStarredComments(starredComments) {
     const { comments, participants, discussion } = this.props;
+
+    if (!starredComments.every(star => comments.some(comment => comment._id === star.commentId))) {
+      return '';
+    }
+
     return (
       <Container>
         <Header
@@ -92,9 +97,9 @@ class StarredCommentView extends Component {
                           />
                           <Button
                             disabled={!!discussion.activeVote
-                              || !starredComment.users.some(user => user === Meteor.userId())
-                              || discussion.votes.some(vote => vote.commentId === starredComment._id)
-                              || discussion.status !== 'active'}
+                            || !starredComment.users.some(user => user === Meteor.userId())
+                            || discussion.votes.some(vote => vote.commentId === starredComment._id)
+                            || discussion.status !== 'active'}
                             attached="bottom"
                             icon="exclamation"
                             color="green"
@@ -198,18 +203,13 @@ class StarredCommentView extends Component {
   }
 }
 
-export default withTracker(({ discussion }) => {
-  Meteor.subscribe('comments', discussion._id);
-  Meteor.subscribe('votes', discussion._id);
-
-  return {
-    comments: Comments.find({
-      discussionId: discussion._id,
-      _id: {
-        $in: discussion.userStars.map(star => star.commentId)
-          .concat(discussion.votes.map(vote => vote.commentId)),
-      },
-    }).fetch(),
-    activeVote: discussion.activeVote && Votes.findOne({ _id: discussion.activeVote }),
-  };
-})(StarredCommentView);
+export default withTracker(({ discussion }) => ({
+  comments: Comments.find({
+    discussionId: discussion._id,
+    _id: {
+      $in: discussion.userStars.map(star => star.commentId)
+        .concat(discussion.votes.map(vote => vote.commentId)),
+    },
+  }).fetch(),
+  activeVote: Votes.findOne({ _id: discussion.activeVote }),
+}))(StarredCommentView);

@@ -28,6 +28,17 @@ import ScenarioSetView from '/imports/ui/ScenarioSet/ScenarioSetView';
 class App extends Component {
   browserHistory = history.createBrowserHistory();
 
+  constructor(props) {
+    super(props);
+
+    Meteor.subscribe('topics');
+    Meteor.subscribe('scenarioSets');
+    Meteor.subscribe('scenarios');
+    Meteor.subscribe('discussions');
+    Meteor.subscribe('groups');
+    Meteor.subscribe('users');
+  }
+
   render() {
     return (
       <Router history={this.browserHistory}>

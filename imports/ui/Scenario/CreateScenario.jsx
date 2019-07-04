@@ -84,10 +84,6 @@ class CreateScenario extends Component {
   }
 }
 
-export default withTracker(() => {
-  Meteor.subscribe('topics');
-
-  return {
-    topics: Topics.find({}).fetch(),
-  };
-})(CreateScenario);
+export default withTracker(() => ({
+  topics: Topics.find({}).fetch(),
+}))(CreateScenario);

@@ -7,7 +7,6 @@ import { ScenarioPropType } from '/imports/types';
 import {
   Segment, Container,
 } from 'semantic-ui-react';
-import LoadingPage from '/imports/ui/Error/LoadingPage';
 import NotFoundPage from '/imports/ui/Error/NotFoundPage';
 import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
@@ -18,15 +17,10 @@ class ScenarioView extends Component {
 
   static propTypes = {
     scenario: PropTypes.oneOfType([ScenarioPropType, PropTypes.bool]),
-    loaded: PropTypes.bool.isRequired,
   }
 
   render() {
-    const { scenario, loaded } = this.props;
-
-    if (!loaded) {
-      return <LoadingPage />;
-    }
+    const { scenario } = this.props;
 
     if (!scenario) {
       return <NotFoundPage />;
@@ -48,10 +42,8 @@ class ScenarioView extends Component {
 
 export default withTracker(({ match }) => {
   const { scenarioId } = match.params;
-  const scenariosSub = Meteor.subscribe('scenarios');
 
   return {
-    loaded: scenariosSub.ready(),
     scenario: Scenarios.findOne({ _id: scenarioId }),
   };
 })(ScenarioView);
