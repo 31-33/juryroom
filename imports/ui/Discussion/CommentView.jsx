@@ -7,6 +7,7 @@ import {
   Comment, Icon, Divider, Container, Segment, List, Button, Item,
 } from 'semantic-ui-react';
 import Moment from 'react-moment';
+import ReactMarkdown from 'react-markdown';
 import Linkify from 'react-linkify';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -129,8 +130,8 @@ class CommentViewTemplate extends PureComponent {
           </div>
         </Comment.Metadata>
         <Comment.Text>
-          <Linkify>
-            {comment.text}
+          <Linkify properties={{ target: '_blank' }}>
+            <ReactMarkdown source={comment.text} />
           </Linkify>
         </Comment.Text>
         <Comment.Actions>

@@ -3,9 +3,10 @@ import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
 import { DiscussionPropType } from '/imports/types';
 import {
-  Form, TextArea, Button, Statistic,
+  Form, Button, Statistic,
 } from 'semantic-ui-react';
 import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
+import RichTextEditor from 'react-rte';
 
 class CommentForm extends PureComponent {
   static defaultProps = {
@@ -21,23 +22,23 @@ class CommentForm extends PureComponent {
     super();
 
     this.state = {
-      commentText: '',
+      commentContent: RichTextEditor.createEmptyValue(),
     };
   }
 
-  onCommentTextChange = (e, { value }) => {
+  onCommentTextChange = (value) => {
     this.setState({
-      commentText: value,
+      commentContent: value,
     });
   }
 
   submitComment = () => {
-    const { commentText } = this.state;
+    const { commentContent } = this.state;
     const { discussion, parentId } = this.props;
-    Meteor.call('comments.insert', discussion._id, parentId || '', commentText);
+    Meteor.call('comments.insert', discussion._id, parentId || '', commentContent.toString('markdown'));
 
     this.setState({
-      commentText: '',
+      commentContent: RichTextEditor.createEmptyValue(),
     });
     this.close();
   }
@@ -49,20 +50,20 @@ class CommentForm extends PureComponent {
 
   render() {
     const { discussion } = this.props;
-    const { commentText } = this.state;
+    const { commentContent } = this.state;
     const commentLengthLimit = discussion.commentLengthLimit || MAX_COMMENT_LENGTH;
 
     return (
       <Form>
         <Form.Field
           label="Message"
-          control={TextArea}
+          control={RichTextEditor}
           maxLength={commentLengthLimit}
-          value={commentText}
+          value={commentContent}
           onChange={this.onCommentTextChange}
           placeholder="Type your comment here..."
         />
-        <Statistic content={`${commentText.length}/${commentLengthLimit}`} floated="right" />
+        <Statistic content={`${commentContent.toString('markdown').length}/${commentLengthLimit}`} floated="right" />
         <Form.Group>
           <Form.Field
             control={Button}
