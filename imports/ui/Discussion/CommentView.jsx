@@ -1,14 +1,16 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import Comments from '/imports/api/Comments';
 import Votes from '/imports/api/Votes';
+import Discussions from '/imports/api/Discussions';
 import {
   Comment, Icon, Divider, Container, Segment, List, Button, Item,
 } from 'semantic-ui-react';
 import Moment from 'react-moment';
 import ReactMarkdown from 'react-markdown';
 import Linkify from 'react-linkify';
+import isEqual from 'react-fast-compare';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CommentForm from './CommentForm';
@@ -17,22 +19,28 @@ import {
   DiscussionPropType, CommentPropType, UserPropType, VotePropType,
 } from '/imports/types';
 
-class CommentViewTemplate extends PureComponent {
+class CommentViewTemplate extends Component {
   static defaultProps = {
     vote: false,
   }
 
   static propTypes = {
-    comment: CommentPropType.isRequired,
     discussion: DiscussionPropType.isRequired,
-    children: PropTypes.arrayOf(CommentPropType).isRequired,
+    discussionId: PropTypes.string.isRequired,
+    comment: CommentPropType.isRequired,
+    commentId: PropTypes.string.isRequired,
+    children: PropTypes.arrayOf(PropTypes.shape({ _id: PropTypes.string.isRequired })).isRequired,
     participants: PropTypes.arrayOf(UserPropType).isRequired,
     vote: PropTypes.oneOfType([VotePropType, PropTypes.bool]),
   }
 
+  shouldComponentUpdate(nextProps) {
+    return !isEqual(this.props, nextProps);
+  }
+
   collapse = () => {
-    const { discussion, comment } = this.props;
-    Meteor.call('comments.collapse', discussion._id, comment._id, !this.isCollapsed());
+    const { discussionId, commentId } = this.props;
+    Meteor.call('comments.collapse', discussionId, commentId, !this.isCollapsed());
   }
 
   isCollapsed() {
@@ -41,16 +49,16 @@ class CommentViewTemplate extends PureComponent {
   }
 
   renderChildren() {
-    const { children, discussion, participants } = this.props;
+    const { children, discussionId, participants } = this.props;
     return children.length > 0 && (
       <Comment.Group threaded>
         {
-          children.map(child => (
+          children.map(({ _id }) => (
             <CommentView
-              key={child._id}
-              discussion={discussion}
+              key={_id}
+              discussionId={discussionId}
               participants={participants}
-              comment={child}
+              commentId={_id}
             />
           ))
         }
@@ -152,7 +160,13 @@ class CommentViewTemplate extends PureComponent {
     const {
       discussion, comment, vote, participants,
     } = this.props;
+
+    if (!discussion || !comment) {
+      return '';
+    }
+
     const starredBy = discussion.userStars.filter(star => star.commentId === comment._id);
+
     return (
       <Comment collapsed={this.isCollapsed()} id={comment._id}>
         <Comment.Content>
@@ -184,15 +198,47 @@ class CommentViewTemplate extends PureComponent {
     );
   }
 }
-const CommentView = withTracker(({ discussion, comment }) => ({
-  children: Comments.find(
+const CommentView = withTracker(({ discussionId, commentId }) => {
+  const discussion = Discussions.findOne(
+    { _id: discussionId },
     {
-      discussionId: discussion._id,
-      parentId: comment._id,
+      fields: {
+        activeReplies: 1,
+        userStars: 1,
+        votes: 1,
+        activeVote: 1,
+        status: 1,
+      },
+      transform: ({
+        _id, activeReplies, userStars, votes, activeVote, status,
+      }) => ({
+        _id,
+        activeReplies: activeReplies.filter(reply => reply.parentId === commentId),
+        userStars: userStars.filter(star => star.commentId === commentId),
+        votes: votes.filter(vote => vote.commentId === commentId),
+        activeVote,
+        status,
+      }),
     },
-    { sort: { postedTime: 1 } },
-  ).fetch() || [],
-  vote: Votes.findOne({ commentId: comment._id }),
-}))(CommentViewTemplate);
+  );
+
+  return {
+    discussion,
+    comment: Comments.findOne(
+      { _id: commentId },
+    ),
+    children: Comments.find(
+      {
+        discussionId,
+        parentId: commentId,
+      },
+      {
+        fields: { _id: 1 },
+        sort: { postedTime: 1 },
+      },
+    ).fetch() || [],
+    vote: Votes.findOne({ commentId }),
+  };
+})(CommentViewTemplate);
 
 export default CommentView;

@@ -13,44 +13,39 @@ import CommentView from './CommentView';
 import CommentForm from './CommentForm';
 import StarredCommentView from './StarredCommentView';
 import {
-  CommentPropType, DiscussionPropType, UserPropType, ScenarioPropType,
+  UserPropType, ScenarioPropType,
 } from '/imports/types';
 import NotFoundPage from '/imports/ui/Error/NotFoundPage';
 import LoadingPage from '/imports/ui/Error/LoadingPage';
 
 class DiscussionThread extends PureComponent {
   static defaultProps = {
-    discussion: false,
     participants: false,
     scenario: false,
   }
 
   static propTypes = {
-    comments: PropTypes.arrayOf(CommentPropType).isRequired,
-    discussion: PropTypes.oneOfType([DiscussionPropType, PropTypes.bool]),
+    children: PropTypes.arrayOf(PropTypes.shape({ _id: PropTypes.string.isRequired })).isRequired,
     participants: PropTypes.oneOfType([PropTypes.arrayOf(UserPropType), PropTypes.bool]),
     scenario: PropTypes.oneOfType([ScenarioPropType, PropTypes.bool]),
+    discussionId: PropTypes.string.isRequired,
   }
 
   contextRef = createRef();
 
-  renderComments() {
-    const { comments, discussion, participants } = this.props;
-    return comments.map(comment => (
-      <CommentView
-        key={comment._id}
-        discussion={discussion}
-        participants={participants}
-        comment={comment}
-      />
-    ));
-  }
-
-  renderUserReplyingStatus() {
-    const { discussion, participants } = this.props;
-    const userList = (discussion.activeReplies || [])
-      .filter(reply => reply.userId !== Meteor.userId() && reply.parentId === '')
-      .map(reply => participants.find(user => user._id === reply.userId).username);
+  renderUserReplyingStatus = withTracker(({ discussionId }) => ({
+    discussion: Discussions.findOne(
+      { _id: discussionId },
+      {
+        fields: { activeReplies: 1 },
+      },
+    ),
+  }))(({ discussion, participants }) => {
+    const userList = discussion
+      ? discussion.activeReplies
+        .filter(reply => reply.userId !== Meteor.userId() && reply.parentId === '')
+        .map(reply => participants.find(user => user._id === reply.userId).username)
+      : [];
 
     return userList.length > 0 && (
       <Container>
@@ -59,11 +54,20 @@ class DiscussionThread extends PureComponent {
         </strong>
       </Container>
     );
-  }
+  });
 
-  renderCommentForm() {
-    const { discussion } = this.props;
-    return (discussion.activeReplies || []).some(reply => reply.userId === Meteor.userId() && reply.parentId === '')
+  renderCommentForm = withTracker(({ discussionId }) => ({
+    discussion: Discussions.findOne(
+      { _id: discussionId },
+      {
+        fields: {
+          activeReplies: 1,
+          commentLengthLimit: 1,
+        },
+      },
+    ),
+  }))(({ discussion }) => (
+    (discussion && discussion.activeReplies.some(reply => reply.userId === Meteor.userId() && reply.parentId === ''))
       ? (
         <CommentForm discussion={discussion} />
       )
@@ -75,15 +79,27 @@ class DiscussionThread extends PureComponent {
           icon="edit"
           primary
         />
-      );
+      )
+  ));
+
+  renderComments() {
+    const { children, participants, discussionId } = this.props;
+    return children.map(({ _id }) => (
+      <CommentView
+        key={_id}
+        discussionId={discussionId}
+        participants={participants}
+        commentId={_id}
+      />
+    ));
   }
 
   render() {
     const {
-      discussion, participants, scenario,
+      participants, scenario, discussionId,
     } = this.props;
 
-    if (!discussion) {
+    if (!scenario) {
       return <NotFoundPage />;
     }
 
@@ -100,13 +116,13 @@ class DiscussionThread extends PureComponent {
           )}
           <Comment.Group threaded attached="bottom">
             {this.renderComments()}
-            {this.renderUserReplyingStatus()}
+            <this.renderUserReplyingStatus participants={participants} discussionId={discussionId} />
           </Comment.Group>
-          {this.renderCommentForm()}
+          <this.renderCommentForm discussionId={discussionId} />
           <Rail position="left">
             <Sticky context={this.contextRef} offset={80}>
               <StarredCommentView
-                discussion={discussion}
+                discussionId={discussionId}
                 participants={participants}
               />
             </Sticky>
@@ -130,27 +146,21 @@ export default withTracker(({ match }) => {
   const discussion = Discussions.findOne(
     { _id: discussionId },
     {
-      fields:
-      {
-        scenarioId: 1,
-        activeReplies: 1,
-        userStars: 1,
-        votes: 1,
-        activeVote: 1,
-        commentLengthLimit: 1,
-        status: 1,
-      },
+      fields: { scenarioId: 1 },
     },
   );
 
   return {
-    discussion,
-    comments: Comments.find(
+    discussionId,
+    children: Comments.find(
       {
         discussionId,
         parentId: '',
       },
-      { sort: { postedTime: 1 } },
+      {
+        fields: { _id: 1 },
+        sort: { postedTime: 1 },
+      },
     ).fetch(),
     scenario:
       discussion

@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
-import { DiscussionPropType } from '/imports/types';
 import {
   Form, Button, Statistic,
 } from 'semantic-ui-react';
@@ -14,7 +13,9 @@ class CommentForm extends PureComponent {
   }
 
   static propTypes = {
-    discussion: DiscussionPropType.isRequired,
+    discussion: PropTypes.shape({
+      commentLengthLimit: PropTypes.number,
+    }).isRequired,
     parentId: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   }
 

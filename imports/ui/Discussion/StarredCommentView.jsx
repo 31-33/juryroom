@@ -7,10 +7,11 @@ import {
 import ReactMarkdown from 'react-markdown';
 import Linkify from 'react-linkify';
 import Comments from '/imports/api/Comments';
+import Discussions from '/imports/api/Discussions';
 import Votes from '/imports/api/Votes';
 import PropTypes from 'prop-types';
 import {
-  DiscussionPropType, CommentPropType, UserPropType, VotePropType,
+  CommentPropType, UserPropType, VotePropType,
 } from '/imports/types';
 import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
@@ -25,7 +26,21 @@ class StarredCommentView extends PureComponent {
   }
 
   static propTypes = {
-    discussion: DiscussionPropType.isRequired,
+    discussion: PropTypes.oneOfType([
+      PropTypes.shape({
+        userStars: PropTypes.arrayOf(PropTypes.shape({
+          userId: PropTypes.string.isRequired,
+          commentId: PropTypes.string.isRequired,
+        })).isRequired,
+        votes: PropTypes.arrayOf(PropTypes.shape({
+          voteId: PropTypes.string.isRequired,
+          commentId: PropTypes.string.isRequired,
+        })).isRequired,
+        activeVote: PropTypes.string.isRequired,
+        status: PropTypes.string.isRequired,
+      }),
+      PropTypes.bool,
+    ]).isRequired,
     comments: PropTypes.oneOfType([PropTypes.arrayOf(CommentPropType), PropTypes.bool]).isRequired,
     participants: PropTypes.arrayOf(UserPropType).isRequired,
     activeVote: PropTypes.oneOfType([VotePropType, PropTypes.bool]),
@@ -36,11 +51,11 @@ class StarredCommentView extends PureComponent {
       comments, participants, discussion, activeVote,
     } = this.props;
 
-    if (!starredComments.every(star => comments.some(comment => comment._id === star.commentId))) {
-      return '';
-    }
-
     return starredComments.map((starredComment) => {
+      if (!comments.some(comment => comment._id === starredComment.commentId)) {
+        return '';
+      }
+
       const commentData = comments.find(
         comment => comment._id === starredComment.commentId,
       );
@@ -80,12 +95,15 @@ class StarredCommentView extends PureComponent {
             <Comment.Actions>
               {starredComment.users.length > 0 && (
                 <Button
+                  style={{ width: '100%' }}
                   attached="top"
                   icon="star"
                   color="yellow"
                   content={isStarred ? 'Starred' : 'Star'}
                   basic={!isStarred}
+                  fluid
                   label={{
+                    style: ({ width: '100%', horizontalAlign: 'center' }),
                     basic: true,
                     color: 'yellow',
                     pointing: 'left',
@@ -138,6 +156,11 @@ class StarredCommentView extends PureComponent {
 
   render() {
     const { discussion, activeVote } = this.props;
+
+    if (!discussion) {
+      return '';
+    }
+
     const starredComments = [];
 
     if (activeVote) {
@@ -182,13 +205,28 @@ class StarredCommentView extends PureComponent {
   }
 }
 
-export default withTracker(({ discussion }) => ({
-  comments: Comments.find({
-    discussionId: discussion._id,
-    _id: {
-      $in: discussion.userStars.map(star => star.commentId)
-        .concat(discussion.votes.map(vote => vote.commentId)),
+export default withTracker(({ discussionId }) => {
+  const discussion = Discussions.findOne(
+    { _id: discussionId },
+    {
+      fields: {
+        userStars: 1,
+        votes: 1,
+        activeVote: 1,
+        status: 1,
+      },
     },
-  }).fetch(),
-  activeVote: Votes.findOne({ _id: discussion.activeVote }),
-}))(StarredCommentView);
+  );
+
+  return {
+    discussion,
+    comments: discussion && Comments.find({
+      discussionId,
+      _id: {
+        $in: discussion.userStars.map(star => star.commentId)
+          .concat(discussion.votes.map(vote => vote.commentId)),
+      },
+    }).fetch(),
+    activeVote: discussion && Votes.findOne({ _id: discussion.activeVote }),
+  };
+})(StarredCommentView);
