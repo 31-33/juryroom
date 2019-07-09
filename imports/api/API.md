@@ -87,7 +87,6 @@ Each time this method is called, it checks whether the other members of the grou
 
 Throws an error if:
   - The specified `voteId` does not exist
-  - The user has already voted on this vote
   - The vote is not the active vote for this discussion
   - The user is not a member of the group participating in this discussion
 

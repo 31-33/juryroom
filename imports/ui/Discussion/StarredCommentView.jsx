@@ -36,7 +36,7 @@ class StarredCommentView extends PureComponent {
           voteId: PropTypes.string.isRequired,
           commentId: PropTypes.string.isRequired,
         })).isRequired,
-        activeVote: PropTypes.string.isRequired,
+        activeVote: PropTypes.string,
         status: PropTypes.string.isRequired,
       }),
       PropTypes.bool,
@@ -128,24 +128,22 @@ class StarredCommentView extends PureComponent {
                   onClick={() => Meteor.call('discussions.callVote', discussion._id, commentData._id, starredComment.users)}
                 />
               )}
-              {isActiveVote && (
-                activeVote.userVotes.some(userVote => userVote.userId === Meteor.userId())
-                  ? renderUserVotes(activeVote, participants)
-                  : (
-                    <Button.Group fluid>
-                      <Button
-                        content="Disagree"
-                        negative
-                        onClick={() => Meteor.call('votes.vote', activeVote._id, false)}
-                      />
-                      <Button.Or />
-                      <Button
-                        content="Agree"
-                        positive
-                        onClick={() => Meteor.call('votes.vote', activeVote._id, true)}
-                      />
-                    </Button.Group>
-                  )
+              {isActiveVote && (activeVote.userVotes[Meteor.userId()] === null
+                ? (
+                  <Button.Group fluid>
+                    <Button
+                      content="Disagree"
+                      negative
+                      onClick={() => Meteor.call('votes.vote', activeVote._id, false)}
+                    />
+                    <Button.Or />
+                    <Button
+                      content="Agree"
+                      positive
+                      onClick={() => Meteor.call('votes.vote', activeVote._id, true)}
+                    />
+                  </Button.Group>
+                ) : renderUserVotes(activeVote, participants)
               )}
             </Comment.Actions>
           </Comment.Content>

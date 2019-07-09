@@ -10,10 +10,10 @@ export function renderUserVotes(vote, users, size = 'mini') {
   return (
     <List horizontal size={size}>
       {users.map((user) => {
-        const userVote = vote.userVotes.find(v => v.userId === user._id);
+        const userVote = vote.userVotes[user._id];
         let color = 'grey';
-        if (userVote !== undefined) {
-          color = userVote.vote ? 'green' : 'red';
+        if (userVote !== null) {
+          color = userVote ? 'green' : 'red';
         }
         return (
           <List.Item key={user._id} size={size}>
@@ -51,24 +51,26 @@ class Vote extends PureComponent {
 
     render() {
       const { vote, isActive, participants } = this.props;
+      const userVote = vote.userVotes[Meteor.userId()];
       return (
-        <Segment attached="bottom" secondary>
-          {(isActive && !vote.userVotes.some(v => v.userId === Meteor.userId())) ? (
-            <Button.Group>
+        <Segment attached="bottom" secondary clearing>
+          {userVote !== undefined && renderUserVotes(vote, participants)}
+          {isActive && (
+            <Button.Group floated="right">
               <Button
-                negative
+                color={userVote !== true ? 'red' : 'grey'}
                 content="Disagree"
                 onClick={() => Meteor.call('votes.vote', vote._id, false)}
                 attached="left"
               />
               <Button
-                positive
+                color={userVote !== false ? 'green' : 'grey'}
                 content="Agree"
                 onClick={() => Meteor.call('votes.vote', vote._id, true)}
                 attached="right"
               />
             </Button.Group>
-          ) : renderUserVotes(vote, participants)}
+          )}
         </Segment>
       );
     }

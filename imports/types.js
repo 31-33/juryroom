@@ -38,10 +38,7 @@ const VotePropType = PropTypes.shape({
   calledAt: PropTypes.objectOf(Date).isRequired,
   commentId: PropTypes.string.isRequired,
   discussionId: PropTypes.string.isRequired,
-  userVotes: PropTypes.arrayOf(PropTypes.shape({
-    userId: PropTypes.string.isRequired,
-    vote: PropTypes.bool.isRequired,
-  })).isRequired,
+  userVotes: PropTypes.objectOf(PropTypes.bool).isRequired,
 });
 
 const TopicPropType = PropTypes.shape({

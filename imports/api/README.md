@@ -269,10 +269,14 @@ Represents a vote. Users may call for a vote upon comments they have starred, an
     _id: String,
     commentId: String,
     discussionId: String,
-    userVotes: [
+    userVotes: {
+        (userId: String) : (vote: Boolean?),
+    },
+    voteArchive: [
         {
             userId: String,
             vote: Boolean,
+            voteTime: Date,
         },
     ],
     callerId: String,
@@ -287,7 +291,9 @@ Represents a vote. Users may call for a vote upon comments they have starred, an
 
 `discussionId`: *Identifies the discussion which this vote (and associated comment) exist within.*
 
-`userVotes`: *Array storing the user votes that have been made upon this collection. Each entry consists of the `userId` making the vote, and a boolean `vote` (true=agree, false=disagree) they made.*
+`userVotes`: *A dictionary that stores the current state of user votes on this vote. Initialized with a key for each userId in the group for the associated discussion, with a value of `null`. Value is set to either `true` or `false` when the user makes (or changes) their vote.*
+
+`voteArchive`: *Array storing the full history of user votes that have been made upon this collection. Each entry consists of the `userId` making the vote, a boolean `vote` (true=agree, false=disagree) they made, along with the time the vote was made at.*
 
 `callerId`: *Stores the id of the user who called the vote.*
 

@@ -241,6 +241,15 @@ Meteor.methods({
     check(commentId, String);
     check(starredUsers, Array);
 
+    const group = Groups.findOne({
+      members: this.userId,
+      discussions: { $elemMatch: { discussionId } },
+    });
+
+    if (!this.userId || !group) {
+      throw new Meteor.Error('not-authorized');
+    }
+
     if (!isDiscussionParticipant(this.userId, discussionId)) {
       throw new Meteor.Error('not-authorized');
     }
@@ -260,10 +269,16 @@ Meteor.methods({
       throw new Meteor.Error('already-voted-on');
     }
 
+    const userVotes = group.members.reduce((obj, userId) => {
+      // eslint-disable-next-line no-param-reassign
+      obj[userId] = null;
+      return obj;
+    }, {});
+
     const voteId = Votes.insert({
       commentId,
       discussionId,
-      userVotes: [],
+      userVotes,
       callerId: this.userId,
       starredBy: starredUsers,
       calledAt: new Date(),
@@ -295,11 +310,6 @@ Meteor.methods({
       throw new Meteor.Error('vote-not-found');
     }
 
-    // Check user has not already voted
-    if (currVote.userVotes.some(vote => vote.userId === this.userId)) {
-      throw new Meteor.Error('already-voted');
-    }
-
     // Check vote is active
     const discussion = Discussions.findOne(
       { _id: currVote.discussionId },
@@ -315,21 +325,27 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized');
     }
 
+    const setVote = {};
+    setVote[`userVotes.${this.userId}`] = userVote;
+
     Votes.update(
       { _id: voteId },
       {
+        $set: setVote,
         $addToSet: {
-          userVotes: {
+          voteArchive: {
             userId: this.userId,
             vote: userVote,
+            voteTime: new Date(),
           },
         },
       },
     );
 
     // Check if everyone has voted
-    if (group.members.every(user => user === this.userId
-      || currVote.userVotes.some(vote => vote.userId === user))) {
+    if (Object.entries(currVote.userVotes).every(
+      vote => vote[0] === this.userId || vote[1] !== null,
+    )) {
       Discussions.update(
         { _id: currVote.discussionId },
         {
@@ -338,7 +354,9 @@ Meteor.methods({
           },
         },
       );
-      if (userVote && currVote.userVotes.every(vote => vote.vote)) {
+      if (Object.entries(currVote.userVotes).every(
+        vote => (vote[0] === this.userId && userVote === true) || vote[1] === true,
+      )) {
         Discussions.update(
           { _id: currVote.discussionId },
           {
