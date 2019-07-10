@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import _ from 'lodash';
 import ScenarioSets from '/imports/api/ScenarioSets';
@@ -301,7 +301,7 @@ Meteor.methods({
   },
   'votes.vote'(voteId, userVote) {
     check(voteId, String);
-    check(userVote, Boolean);
+    check(userVote, Match.OneOf(Boolean, null));
 
     const currVote = Votes.findOne({ _id: voteId });
 
@@ -344,7 +344,7 @@ Meteor.methods({
 
     // Check if everyone has voted
     if (Object.entries(currVote.userVotes).every(
-      vote => vote[0] === this.userId || vote[1] !== null,
+      vote => (vote[0] === this.userId && userVote !== null) || vote[1] !== null,
     )) {
       Discussions.update(
         { _id: currVote.discussionId },

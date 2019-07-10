@@ -119,7 +119,7 @@ class StarredCommentView extends PureComponent {
                 <Button
                   disabled={!!discussion.activeVote
                   || !starredComment.users.some(user => user === Meteor.userId())
-                  || discussion.votes.some(vote => vote.commentId === starredComment._id)
+                  || discussion.votes.some(vote => vote.commentId === starredComment.commentId)
                   || discussion.status !== 'active'}
                   attached="bottom"
                   icon="exclamation"
@@ -128,23 +128,7 @@ class StarredCommentView extends PureComponent {
                   onClick={() => Meteor.call('discussions.callVote', discussion._id, commentData._id, starredComment.users)}
                 />
               )}
-              {isActiveVote && (activeVote.userVotes[Meteor.userId()] === null
-                ? (
-                  <Button.Group fluid>
-                    <Button
-                      content="Disagree"
-                      negative
-                      onClick={() => Meteor.call('votes.vote', activeVote._id, false)}
-                    />
-                    <Button.Or />
-                    <Button
-                      content="Agree"
-                      positive
-                      onClick={() => Meteor.call('votes.vote', activeVote._id, true)}
-                    />
-                  </Button.Group>
-                ) : renderUserVotes(activeVote, participants)
-              )}
+              {isActiveVote && renderUserVotes(activeVote, participants)}
             </Comment.Actions>
           </Comment.Content>
         </Comment>

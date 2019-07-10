@@ -91,7 +91,7 @@ class CommentViewTemplate extends Component {
             <Button
               disabled={!!discussion.activeVote
                 || !starredBy.some(star => star.userId === Meteor.userId())
-                || vote
+                || !!vote
                 || discussion.status !== 'active'}
               floated="right"
               content="Call Vote"
