@@ -88,7 +88,10 @@ class StarredCommentView extends PureComponent {
             <Comment.Text>
               <Linkify properties={{ target: '_blank' }}>
                 <Dotdotdot clamp={isActiveVote ? 10 : 5}>
-                  <ReactMarkdown source={commentData.text} />
+                  <ReactMarkdown
+                    source={commentData.text}
+                    disallowedTypes={['image', 'imageReference']}
+                  />
                 </Dotdotdot>
               </Linkify>
             </Comment.Text>

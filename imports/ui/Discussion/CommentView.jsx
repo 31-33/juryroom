@@ -139,7 +139,10 @@ class CommentViewTemplate extends Component {
         </Comment.Metadata>
         <Comment.Text>
           <Linkify properties={{ target: '_blank' }}>
-            <ReactMarkdown source={comment.text} />
+            <ReactMarkdown
+              source={comment.text}
+              disallowedTypes={['image', 'imageReference']}
+            />
           </Linkify>
         </Comment.Text>
         <Comment.Actions>

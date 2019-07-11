@@ -53,6 +53,7 @@ class CommentForm extends PureComponent {
     const { discussion } = this.props;
     const { commentContent } = this.state;
     const commentLengthLimit = discussion.commentLengthLimit || MAX_COMMENT_LENGTH;
+    const currCommentLength = commentContent.toString('markdown').length;
 
     return (
       <Form>
@@ -63,10 +64,40 @@ class CommentForm extends PureComponent {
           value={commentContent}
           onChange={this.onCommentTextChange}
           placeholder="Type your comment here..."
+          autoFocus
+          editorStyle={currCommentLength > commentLengthLimit ? { color: 'red' } : {}}
+          toolbarConfig={{
+            display: ['INLINE_STYLE_BUTTONS', 'BLOCK_TYPE_BUTTONS', 'BLOCK_TYPE_DROPDOWN', 'HISTORY_BUTTONS'],
+            INLINE_STYLE_BUTTONS: [
+              { label: 'Bold', style: 'BOLD' },
+              { label: 'Italic', style: 'ITALIC' },
+              { label: 'Strikethrough', style: 'STRIKETHROUGH' },
+              { label: 'Code', style: 'CODE' },
+            ],
+            BLOCK_TYPE_DROPDOWN: [
+              { label: 'Normal', style: 'unstyled' },
+              { label: 'Heading Large', style: 'header-one' },
+              { label: 'Heading Medium', style: 'header-two' },
+              { label: 'Heading Small', style: 'header-three' },
+              { label: 'Code Block', style: 'code-block' },
+            ],
+            BLOCK_TYPE_BUTTONS: [
+              { label: 'UL', style: 'unordered-list-item' },
+              { label: 'OL', style: 'ordered-list-item' },
+              { label: 'Blockquote', style: 'blockquote' },
+            ],
+          }}
         />
-        <Statistic content={`${commentContent.toString('markdown').length}/${commentLengthLimit}`} floated="right" />
+        <Statistic
+          floated="right"
+          value={`${currCommentLength}/${commentLengthLimit}`}
+          size="small"
+          text
+          color={currCommentLength > commentLengthLimit ? 'red' : 'black'}
+        />
         <Form.Group>
           <Form.Field
+            disabled={currCommentLength > commentLengthLimit}
             control={Button}
             onClick={this.submitComment}
             content="Add Reply"
