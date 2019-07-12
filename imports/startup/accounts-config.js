@@ -43,4 +43,22 @@ if (Meteor.isServer) {
       ${url}`;
     },
   };
+
+  Accounts.emailTemplates.enrollAccount = {
+    from() {
+      return 'JuryRoom <no-reply@juryroom.com';
+    },
+    subject() {
+      return 'JuryRoom Invitation';
+    },
+    text(user, url) {
+      return `Hi,
+      You have been invited to participate in JuryRoom
+      
+      Please click the link below to register your account.
+      ${url}`;
+    },
+  };
+
+  Accounts.urls.enrollAccount = token => Meteor.absoluteUrl(`user/enroll/${token}`);
 }

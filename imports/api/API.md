@@ -115,6 +115,39 @@ Sets the users avatar to the supplied `avatar` value (may be a url or a base64-e
 
 ---
 ```javascript
+'users.enrolNewUser'(emailAddress: String)
+```
+Creates a new user and returns the associated `userId`. An email is sent to the supplied email address, inviting them to join the site.
+
+Throws an error if the calling user does not have the admin role.
+
+---
+```javascript
+'users.doesUsernameExist'(username: String)
+```
+Used to check whether the supplied username is valid or not.
+
+Returns true if there exists another user with the username, and false if the username is unused.
+
+---
+```javascript
+'users.getFromResetToken'(token: String)
+```
+Finds and returns the user object for the supplied reset/enrollment token.
+The returned object exposes only the `_id` and `emails` fields from the user object.
+
+Throws an error if no user was found for the supplied token, or if the token has expired.
+
+---
+```javascript
+'users.setUsernameOnEnroll'(token: String, username: String)
+```
+Sets the username for the user associated with the specified enrollment token.
+
+Throws an error if the token is invalid, expired, or not an enrollment token.
+
+---
+```javascript
 'roles.setAdmin'(userIds: String | Array<String>)
 ```
 Adds the `admin` role to each of the supplied users.
