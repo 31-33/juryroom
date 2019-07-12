@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import { Accounts } from 'meteor/accounts-base';
 
@@ -13,14 +13,27 @@ if (Meteor.isServer) {
         emails: 1,
         avatar: 1,
         roles: 1,
+        profileInfo: 1,
       },
     },
   ));
 }
 
 Meteor.methods({
-  'users.updateProfile'(avatar) {
+  'users.updateProfile'(avatar, profileInfo) {
     check(avatar, String);
+    check(profileInfo, Match.Where((info) => {
+      if (typeof info !== 'object' && info !== undefined) {
+        return false;
+      }
+      return Object.entries(info).every(
+        kvp => kvp.length === 2
+        && typeof kvp[0] === 'string'
+        && typeof kvp[1] === 'object'
+        && typeof kvp[1].public === 'boolean',
+      );
+    }));
+
     if (!this.userId) {
       throw new Meteor.Error('not-authorized');
     }
@@ -30,6 +43,7 @@ Meteor.methods({
       {
         $set: {
           avatar,
+          profileInfo,
         },
       },
     );

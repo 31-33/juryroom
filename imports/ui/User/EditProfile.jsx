@@ -5,17 +5,18 @@ import {
   Segment, Header, Form,
 } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
-
 import DayPickerInput from 'react-day-picker/DayPickerInput';
 import 'react-day-picker/lib/style.css';
-import ReactAvatarEditor from 'react-avatar-editor';
 import { UserPropType } from '/imports/types';
 import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
+import AvatarEditor from './AvatarEditor';
 
 class EditProfile extends Component {
+  avatarEditor = null;
+
   static defaultProps = {
     user: false,
-  }
+  };
 
   static propTypes = {
     user: PropTypes.oneOfType([UserPropType, PropTypes.bool]),
@@ -23,52 +24,93 @@ class EditProfile extends Component {
     history: PropTypes.shape({
       push: PropTypes.func.isRequired,
     }).isRequired,
-  }
+  };
 
   constructor(props) {
     super(props);
 
-    const { avatar } = props.user || {};
     this.state = {
-      scale: 1,
-      image: avatar || '/avatar_default.png',
+
     };
   }
 
   componentDidUpdate(prevProps) {
     const { user } = this.props;
-    if (!prevProps.user && user && user.avatar) {
-      this.updateImage(user.avatar);
+    if (prevProps.user.profileInfo === undefined && user.profileInfo) {
+      const {
+        firstname,
+        lastname,
+        gender,
+        dateofbirth,
+        ethnicity,
+        religion,
+        about,
+      } = user.profileInfo;
+
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({
+        firstname: firstname.value,
+        lastname: lastname.value,
+        gender: gender.value,
+        dateofbirth: dateofbirth.value,
+        ethnicity: ethnicity.value,
+        religion: religion.value,
+        about: about.value,
+      });
     }
-  }
-
-  setEditor = (editor) => {
-    this.editor = editor;
-  }
-
-  getImage() {
-    return this.editor.getImageScaledToCanvas().toDataURL();
   }
 
   saveProfile = () => {
     const { history, userId } = this.props;
-    Meteor.call('users.updateProfile', this.getImage(), () => {
-      history.push(`/user/${userId}`);
-    });
+    const {
+      firstname,
+      lastname,
+      gender,
+      dateofbirth,
+      ethnicity,
+      religion,
+      about,
+    } = this.state;
+
+    const profileInfo = {
+      firstname: { value: firstname, public: true },
+      lastname: { value: lastname, public: true },
+      gender: { value: gender, public: true },
+      dateofbirth: { value: dateofbirth, public: true },
+      ethnicity: { value: ethnicity, public: true },
+      religion: { value: religion, public: true },
+      about: { value: about, public: true },
+    };
+
+    Meteor.call(
+      'users.updateProfile',
+      this.avatarEditor.getProfileImage(),
+      profileInfo,
+      () => {
+        history.push(`/user/${userId}`);
+      },
+    );
   }
 
-  updateImage(img) {
-    this.setState({ image: img });
-  }
+  handleChange = (e, { name, value }) => this.setState({ [name]: value });
 
   render() {
-    const { image, scale } = this.state;
     const { user, userId } = this.props;
     const { username } = user || {};
 
     if (userId !== Meteor.userId()) {
       return <NotAuthorizedPage />;
     }
+
+    const {
+      firstname,
+      lastname,
+      gender,
+      dateofbirth,
+      ethnicity,
+      religion,
+      about,
+    } = this.state;
 
     return (
       <Segment>
@@ -78,36 +120,69 @@ class EditProfile extends Component {
         </Header>
         <Segment attached="bottom">
           <Form>
-            <Segment.Group horizontal>
-              <Form.Group grouped as={Segment} floated="left">
-                <Form.Group>
-                  <Form.Input label="First Name" />
-                  <Form.Input label="Last Name" />
+            <Form.Group>
+              <Form.Field width={12}>
+                <Form.Group widths="equal">
+                  <Form.Input
+                    label="First Name"
+                    name="firstname"
+                    defaultValue={firstname}
+                    onChange={this.handleChange}
+                  />
+                  <Form.Input
+                    label="Last Name"
+                    name="lastname"
+                    defaultValue={lastname}
+                    onChange={this.handleChange}
+                  />
                 </Form.Group>
-                <Form.Group>
-                  <Form.Input label="Gender" />
-                  <Form.Field label="Date of Birth" control={DayPickerInput} format="DD/MM/YYYY" placeholder="DD/MM/YYYY" />
+                <Form.Group widths="equal">
+                  <Form.Input
+                    label="Gender"
+                    name="gender"
+                    defaultValue={gender}
+                    onChange={this.handleChange}
+                  />
+                  <Form.Field
+                    label="Date of Birth"
+                    control={DayPickerInput}
+                    format="DD/MM/YYYY"
+                    placeholder="DD/MM/YYYY"
+                    name="dateofbirth"
+                    defaultValue={dateofbirth}
+                    onChange={this.handleChange}
+                  />
                 </Form.Group>
-                <Form.Group>
-                  <Form.Input label="Ethnicity" />
-                  <Form.Input label="Religion" />
+                <Form.Group widths="equal">
+                  <Form.Input
+                    label="Ethnicity"
+                    name="ethnicity"
+                    defaultValue={ethnicity}
+                    onChange={this.handleChange}
+                  />
+                  <Form.Input
+                    label="Religion"
+                    name="religion"
+                    defaultValue={religion}
+                    onChange={this.handleChange}
+                  />
                 </Form.Group>
-              </Form.Group>
-              <Form.Group grouped as={Segment} floated="right">
-                <ReactAvatarEditor
-                  ref={this.setEditor}
-                  width={100}
-                  height={100}
-                  image={image}
-                  scale={parseFloat(scale)}
-                />
-                <div>
-                  <input type="range" min="0.25" max="4" step="0.05" defaultValue="1" onChange={e => this.setState({ scale: parseFloat(e.target.value) })} />
-                  <input type="file" onChange={e => this.setState({ image: e.target.files[0] })} />
-                </div>
-              </Form.Group>
-            </Segment.Group>
-            <Form.TextArea label="About" />
+              </Form.Field>
+              <Form.Field width={4}>
+                {user && (
+                  <AvatarEditor
+                    ref={(ref) => { this.avatarEditor = ref; }}
+                    avatar={user.avatar}
+                  />
+                )}
+              </Form.Field>
+            </Form.Group>
+            <Form.TextArea
+              label="About"
+              name="about"
+              value={about}
+              onChange={this.handleChange}
+            />
             <Form.Button onClick={this.saveProfile}>Save</Form.Button>
           </Form>
         </Segment>
