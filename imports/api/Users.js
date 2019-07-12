@@ -10,6 +10,7 @@ if (Meteor.isServer) {
     {
       fields: {
         username: 1,
+        emails: 1,
         avatar: 1,
         roles: 1,
       },
@@ -36,14 +37,13 @@ Meteor.methods({
   'users.enrolNewUser'(emailAddress) {
     check(emailAddress, String);
 
-    if (!Roles.userIsInRole(this.userId, ['admin'])) {
+    if (!Roles.userIsInRole(this.userId, ['admin', 'create-group'])) {
       throw new Meteor.Error('not-authorized');
     }
 
-    if (Meteor.isServer) {
-      const userId = Accounts.createUser({ email: emailAddress });
-      Accounts.sendEnrollmentEmail(userId);
-    }
+    const userId = Accounts.createUser({ email: emailAddress });
+    Accounts.sendEnrollmentEmail(userId);
+    return userId;
   },
   'users.doesUsernameExist'(username) {
     check(username, String);
