@@ -33,37 +33,35 @@ Throws error if user calling this method does not have required permissions (i.e
 
 ---
 ```javascript
-'discussions.star_comment'(discussionId: String, commentId: String)
+'comments.star'(discussionId: String, commentId: String)
 ```
 Marks the specified comment as starred within the current discussion. As each user may only have one comment per discussion starred at a time, any previously starred comments will be unstarred.
 
-An error will be thrown if the user is not a member of the specified discussion.
+An error will be thrown if the user is not a member of the specified discussion, or if the discussion is not in the active state.
 
 ---
 ```javascript
-'discussions.remove_star'(discussionId: String)
+'comments.unstar'(discussionId: String, commentId: String)
 ```
-Removes the user's star from the specified discussion, if one exists.
+Unstars the specified comment in the specified discussion.
 
-Throws an error if the user is not a member of the specified discussion.
+Throws an error if the user is not a member of the specified discussion, or if the discussion is not in the active state.
 
 ---
 ```javascript
-'discussions.reply'(discussionId: String, parentId: String)
+'comments.reply'(discussionId: String, parentId: String)
 ```
-Marks the current user as replying to the specified comment (`parentId`) within the specified discussion. This information is used to display which users are actively replying to other comments, as well as rendering the comment-posting form on the users client.
+Marks the current user as replying to the specified comment. This information is used to display which users are actively replying to other comments, as well as rendering the comment-posting form on the users client. If `parentId` is `''` (denoting a root-level comment in progress), the information is stored on the discussion object. Otherwise, the information is stored on the comment to which `parentId` refers to.
 
-As the user may only be replying to one comment at a time, this method will overwrite any previous calls.
-
-Throws an error if the user is not a member of the specified discussion.
+Throws an error if the user is not a member of the specified discussion, or if the discussion is not in the active state.
 
 ---
 ```javascript
-'discussions.closeReply'(discussionId: String)
+'comments.closeReply'(discussionId: String, parentId: String)
 ```
-Signifies that the user is no longer replying to any comment within the specified discussion.
+Signifies that the user has closed the reply form for the specified comment in the specified discussion. If `parentId` is `''`, this method removes the user from the `activeReplies` field of the related discussion object. Otherwise, the user is removed from the `activeReplies` field of the comment corresponding to the specified `parentId`.
 
-Throws an error if the user is not a member of the specified discussion.
+Throws an error if the user is not a member of the specified discussion, or if the discussion is not in the active state.
 
 ---
 ```javascript

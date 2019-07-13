@@ -85,13 +85,7 @@ Represents a discussion thread. A discussion is a conversation between a group o
     activeReplies: [
         {
             userId: String,
-            parentId: String,
-        },
-    ],
-    userStars: [
-        {
-            userId: String,
-            commentId: String,
+            activeTime: Date,
         },
     ],
     actionStar: [
@@ -106,6 +100,7 @@ Represents a discussion thread. A discussion is a conversation between a group o
             userId: String,
             parentId: String?,
             dateTime: Date,
+            open: Boolean,
         },
     ],
     actionCollapse: [
@@ -136,13 +131,11 @@ Represents a discussion thread. A discussion is a conversation between a group o
 
 `groupId`: *String which identifies the group which is participating in this discussion.*
 
-`activeReplies`: *Stores which replies are currently being replied to (and by which users). `parentId` may be an empty string, representing a root level comment is being made. This is used to store the current state of new posts/replies—there should only be one entry for each `userId`.*
-
-`userStars`: *Stores which comments are currently starred (and by which users). Each user can only have one comment starred at a time, and therefore there should only be one entry for each `userId`.*
+`activeReplies`: *Stores which users are currently making root-level comments. The `userId` of each user currently making a comment is stored, along with the time of activity.*
 
 `actionStar`: *Stores the full history of every star action made on this discussion thread. A star action consists of the `userId` who made the action, the `commentId` of the starred comment (not defined in the case of un-starring), and the `dateTime` the action was made at*.
 
-`actionReply`: *Stores the full history of every active reply made by the user. A reply action consists of the `userId` who made the action, the `parentId` of the comment being replied to (an empty string represents a root-level comment, and undefined represents the reply window being closed), and the `dateTime` the action was made at.*
+`actionReply`: *Stores the full history of every active reply made by the user. A reply action consists of the `userId` who made the action, the `parentId` of the comment being replied to (an empty string represents a root-level comment), the `dateTime` the action was made at, and a boolean flag `open` denoting whether or not the action was opening or closing the reply window.*
 
 `actionCollapse`: *Stores the full history of every comment that was collapsed/uncollapsed by a user participating in this discussion. Consists of the `userId` making the action, the `commentId` being collapsed, a boolean (`collapsed`) specifying whether the action was collapsing or uncollapsing the comment, and the `dateTime` at which the action was made. **Note: State of which users currently have a comment collapsed is stored on the comment itself.***
 
@@ -240,6 +233,18 @@ Represents a single post within a discussion thread. May be posted at the root l
     discussionId: String,
     parentId: String,
     postedTime: Date,
+    activeReplies: [
+        {
+            userId: String,
+            activeTime: Date,
+        },
+    ],
+    userStars: [
+        {
+            userId: String,
+            dateTime: Date,
+        },
+    ],
     authorId: String,
     text: String,
     collapsedBy: [String],
@@ -253,6 +258,10 @@ Represents a single post within a discussion thread. May be posted at the root l
 `parentId`: *Uniquely identifies another entry within the Comments collection, to which this comment is a reply to. This field may also be an empty string, representing comments which are posted at the root-level.*
 
 `postedTime`: *ISODate object representing the UTC time when this comment was posted.*
+
+`activeReplies`: *Stores the `userId`'s for the users who are currently replying to this comment.*
+
+`userStars`: *Stores the `userId`s for the users who currently have this comment starred.*
 
 `authorId`: *Stores the unique identifier for the user who posted this comment.*
 
