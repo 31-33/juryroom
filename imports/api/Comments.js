@@ -21,6 +21,7 @@ if (Meteor.isServer) {
           discussionId: 1,
           parentId: 1,
           postedTime: 1,
+          activeReplies: 1,
           authorId: 1,
           text: 1,
           collapsedBy: 1,
@@ -83,7 +84,7 @@ Meteor.methods({
       { _id: discussionId },
       {
         $addToSet: {
-          action_collapse: {
+          actionCollapse: {
             userId: this.userId,
             commentId,
             collapsed: collapse,
@@ -92,6 +93,111 @@ Meteor.methods({
         },
       },
     );
+  },
+  'comments.reply'(discussionId, parentId) {
+    check(discussionId, String);
+    check(parentId, String);
+
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    const discussion = Discussions.findOne({ _id: discussionId });
+    if (!discussion || discussion.status !== 'active') {
+      throw new Meteor.Error('discussion-not-active');
+    }
+
+    if (parentId === '') {
+      // Root level comment- stored on discussion object
+      Discussions.update(
+        { _id: discussionId },
+        {
+          $addToSet: {
+            activeReplies: {
+              userId: this.userId,
+              activeTime: new Date(),
+            },
+            actionReply: {
+              userId: this.userId,
+              parentId,
+              dateTime: new Date(),
+              open: true,
+            },
+          },
+        },
+      );
+    } else {
+      // Reply to comment- stored on parent comment object
+      Comments.update(
+        { _id: parentId, discussionId },
+        {
+          $addToSet: {
+            activeReplies: {
+              userId: this.userId,
+              activeTime: new Date(),
+            },
+          },
+        },
+      );
+      Discussions.update(
+        { _id: discussionId },
+        {
+          $addToSet: {
+            actionReply: {
+              userId: this.userId,
+              parentId,
+              dateTime: new Date(),
+              open: true,
+            },
+          },
+        },
+      );
+    }
+  },
+  'comments.closeReply'(discussionId, parentId) {
+    check(discussionId, String);
+    check(parentId, String);
+
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    if (parentId === '') {
+      Discussions.update(
+        { _id: discussionId },
+        {
+          $pull: {
+            activeReplies: { userId: this.userId },
+          },
+          $addToSet: {
+            userId: this.userId,
+            parentId,
+            dateTime: new Date(),
+            open: false,
+          },
+        },
+      );
+    } else {
+      Comments.update(
+        { _id: parentId, discussionId },
+        {
+          $pull: {
+            activeReplies: { userId: this.userId },
+          },
+        },
+      );
+      Discussions.update(
+        { _id: discussionId },
+        {
+          $addToSet: {
+            userId: this.userId,
+            parentId,
+            dateTime: new Date(),
+            open: false,
+          },
+        },
+      );
+    }
   },
   'comments.generateDiscussion'(discussionId, numComments, replyProbability) {
     check(discussionId, String);

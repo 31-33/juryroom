@@ -67,9 +67,9 @@ class CommentViewTemplate extends Component {
   }
 
   renderUserReplyingStatus() {
-    const { discussion, participants, comment } = this.props;
-    const userList = discussion.activeReplies
-      .filter(reply => reply.userId !== Meteor.userId() && reply.parentId === comment._id)
+    const { participants, comment } = this.props;
+    const userList = (comment.activeReplies || [])
+      .filter(reply => reply.userId !== Meteor.userId())
       .map(reply => participants.find(user => user._id === reply.userId).username);
 
     return userList.length > 0 && (
@@ -146,7 +146,7 @@ class CommentViewTemplate extends Component {
           </Linkify>
         </Comment.Text>
         <Comment.Actions>
-          <Comment.Action onClick={() => Meteor.call('discussions.reply', discussion._id, comment._id)} content="Reply" />
+          <Comment.Action onClick={() => Meteor.call('comments.reply', discussion._id, comment._id)} content="Reply" />
           {
             starredBy.some(star => star.userId === Meteor.userId()) ? (
               <Comment.Action onClick={() => Meteor.call('discussions.remove_star', discussion._id)} content="Unstar" />
@@ -169,7 +169,6 @@ class CommentViewTemplate extends Component {
     }
 
     const starredBy = discussion.userStars.filter(star => star.commentId === comment._id);
-
     return (
       <Comment collapsed={this.isCollapsed()} id={comment._id}>
         <Comment.Content>
@@ -187,8 +186,9 @@ class CommentViewTemplate extends Component {
               isActive={vote._id === discussion.activeVote}
             />
           )}
-          {discussion.activeReplies.some(reply => reply.userId === Meteor.userId()
-            && reply.parentId === comment._id) && (
+          {comment.activeReplies && comment.activeReplies.some(
+            reply => reply.userId === Meteor.userId(),
+          ) && (
             <CommentForm
               discussion={discussion}
               parentId={comment._id}
@@ -206,17 +206,15 @@ const CommentView = withTracker(({ discussionId, commentId }) => {
     { _id: discussionId },
     {
       fields: {
-        activeReplies: 1,
         userStars: 1,
         votes: 1,
         activeVote: 1,
         status: 1,
       },
       transform: ({
-        _id, activeReplies, userStars, votes, activeVote, status,
+        _id, userStars, votes, activeVote, status,
       }) => ({
         _id,
-        activeReplies: activeReplies.filter(reply => reply.parentId === commentId),
         userStars: userStars.filter(star => star.commentId === commentId),
         votes: votes.filter(vote => vote.commentId === commentId),
         activeVote,

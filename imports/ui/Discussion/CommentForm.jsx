@@ -8,15 +8,12 @@ import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
 import RichTextEditor from 'react-rte';
 
 class CommentForm extends PureComponent {
-  static defaultProps = {
-    parentId: false,
-  }
-
   static propTypes = {
     discussion: PropTypes.shape({
+      _id: PropTypes.string.isRequired,
       commentLengthLimit: PropTypes.number,
     }).isRequired,
-    parentId: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+    parentId: PropTypes.string.isRequired,
   }
 
   constructor() {
@@ -46,7 +43,7 @@ class CommentForm extends PureComponent {
 
   close = () => {
     const { discussion, parentId } = this.props;
-    Meteor.call('discussions.closeReply', discussion._id, parentId);
+    Meteor.call('comments.closeReply', discussion._id, parentId);
   }
 
   render() {

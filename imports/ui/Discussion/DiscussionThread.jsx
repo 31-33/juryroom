@@ -43,7 +43,7 @@ class DiscussionThread extends PureComponent {
   }))(({ discussion, participants }) => {
     const userList = discussion
       ? discussion.activeReplies
-        .filter(reply => reply.userId !== Meteor.userId() && reply.parentId === '')
+        .filter(reply => reply.userId !== Meteor.userId())
         .map(reply => participants.find(user => user._id === reply.userId).username)
       : [];
 
@@ -67,13 +67,16 @@ class DiscussionThread extends PureComponent {
       },
     ),
   }))(({ discussion }) => (
-    (discussion && discussion.activeReplies.some(reply => reply.userId === Meteor.userId() && reply.parentId === ''))
+    (discussion && discussion.activeReplies.some(reply => reply.userId === Meteor.userId()))
       ? (
-        <CommentForm discussion={discussion} />
+        <CommentForm
+          discussion={discussion}
+          parentId=""
+        />
       )
       : (
         <Button
-          onClick={() => Meteor.call('discussions.reply', discussion._id, '')}
+          onClick={() => Meteor.call('comments.reply', discussion._id, '')}
           content="Post"
           labelPosition="left"
           icon="edit"

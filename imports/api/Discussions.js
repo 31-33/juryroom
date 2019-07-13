@@ -178,64 +178,6 @@ Meteor.methods({
       },
     );
   },
-  'discussions.reply'(discussionId, parentId) {
-    check(discussionId, String);
-    check(parentId, String);
-
-    if (!isDiscussionParticipant(this.userId, discussionId)) {
-      throw new Meteor.Error('not-authorized');
-    }
-
-    const discussion = Discussions.findOne({ _id: discussionId });
-    if (!discussion || discussion.status !== 'active') {
-      throw new Meteor.Error('discussion-not-active');
-    }
-
-    // Remove any active replies for this user
-    Meteor.call('discussions.closeReply', discussionId);
-
-    // Insert current user replying to specified comment
-    Discussions.update(
-      { _id: discussionId },
-      {
-        $addToSet: {
-          activeReplies: {
-            userId: this.userId,
-            parentId,
-          },
-          actionReply: {
-            userId: this.userId,
-            parentId,
-            dateTime: new Date(),
-          },
-        },
-      },
-    );
-  },
-  'discussions.closeReply'(discussionId) {
-    check(discussionId, String);
-
-    if (!isDiscussionParticipant(this.userId, discussionId)) {
-      throw new Meteor.Error('not-authorized');
-    }
-
-    Discussions.update(
-      { _id: discussionId },
-      {
-        $pull: {
-          activeReplies: {
-            userId: this.userId,
-          },
-        },
-        $addToSet: {
-          actionReply: {
-            userId: this.userId,
-            dateTime: new Date(),
-          },
-        },
-      },
-    );
-  },
   'discussions.callVote'(discussionId, commentId, starredUsers) {
     check(discussionId, String);
     check(commentId, String);
