@@ -12,11 +12,14 @@ import PropTypes from 'prop-types';
 import CommentView from './CommentView';
 import CommentForm from './CommentForm';
 import StarredCommentView from './StarredCommentView';
+import DiscussionOverview from './DiscussionOverview';
 import {
   UserPropType, ScenarioPropType,
 } from '/imports/types';
 import NotFoundPage from '/imports/ui/Error/NotFoundPage';
 import LoadingPage from '/imports/ui/Error/LoadingPage';
+
+const scrollToElement = require('scroll-to-element');
 
 class DiscussionThread extends PureComponent {
   static defaultProps = {
@@ -155,7 +158,10 @@ class DiscussionThread extends PureComponent {
           </Rail>
           <Rail position="right">
             <Sticky context={this.contextRef} offset={80}>
-              <Segment>Discussion history / navigation bar here</Segment>
+              <DiscussionOverview
+                discussionId={discussionId}
+                handleClick={id => scrollToElement(`#${CSS.escape(id)}`, { align: 'top', offset: -120 })}
+              />
             </Sticky>
           </Rail>
         </Segment>

@@ -69,7 +69,7 @@ class StarredCommentView extends PureComponent {
               color="black"
               size="mini"
               onClick={() => scrollToElement(
-                `#${comment._id}`,
+                `#${CSS.escape(comment._id)}`,
                 {
                   align: 'top',
                   offset: -120,
