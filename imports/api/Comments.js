@@ -22,6 +22,7 @@ if (Meteor.isServer) {
           parentId: 1,
           postedTime: 1,
           activeReplies: 1,
+          userStars: 1,
           authorId: 1,
           text: 1,
           collapsedBy: 1,
@@ -198,6 +199,99 @@ Meteor.methods({
         },
       );
     }
+  },
+  'comments.star'(discussionId, commentId) {
+    check(discussionId, String);
+    check(commentId, String);
+
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    const discussion = Discussions.findOne({ _id: discussionId });
+    if (!discussion || discussion.status !== 'active') {
+      throw new Meteor.Error('discussion-not-active');
+    }
+
+    // Remove existing stars by user in this discussion
+    Comments.update(
+      {
+        discussionId,
+        userStars: { $exists: true, $ne: [] },
+      },
+      {
+        $pull: {
+          userStars: { userId: this.userId },
+        },
+      },
+      {
+        multi: true,
+      },
+    );
+
+    // Star the target comment
+    Comments.update(
+      { _id: commentId, discussionId },
+      {
+        $addToSet: {
+          userStars: {
+            userId: this.userId,
+            dateTime: new Date(),
+          },
+        },
+      },
+    );
+
+    // Record this event on the discussion
+    Discussions.update(
+      { _id: discussionId },
+      {
+        $addToSet: {
+          actionStar: {
+            userId: this.userId,
+            commentId,
+            dateTime: new Date(),
+          },
+        },
+      },
+    );
+  },
+  'comments.unstar'(discussionId, commentId) {
+    check(discussionId, String);
+    check(commentId, String);
+
+    if (!isDiscussionParticipant(this.userId, discussionId)) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    const discussion = Discussions.findOne({ _id: discussionId });
+    if (!discussion || discussion.status !== 'active') {
+      throw new Meteor.Error('discussion-not-active');
+    }
+
+    // Remove user from userStars on specified comment
+    Comments.update(
+      { _id: commentId, discussionId },
+      {
+        $pull: {
+          userStars: { userId: this.userId },
+        },
+      },
+    );
+
+    // Record this event on discussion object
+    Discussions.update(
+      { _id: discussionId },
+      {
+        $addToSet: {
+          actionStar: {
+            userId: this.userId,
+            commentId: '',
+            dateTime: new Date(),
+          },
+        },
+      },
+    );
   },
   'comments.generateDiscussion'(discussionId, numComments, replyProbability) {
     check(discussionId, String);

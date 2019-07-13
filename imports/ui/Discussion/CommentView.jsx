@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 import CommentForm from './CommentForm';
 import Vote from './Vote';
 import {
-  DiscussionPropType, CommentPropType, UserPropType, VotePropType,
+  UserPropType, VotePropType,
 } from '/imports/types';
 
 class CommentViewTemplate extends Component {
@@ -25,9 +25,14 @@ class CommentViewTemplate extends Component {
   }
 
   static propTypes = {
-    discussion: DiscussionPropType.isRequired,
+    discussion: PropTypes.shape({
+      activeVote: PropTypes.string,
+      status: PropTypes.string.isRequired,
+    }).isRequired,
     discussionId: PropTypes.string.isRequired,
-    comment: CommentPropType.isRequired,
+    comment: PropTypes.shape({
+
+    }).isRequired,
     commentId: PropTypes.string.isRequired,
     children: PropTypes.arrayOf(PropTypes.shape({ _id: PropTypes.string.isRequired })).isRequired,
     participants: PropTypes.arrayOf(UserPropType).isRequired,
@@ -149,9 +154,9 @@ class CommentViewTemplate extends Component {
           <Comment.Action onClick={() => Meteor.call('comments.reply', discussion._id, comment._id)} content="Reply" />
           {
             starredBy.some(star => star.userId === Meteor.userId()) ? (
-              <Comment.Action onClick={() => Meteor.call('discussions.remove_star', discussion._id)} content="Unstar" />
+              <Comment.Action onClick={() => Meteor.call('comments.unstar', discussion._id, comment._id)} content="Unstar" />
             ) : (
-              <Comment.Action onClick={() => Meteor.call('discussions.star_comment', discussion._id, comment._id)} content="Star" />
+              <Comment.Action onClick={() => Meteor.call('comments.star', discussion._id, comment._id)} content="Star" />
             )
           }
         </Comment.Actions>
@@ -168,7 +173,7 @@ class CommentViewTemplate extends Component {
       return '';
     }
 
-    const starredBy = discussion.userStars.filter(star => star.commentId === comment._id);
+    const starredBy = (comment.userStars || []);
     return (
       <Comment collapsed={this.isCollapsed()} id={comment._id}>
         <Comment.Content>
@@ -206,20 +211,9 @@ const CommentView = withTracker(({ discussionId, commentId }) => {
     { _id: discussionId },
     {
       fields: {
-        userStars: 1,
-        votes: 1,
         activeVote: 1,
         status: 1,
       },
-      transform: ({
-        _id, userStars, votes, activeVote, status,
-      }) => ({
-        _id,
-        userStars: userStars.filter(star => star.commentId === commentId),
-        votes: votes.filter(vote => vote.commentId === commentId),
-        activeVote,
-        status,
-      }),
     },
   );
 

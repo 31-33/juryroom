@@ -11,7 +11,7 @@ import Discussions from '/imports/api/Discussions';
 import Votes from '/imports/api/Votes';
 import PropTypes from 'prop-types';
 import {
-  CommentPropType, UserPropType, VotePropType,
+  UserPropType, VotePropType,
 } from '/imports/types';
 import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
@@ -28,10 +28,6 @@ class StarredCommentView extends PureComponent {
   static propTypes = {
     discussion: PropTypes.oneOfType([
       PropTypes.shape({
-        userStars: PropTypes.arrayOf(PropTypes.shape({
-          userId: PropTypes.string.isRequired,
-          commentId: PropTypes.string.isRequired,
-        })).isRequired,
         votes: PropTypes.arrayOf(PropTypes.shape({
           voteId: PropTypes.string.isRequired,
           commentId: PropTypes.string.isRequired,
@@ -41,136 +37,110 @@ class StarredCommentView extends PureComponent {
       }),
       PropTypes.bool,
     ]).isRequired,
-    comments: PropTypes.oneOfType([PropTypes.arrayOf(CommentPropType), PropTypes.bool]).isRequired,
+    comments: PropTypes.arrayOf(PropTypes.shape({
+      authorId: PropTypes.string.isRequired,
+      userStars: PropTypes.arrayOf(PropTypes.shape({
+        userId: PropTypes.string.isRequired,
+      })),
+    })).isRequired,
     participants: PropTypes.arrayOf(UserPropType).isRequired,
     activeVote: PropTypes.oneOfType([VotePropType, PropTypes.bool]),
   }
 
-  renderStarredComments(starredComments) {
+  renderComment(comment) {
     const {
-      comments, participants, discussion, activeVote,
+      participants, discussion, activeVote,
     } = this.props;
 
-    return starredComments.map((starredComment) => {
-      if (!comments.some(comment => comment._id === starredComment.commentId)) {
-        return '';
-      }
+    const author = participants.find(user => user._id === comment.authorId);
+    const isStarred = comment.userStars.some(star => star.userId === Meteor.userId());
+    const isActiveVote = activeVote && activeVote.commentId === comment._id;
 
-      const commentData = comments.find(
-        comment => comment._id === starredComment.commentId,
-      );
-      const author = participants.find(user => user._id === commentData.authorId);
-      const isStarred = starredComment.users.includes(Meteor.userId());
-      const isActiveVote = activeVote && activeVote.commentId === starredComment.commentId;
-
-      return (
-        <Comment key={starredComment.commentId}>
-          <Comment.Content>
-            <Comment.Author as={Link} to={`/user/${author._id}`}>
-              {author.username}
-            </Comment.Author>
-            <Comment.Metadata style={{ display: 'inline' }}>
-              <Moment fromNow>{commentData.postedTime}</Moment>
+    return (
+      <Comment key={comment._id}>
+        <Comment.Content>
+          <Comment.Author as={Link} to={`/user/${author._id}`}>
+            {author.username}
+          </Comment.Author>
+          <Comment.Metadata style={{ display: 'inline' }}>
+            <Moment fromNow>{comment.postedTime}</Moment>
+            <Button
+              floated="right"
+              color="black"
+              size="mini"
+              onClick={() => scrollToElement(
+                `#${comment._id}`,
+                {
+                  align: 'top',
+                  offset: -120,
+                },
+              )}
+              content="Scroll To"
+            />
+          </Comment.Metadata>
+          <Comment.Text>
+            <Linkify properties={{ target: '_blank' }}>
+              <Dotdotdot clamp={isActiveVote ? 10 : 5}>
+                <ReactMarkdown
+                  source={comment.text}
+                  disallowedTypes={['image', 'imageReference']}
+                />
+              </Dotdotdot>
+            </Linkify>
+          </Comment.Text>
+          <Comment.Actions>
+            {comment.userStars.length > 0 && (
               <Button
-                floated="right"
-                color="black"
-                size="mini"
-                onClick={() => scrollToElement(
-                  `#${starredComment.commentId}`,
-                  {
-                    align: 'top',
-                    offset: -120,
-                  },
-                )}
-                content="Scroll To"
+                style={{ width: '100%' }}
+                attached="top"
+                icon="star"
+                color="yellow"
+                content={isStarred ? 'Starred' : 'Star'}
+                basic={!isStarred}
+                fluid
+                label={{
+                  style: ({ width: '100%', horizontalAlign: 'center' }),
+                  basic: true,
+                  color: 'yellow',
+                  pointing: 'left',
+                  content: comment.userStars.map(star => participants.find(user => user._id === star.userId).username).join(', '),
+                }}
+                onClick={() => (isStarred
+                  ? Meteor.call('comments.unstar', discussion._id, comment._id)
+                  : Meteor.call('comments.star', discussion._id, comment._id))
+                }
               />
-            </Comment.Metadata>
-            <Comment.Text>
-              <Linkify properties={{ target: '_blank' }}>
-                <Dotdotdot clamp={isActiveVote ? 10 : 5}>
-                  <ReactMarkdown
-                    source={commentData.text}
-                    disallowedTypes={['image', 'imageReference']}
-                  />
-                </Dotdotdot>
-              </Linkify>
-            </Comment.Text>
-            <Comment.Actions>
-              {starredComment.users.length > 0 && (
-                <Button
-                  style={{ width: '100%' }}
-                  attached="top"
-                  icon="star"
-                  color="yellow"
-                  content={isStarred ? 'Starred' : 'Star'}
-                  basic={!isStarred}
-                  fluid
-                  label={{
-                    style: ({ width: '100%', horizontalAlign: 'center' }),
-                    basic: true,
-                    color: 'yellow',
-                    pointing: 'left',
-                    content: starredComment.users.map(userId => participants.find(user => user._id === userId).username).join(', '),
-                  }}
-                  onClick={() => (isStarred
-                    ? Meteor.call('discussions.remove_star', discussion._id)
-                    : Meteor.call('discussions.star_comment', discussion._id, commentData._id))
-                  }
-                />
-              )}
-              {!isActiveVote && (
-                <Button
-                  disabled={!!discussion.activeVote
-                  || !starredComment.users.some(user => user === Meteor.userId())
-                  || discussion.votes.some(vote => vote.commentId === starredComment.commentId)
-                  || discussion.status !== 'active'}
-                  attached="bottom"
-                  icon="exclamation"
-                  color="green"
-                  content="Call Vote"
-                  onClick={() => Meteor.call('discussions.callVote', discussion._id, commentData._id, starredComment.users)}
-                />
-              )}
-              {isActiveVote && renderUserVotes(activeVote, participants)}
-            </Comment.Actions>
-          </Comment.Content>
-        </Comment>
-      );
-    });
+            )}
+            {!isActiveVote && (
+              <Button
+                disabled={!!discussion.activeVote
+                || !comment.userStars.some(star => star.userId === Meteor.userId())
+                || discussion.votes.some(vote => vote.commentId === comment._id)
+                || discussion.status !== 'active'}
+                attached="bottom"
+                icon="exclamation"
+                color="green"
+                content="Call Vote"
+                onClick={() => Meteor.call('discussions.callVote', discussion._id, comment._id, comment.userStars.map(star => star.userId))}
+              />
+            )}
+            {isActiveVote && renderUserVotes(activeVote, participants)}
+          </Comment.Actions>
+        </Comment.Content>
+      </Comment>
+    );
   }
 
   render() {
-    const { discussion, activeVote } = this.props;
-
+    const { discussion, comments, activeVote } = this.props;
     if (!discussion) {
       return '';
     }
 
-    const starredComments = [];
-
-    if (activeVote) {
-      starredComments.push({
-        commentId: activeVote.commentId,
-        users: [],
-      });
-    }
-
-    discussion.userStars.forEach((star) => {
-      const index = starredComments.findIndex(comment => comment.commentId === star.commentId);
-      if (index < 0) {
-        starredComments.push({
-          commentId: star.commentId,
-          users: [star.userId],
-        });
-      } else {
-        starredComments[index].users.push(star.userId);
-      }
-    });
-
-    starredComments.sort((starA, starB) => {
-      if (activeVote && activeVote.commentId === starA.commentId) return -1;
-      if (activeVote && activeVote.commentId === starB.commentId) return 1;
-      return starA.users.length - starB.users.length;
+    const starredComments = comments.sort((commentA, commentB) => {
+      if (activeVote && activeVote.commentId === commentA._id) return -1;
+      if (activeVote && activeVote.commentId === commentB._id) return 1;
+      return commentA.userStars.length - commentB.userStars.length;
     });
 
     return starredComments.length > 0 && (
@@ -182,7 +152,11 @@ class StarredCommentView extends PureComponent {
         />
         <Segment attached="bottom">
           <Comment.Group>
-            {this.renderStarredComments(starredComments)}
+            {comments.sort((commentA, commentB) => {
+              if (activeVote && activeVote.commentId === commentA._id) return -1;
+              if (activeVote && activeVote.commentId === commentB._id) return 1;
+              return commentA.userStars.length - commentB.userStars.length;
+            }).map(comment => this.renderComment(comment))}
           </Comment.Group>
         </Segment>
       </Container>
@@ -195,23 +169,24 @@ export default withTracker(({ discussionId }) => {
     { _id: discussionId },
     {
       fields: {
-        userStars: 1,
         votes: 1,
         activeVote: 1,
         status: 1,
       },
     },
   );
+  const activeVote = discussion && Votes.findOne({ _id: discussion.activeVote });
+  const activeVoteCommentId = activeVote ? activeVote.commentId : '';
 
   return {
     discussion,
     comments: discussion && Comments.find({
       discussionId,
-      _id: {
-        $in: discussion.userStars.map(star => star.commentId)
-          .concat(discussion.votes.map(vote => vote.commentId)),
-      },
+      $or: [
+        { userStars: { $exists: true, $ne: [] } },
+        { _id: activeVoteCommentId },
+      ],
     }).fetch(),
-    activeVote: discussion && Votes.findOne({ _id: discussion.activeVote }),
+    activeVote,
   };
 })(StarredCommentView);
