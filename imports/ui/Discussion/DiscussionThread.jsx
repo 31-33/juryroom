@@ -25,10 +25,9 @@ class DiscussionThread extends PureComponent {
   }
 
   static propTypes = {
-    children: PropTypes.arrayOf(PropTypes.shape({ _id: PropTypes.string.isRequired })).isRequired,
+    discussionId: PropTypes.string.isRequired,
     participants: PropTypes.oneOfType([PropTypes.arrayOf(UserPropType), PropTypes.bool]),
     scenario: PropTypes.oneOfType([ScenarioPropType, PropTypes.bool]),
-    discussionId: PropTypes.string.isRequired,
   }
 
   contextRef = createRef();
@@ -85,17 +84,35 @@ class DiscussionThread extends PureComponent {
       )
   ));
 
-  renderComments() {
-    const { children, participants, discussionId } = this.props;
-    return children.map(({ _id }) => (
-      <CommentView
-        key={_id}
-        discussionId={discussionId}
-        participants={participants}
-        commentId={_id}
-      />
-    ));
-  }
+  discussionComments = withTracker(({ discussionId }) => ({
+    discussion: Discussions.findOne(
+      { _id: discussionId },
+      {
+        fields: {
+          activeVote: 1,
+          commentLengthLimit: 1,
+          status: 1,
+        },
+      },
+    ),
+    rootComments: Comments.find(
+      {
+        discussionId,
+        parentId: '',
+      },
+      {
+        fields: { _id: 1 },
+        sort: { postedTime: 1 },
+      },
+    ).fetch(),
+  }))(({ discussion, participants, rootComments }) => discussion && rootComments.map(({ _id }) => (
+    <CommentView
+      key={_id}
+      discussion={discussion}
+      participants={participants}
+      commentId={_id}
+    />
+  )));
 
   render() {
     const {
@@ -118,8 +135,14 @@ class DiscussionThread extends PureComponent {
             />
           )}
           <Comment.Group threaded attached="bottom">
-            {this.renderComments()}
-            <this.renderUserReplyingStatus participants={participants} discussionId={discussionId} />
+            <this.discussionComments
+              participants={participants}
+              discussionId={discussionId}
+            />
+            <this.renderUserReplyingStatus
+              participants={participants}
+              discussionId={discussionId}
+            />
           </Comment.Group>
           <this.renderCommentForm discussionId={discussionId} />
           <Rail position="left">
@@ -155,16 +178,6 @@ export default withTracker(({ match }) => {
 
   return {
     discussionId,
-    children: Comments.find(
-      {
-        discussionId,
-        parentId: '',
-      },
-      {
-        fields: { _id: 1 },
-        sort: { postedTime: 1 },
-      },
-    ).fetch(),
     scenario:
       discussion
       && Scenarios.findOne({ _id: discussion.scenarioId }),

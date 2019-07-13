@@ -1,16 +1,14 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import Comments from '/imports/api/Comments';
 import Votes from '/imports/api/Votes';
-import Discussions from '/imports/api/Discussions';
 import {
   Comment, Icon, Divider, Container, Segment, List, Button, Item,
 } from 'semantic-ui-react';
 import Moment from 'react-moment';
 import ReactMarkdown from 'react-markdown';
 import Linkify from 'react-linkify';
-import isEqual from 'react-fast-compare';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CommentForm from './CommentForm';
@@ -19,7 +17,7 @@ import {
   UserPropType, VotePropType,
 } from '/imports/types';
 
-class CommentViewTemplate extends Component {
+class CommentViewTemplate extends PureComponent {
   static defaultProps = {
     vote: false,
   }
@@ -27,9 +25,9 @@ class CommentViewTemplate extends Component {
   static propTypes = {
     discussion: PropTypes.shape({
       activeVote: PropTypes.string,
+      commentLengthLimit: PropTypes.number,
       status: PropTypes.string.isRequired,
     }).isRequired,
-    discussionId: PropTypes.string.isRequired,
     comment: PropTypes.shape({
 
     }).isRequired,
@@ -39,13 +37,9 @@ class CommentViewTemplate extends Component {
     vote: PropTypes.oneOfType([VotePropType, PropTypes.bool]),
   }
 
-  shouldComponentUpdate(nextProps) {
-    return !isEqual(this.props, nextProps);
-  }
-
   collapse = () => {
-    const { discussionId, commentId } = this.props;
-    Meteor.call('comments.collapse', discussionId, commentId, !this.isCollapsed());
+    const { discussion, commentId } = this.props;
+    Meteor.call('comments.collapse', discussion._id, commentId, !this.isCollapsed());
   }
 
   isCollapsed() {
@@ -54,14 +48,14 @@ class CommentViewTemplate extends Component {
   }
 
   renderChildren() {
-    const { children, discussionId, participants } = this.props;
+    const { children, participants, discussion } = this.props;
     return children.length > 0 && (
       <Comment.Group threaded>
         {
           children.map(({ _id }) => (
             <CommentView
               key={_id}
-              discussionId={discussionId}
+              discussion={discussion}
               participants={participants}
               commentId={_id}
             />
@@ -206,34 +200,21 @@ class CommentViewTemplate extends Component {
     );
   }
 }
-const CommentView = withTracker(({ discussionId, commentId }) => {
-  const discussion = Discussions.findOne(
-    { _id: discussionId },
+const CommentView = withTracker(({ discussion, commentId }) => ({
+  comment: Comments.findOne(
+    { _id: commentId },
+  ),
+  children: Comments.find(
     {
-      fields: {
-        activeVote: 1,
-        status: 1,
-      },
+      discussionId: discussion._id,
+      parentId: commentId,
     },
-  );
-
-  return {
-    discussion,
-    comment: Comments.findOne(
-      { _id: commentId },
-    ),
-    children: Comments.find(
-      {
-        discussionId,
-        parentId: commentId,
-      },
-      {
-        fields: { _id: 1 },
-        sort: { postedTime: 1 },
-      },
-    ).fetch() || [],
-    vote: Votes.findOne({ commentId }),
-  };
-})(CommentViewTemplate);
+    {
+      fields: { _id: 1 },
+      sort: { postedTime: 1 },
+    },
+  ).fetch() || [],
+  vote: Votes.findOne({ commentId }),
+}))(CommentViewTemplate);
 
 export default CommentView;
