@@ -1,7 +1,8 @@
-import React, { PureComponent, createRef } from 'react';
+import React, { PureComponent } from 'react';
 import {
-  Button, Comment, Container, Rail, Ref, Segment, Sticky, Header,
+  Button, Comment, Container, Segment, Header, Sidebar,
 } from 'semantic-ui-react';
+import Swipe from 'react-easy-swipe';
 import { Meteor } from 'meteor/meteor';
 import Comments from '/imports/api/Comments';
 import Discussions from '/imports/api/Discussions';
@@ -32,8 +33,6 @@ class DiscussionThread extends PureComponent {
     participants: PropTypes.oneOfType([PropTypes.arrayOf(UserPropType), PropTypes.bool]),
     scenario: PropTypes.oneOfType([ScenarioPropType, PropTypes.bool]),
   }
-
-  contextRef = createRef();
 
   renderUserReplyingStatus = withTracker(({ discussionId }) => ({
     discussion: Discussions.findOne(
@@ -117,6 +116,15 @@ class DiscussionThread extends PureComponent {
     />
   )));
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      showStarredPanel: true,
+      showOverviewPanel: true,
+    };
+  }
+
   scrollToComment = (commentId) => {
     scrollToElement(`#${CSS.escape(commentId)}`, { align: 'top', offset: -120 });
   }
@@ -125,52 +133,73 @@ class DiscussionThread extends PureComponent {
     const {
       participants, scenario, discussionId,
     } = this.props;
+    const { showStarredPanel, showOverviewPanel } = this.state;
 
     if (!scenario) {
       return <NotFoundPage />;
     }
 
     return (
-      <Ref innerRef={this.contextRef}>
-        <Segment>
-          {scenario && (
-            <Header
-              size="large"
-              attached="top"
-              content={scenario.title}
-              subheader={scenario.description}
-            />
-          )}
-          <Comment.Group threaded attached="bottom">
-            <this.discussionComments
-              participants={participants}
-              discussionId={discussionId}
-            />
-            <this.renderUserReplyingStatus
-              participants={participants}
-              discussionId={discussionId}
-            />
-          </Comment.Group>
-          <this.renderCommentForm discussionId={discussionId} />
-          <Rail position="left">
-            <Sticky context={this.contextRef} offset={80}>
-              <StarredCommentView
-                discussionId={discussionId}
+      <Container>
+        <Sidebar
+          animation="overlay"
+          direction="right"
+          visible={showOverviewPanel}
+          as={Swipe}
+          allowMouseEvents
+          tolerance={100}
+          onSwipeRight={() => this.setState({ showOverviewPanel: false })}
+        >
+          <DiscussionOverview
+            discussionId={discussionId}
+            scrollToComment={this.scrollToComment}
+          />
+        </Sidebar>
+        <Sidebar
+          animation="overlay"
+          direction="left"
+          visible={showStarredPanel}
+          as={Swipe}
+          allowMouseEvents
+          tolerance={100}
+          onSwipeLeft={() => this.setState({ showStarredPanel: false })}
+        >
+          <StarredCommentView
+            discussionId={discussionId}
+            participants={participants}
+            scrollToComment={this.scrollToComment}
+          />
+        </Sidebar>
+        <Sidebar.Pusher>
+          <Segment
+            as={Swipe}
+            allowMouseEvents
+            tolerance={250}
+            onSwipeLeft={() => this.setState({ showOverviewPanel: true })}
+            onSwipeRight={() => this.setState({ showStarredPanel: true })}
+          >
+            {scenario && (
+              <Header
+                size="large"
+                attached="top"
+                content={scenario.title}
+                subheader={scenario.description}
+              />
+            )}
+            <Comment.Group threaded attached="bottom">
+              <this.discussionComments
                 participants={participants}
-                scrollToComment={this.scrollToComment}
-              />
-            </Sticky>
-          </Rail>
-          <Rail position="right">
-            <Sticky context={this.contextRef} offset={80}>
-              <DiscussionOverview
                 discussionId={discussionId}
-                scrollToComment={this.scrollToComment}
               />
-            </Sticky>
-          </Rail>
-        </Segment>
-      </Ref>
+              <this.renderUserReplyingStatus
+                participants={participants}
+                discussionId={discussionId}
+              />
+            </Comment.Group>
+            <this.renderCommentForm discussionId={discussionId} />
+          </Segment>
+        </Sidebar.Pusher>
+      </Container>
     );
   }
 }
