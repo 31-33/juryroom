@@ -18,8 +18,6 @@ import Moment from 'react-moment';
 import { renderUserVotes } from '/imports/ui/Discussion/Vote';
 import Dotdotdot from 'react-dotdotdot';
 
-const scrollToElement = require('scroll-to-element');
-
 class StarredCommentView extends PureComponent {
   static defaultProps = {
     activeVote: false,
@@ -45,11 +43,12 @@ class StarredCommentView extends PureComponent {
     })).isRequired,
     participants: PropTypes.arrayOf(UserPropType).isRequired,
     activeVote: PropTypes.oneOfType([VotePropType, PropTypes.bool]),
+    scrollToComment: PropTypes.func.isRequired,
   }
 
   renderComment(comment) {
     const {
-      participants, discussion, activeVote,
+      participants, discussion, activeVote, scrollToComment,
     } = this.props;
 
     const author = participants.find(user => user._id === comment.authorId);
@@ -68,13 +67,7 @@ class StarredCommentView extends PureComponent {
               floated="right"
               color="black"
               size="mini"
-              onClick={() => scrollToElement(
-                `#${CSS.escape(comment._id)}`,
-                {
-                  align: 'top',
-                  offset: -120,
-                },
-              )}
+              onClick={() => scrollToComment(comment._id)}
               content="Scroll To"
             />
           </Comment.Metadata>

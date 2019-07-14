@@ -11,7 +11,7 @@ import Votes from '/imports/api/Votes';
 class DiscussionOverview extends PureComponent {
   static propTypes = {
     discussionId: PropTypes.string.isRequired,
-    handleClick: PropTypes.func.isRequired,
+    scrollToComment: PropTypes.func.isRequired,
   }
 
   renderChildren = withTracker(({ discussionId, commentId }) => ({
@@ -28,7 +28,7 @@ class DiscussionOverview extends PureComponent {
     ),
     vote: Votes.findOne({ discussionId, commentId }),
   }))(({
-    discussionId, children, handleClick, comment, vote,
+    discussionId, children, scrollToComment, comment, vote,
   }) => {
     const isStarred = comment
       && comment.userStars
@@ -50,7 +50,7 @@ class DiscussionOverview extends PureComponent {
               backgroundColor: color,
               border: `${(vote || isStarred) ? '1px' : '2px'} solid #DEDEDE`,
             }}
-            onClick={() => handleClick(comment._id)}
+            onClick={() => scrollToComment(comment._id)}
           />
         )}
         {children.map(({ _id }) => (
@@ -58,7 +58,7 @@ class DiscussionOverview extends PureComponent {
             key={_id}
             discussionId={discussionId}
             commentId={_id}
-            handleClick={handleClick}
+            scrollToComment={scrollToComment}
           />
         ))}
       </Container>
@@ -66,14 +66,14 @@ class DiscussionOverview extends PureComponent {
   });
 
   render() {
-    const { discussionId, handleClick } = this.props;
+    const { discussionId, scrollToComment } = this.props;
 
     return (
       <Segment>
         <this.renderChildren
           discussionId={discussionId}
           commentId=""
-          handleClick={handleClick}
+          scrollToComment={scrollToComment}
         />
       </Segment>
     );

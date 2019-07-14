@@ -117,6 +117,10 @@ class DiscussionThread extends PureComponent {
     />
   )));
 
+  scrollToComment = (commentId) => {
+    scrollToElement(`#${CSS.escape(commentId)}`, { align: 'top', offset: -120 });
+  }
+
   render() {
     const {
       participants, scenario, discussionId,
@@ -153,6 +157,7 @@ class DiscussionThread extends PureComponent {
               <StarredCommentView
                 discussionId={discussionId}
                 participants={participants}
+                scrollToComment={this.scrollToComment}
               />
             </Sticky>
           </Rail>
@@ -160,7 +165,7 @@ class DiscussionThread extends PureComponent {
             <Sticky context={this.contextRef} offset={80}>
               <DiscussionOverview
                 discussionId={discussionId}
-                handleClick={id => scrollToElement(`#${CSS.escape(id)}`, { align: 'top', offset: -120 })}
+                scrollToComment={this.scrollToComment}
               />
             </Sticky>
           </Rail>
