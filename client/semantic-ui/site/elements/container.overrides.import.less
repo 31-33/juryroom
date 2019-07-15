@@ -1,3 +1,15 @@
 /*******************************
          Site Overrides
 *******************************/
+
+@media only screen and (min-width: @computerBreakpoint) and (max-width: @largestSmallMonitor) {
+  .ui.container.wrapper {
+    margin-left: @computerMinimumGutter !important;
+    margin-right: @computerMinimumGutter !important;
+  }
+}
+
+.ui.container.content {
+  // push content container below the menu bar
+  padding-top: @relativeSmall * 2 + 2em;
+}

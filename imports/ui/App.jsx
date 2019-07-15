@@ -44,7 +44,7 @@ class App extends Component {
     return (
       <Router history={this.browserHistory}>
         <Menu fixed="top" inverted>
-          <Container>
+          <Container className="wrapper">
             <Menu.Item as={Link} to="/" header>
               <Icon size="big" name="balance scale" />
               JuryRoom
@@ -69,7 +69,7 @@ class App extends Component {
             </Menu>
           </Container>
         </Menu>
-        <Container style={{ paddingTop: '4em' }}>
+        <Container className="wrapper content">
           <Switch>
             <Route exact path="/discussion/:discussionId" component={DiscussionThread} />
             <Route exact path="/user/:userId" component={UserProfile} />

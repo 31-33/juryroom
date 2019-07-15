@@ -42,7 +42,7 @@ class DiscussionOverview extends PureComponent {
     }
 
     return (
-      <Container style={{ paddingLeft: '10px' }}>
+      <div style={{ paddingLeft: '10px' }}>
         {comment && (
           <Container
             style={{
@@ -61,7 +61,7 @@ class DiscussionOverview extends PureComponent {
             scrollToComment={scrollToComment}
           />
         ))}
-      </Container>
+      </div>
     );
   });
 
