@@ -120,8 +120,8 @@ class DiscussionThread extends PureComponent {
     super(props);
 
     this.state = {
-      showStarredPanel: true,
-      showOverviewPanel: true,
+      showStarredPanel: window.innerWidth > 1200,
+      showOverviewPanel: window.innerWidth > 1200,
     };
   }
 
@@ -140,7 +140,7 @@ class DiscussionThread extends PureComponent {
     }
 
     return (
-      <Container>
+      <div>
         <Sidebar
           animation="overlay"
           direction="right"
@@ -199,7 +199,7 @@ class DiscussionThread extends PureComponent {
             <this.renderCommentForm discussionId={discussionId} />
           </Segment>
         </Sidebar.Pusher>
-      </Container>
+      </div>
     );
   }
 }
