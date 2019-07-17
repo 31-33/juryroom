@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { Segment, Header, List } from 'semantic-ui-react';
+import {
+  Segment, Header, List, Container,
+} from 'semantic-ui-react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
@@ -15,22 +17,23 @@ class Dashboard extends Component {
   render() {
     const { groups } = this.props;
     return (
-      <Segment>
-        <Header size="huge">Dashboard</Header>
-
-        <Header attached="top">Groups</Header>
+      <Container>
+        <Segment attached="top">
+          <Header size="huge" content="Dashboard" />
+        </Segment>
         <Segment attached="bottom">
-          <List divided>
+          <Header content="Groups" />
+          <List relaxed size="huge">
             {groups.map(group => <GroupSummary key={group._id} group={group} />)}
           </List>
         </Segment>
-      </Segment>
+      </Container>
     );
   }
 }
 
 export default withTracker(() => ({
   groups: Groups.find(
-    { members: `${Meteor.userId()}` },
+    { members: Meteor.userId() },
   ).fetch(),
 }))(Dashboard);
