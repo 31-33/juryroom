@@ -65,7 +65,7 @@ Throws an error if the user is not a member of the specified discussion, or if t
 
 ---
 ```javascript
-'discussions.callVote'(discussionId: String, commentId: String)
+'votes.callVote'(discussionId: String, commentId: String)
 ```
 Used to start a vote on the specified comment within the specified discussion.
 

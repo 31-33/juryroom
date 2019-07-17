@@ -17,99 +17,99 @@ if (Meteor.isServer) {
       },
     },
   ));
-}
 
-Meteor.methods({
-  'users.updateProfile'(avatar, profileInfo) {
-    check(avatar, String);
-    check(profileInfo, Match.Where((info) => {
-      if (typeof info !== 'object' && info !== undefined) {
-        return false;
+  Meteor.methods({
+    'users.updateProfile'(avatar, profileInfo) {
+      check(avatar, String);
+      check(profileInfo, Match.Where((info) => {
+        if (typeof info !== 'object' && info !== undefined) {
+          return false;
+        }
+        return Object.entries(info).every(
+          kvp => kvp.length === 2
+          && typeof kvp[0] === 'string'
+          && typeof kvp[1] === 'object'
+          && typeof kvp[1].public === 'boolean',
+        );
+      }));
+
+      if (!this.userId) {
+        throw new Meteor.Error('not-authorized');
       }
-      return Object.entries(info).every(
-        kvp => kvp.length === 2
-        && typeof kvp[0] === 'string'
-        && typeof kvp[1] === 'object'
-        && typeof kvp[1].public === 'boolean',
-      );
-    }));
 
-    if (!this.userId) {
-      throw new Meteor.Error('not-authorized');
-    }
-
-    Meteor.users.update(
-      { _id: this.userId },
-      {
-        $set: {
-          avatar,
-          profileInfo,
+      Meteor.users.update(
+        { _id: this.userId },
+        {
+          $set: {
+            avatar,
+            profileInfo,
+          },
         },
-      },
-    );
-  },
-  'users.enrolNewUser'(emailAddress) {
-    check(emailAddress, String);
+      );
+    },
+    'users.enrolNewUser'(emailAddress) {
+      check(emailAddress, String);
 
-    if (!Roles.userIsInRole(this.userId, ['admin', 'create-group'])) {
-      throw new Meteor.Error('not-authorized');
-    }
+      if (!Roles.userIsInRole(this.userId, ['admin', 'create-group'])) {
+        throw new Meteor.Error('not-authorized');
+      }
 
-    const userId = Accounts.createUser({ email: emailAddress });
-    Accounts.sendEnrollmentEmail(userId);
-    return userId;
-  },
-  'users.doesUsernameExist'(username) {
-    check(username, String);
+      const userId = Accounts.createUser({ email: emailAddress });
+      Accounts.sendEnrollmentEmail(userId);
+      return userId;
+    },
+    'users.doesUsernameExist'(username) {
+      check(username, String);
 
-    return !!Meteor.users.findOne({ username });
-  },
-  'users.getFromResetToken'(token) {
-    check(token, String);
+      return !!Meteor.users.findOne({ username });
+    },
+    'users.getFromResetToken'(token) {
+      check(token, String);
 
-    const user = Meteor.users.findOne({ 'services.password.reset.token': token });
+      const user = Meteor.users.findOne({ 'services.password.reset.token': token });
 
-    if (!user) {
-      throw new Meteor.Error(403, 'Token expired');
-    }
+      if (!user) {
+        throw new Meteor.Error(403, 'Token expired');
+      }
 
-    const { when, reason } = user.services.password.reset;
-    const now = Date.now();
-    // eslint-disable-next-line no-underscore-dangle
-    const tokenLifetime = (reason === 'enroll') ? Accounts._getPasswordEnrollTokenLifetimeMs() : Accounts._getPasswordResetTokenLifetimeMs();
+      const { when, reason } = user.services.password.reset;
+      const now = Date.now();
+      // eslint-disable-next-line no-underscore-dangle
+      const tokenLifetime = (reason === 'enroll') ? Accounts._getPasswordEnrollTokenLifetimeMs() : Accounts._getPasswordResetTokenLifetimeMs();
 
-    if ((now - when) > tokenLifetime) {
-      throw new Meteor.Error(403, 'Token expired');
-    }
+      if ((now - when) > tokenLifetime) {
+        throw new Meteor.Error(403, 'Token expired');
+      }
 
-    return {
-      _id: user._id,
-      emails: user.emails,
-    };
-  },
-  'users.setUsernameOnEnroll'(token, username) {
-    check(token, String);
-    check(username, String);
+      return {
+        _id: user._id,
+        emails: user.emails,
+      };
+    },
+    'users.setUsernameOnEnroll'(token, username) {
+      check(token, String);
+      check(username, String);
 
-    const user = Meteor.users.findOne({ 'services.password.reset.token': token });
+      const user = Meteor.users.findOne({ 'services.password.reset.token': token });
 
-    if (!user) {
-      throw new Meteor.Error(403, 'Token expired');
-    }
+      if (!user) {
+        throw new Meteor.Error(403, 'Token expired');
+      }
 
-    const { when, reason } = user.services.password.reset;
-    if (reason !== 'enroll') {
-      throw new Meteor.Error('not-authorized');
-    }
+      const { when, reason } = user.services.password.reset;
+      if (reason !== 'enroll') {
+        throw new Meteor.Error('not-authorized');
+      }
 
-    const now = Date.now();
-    // eslint-disable-next-line no-underscore-dangle
-    const tokenLifetime = (reason === 'enroll') ? Accounts._getPasswordEnrollTokenLifetimeMs() : Accounts._getPasswordResetTokenLifetimeMs();
+      const now = Date.now();
+      // eslint-disable-next-line no-underscore-dangle
+      const tokenLifetime = (reason === 'enroll') ? Accounts._getPasswordEnrollTokenLifetimeMs() : Accounts._getPasswordResetTokenLifetimeMs();
 
-    if ((now - when) > tokenLifetime) {
-      throw new Meteor.Error(403, 'Token expired');
-    }
+      if ((now - when) > tokenLifetime) {
+        throw new Meteor.Error(403, 'Token expired');
+      }
 
-    Accounts.setUsername(user._id, username);
-  },
-});
+      Accounts.setUsername(user._id, username);
+    },
+  });
+}
