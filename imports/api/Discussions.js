@@ -11,7 +11,8 @@ const Discussions = new Mongo.Collection('discussions');
 export default Discussions;
 
 if (Meteor.isServer) {
-  Meteor.publish('discussions', () => Discussions.find(
+  Meteor.publish('discussions', function() {
+    return Discussions.find(
     { },
     {
       fields: {
@@ -26,7 +27,8 @@ if (Meteor.isServer) {
         commentLengthLimit: 1,
       },
     },
-  ));
+    );
+  });
 }
 if (Meteor.isClient) {
   Meteor.subscribe('groups');

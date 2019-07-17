@@ -4,6 +4,7 @@ import { Mongo } from 'meteor/mongo';
 import { check, Match } from 'meteor/check';
 import { LoremIpsum } from 'lorem-ipsum';
 import Discussions, { isDiscussionParticipant } from './Discussions';
+import Groups from './Groups';
 
 const Comments = new Mongo.Collection('comments');
 export default Comments;
@@ -11,8 +12,16 @@ export const MAX_COMMENT_LENGTH = 500;
 
 if (Meteor.isServer) {
   // TODO: ensure current user is within group associated with discussion_id
-  Meteor.publish('comments', (discussionId) => {
+  Meteor.publish('comments', function(discussionId) {
     check(discussionId, String);
+
+    // Check user is in group (or admin)
+    if (!Groups.findOne({
+      discussions: { $elemMatch: { discussionId } },
+      members: this.userId,
+    }) && !Roles.userIsInRole(this.userId, 'admin')) {
+      throw new Meteor.Error('not-authorized');
+    }
 
     return Comments.find(
       { discussionId },

@@ -1,13 +1,24 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import { Roles } from 'meteor/alanning:roles';
+import Groups from './Groups';
 
 const Votes = new Mongo.Collection('votes');
 export default Votes;
 
 if (Meteor.isServer) {
-  Meteor.publish('votes', (discussionId) => {
+  Meteor.publish('votes', function(discussionId) {
     check(discussionId, String);
+
+    // Check user is in group (or admin)
+    if (!Groups.findOne({
+      discussions: { $elemMatch: { discussionId } },
+      members: this.userId,
+    }) && !Roles.userIsInRole(this.userId, 'admin')) {
+      throw new Meteor.Error('not-authorized');
+    }
+
     return Votes.find(
       { discussionId },
       {
@@ -15,8 +26,6 @@ if (Meteor.isServer) {
           discussionId: 1,
           commentId: 1,
           userVotes: 1,
-          // caller_id: 0,
-          // starred_by: 0,
           calledAt: 1,
         },
       },
