@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import {
-  Button, Comment, Container, Segment, Header, Sidebar,
+  Button, Comment, Container, Segment, Header, Sidebar, Label,
 } from 'semantic-ui-react';
 import Swipe from 'react-easy-swipe';
 import { Meteor } from 'meteor/meteor';
@@ -32,6 +32,7 @@ class DiscussionThread extends PureComponent {
     discussionId: PropTypes.string.isRequired,
     participants: PropTypes.oneOfType([PropTypes.arrayOf(UserPropType), PropTypes.bool]),
     scenario: PropTypes.oneOfType([ScenarioPropType, PropTypes.bool]),
+    isDiscussionActive: PropTypes.bool.isRequired,
   }
 
   renderUserReplyingStatus = withTracker(({ discussionId }) => ({
@@ -131,7 +132,7 @@ class DiscussionThread extends PureComponent {
 
   render() {
     const {
-      participants, scenario, discussionId,
+      participants, scenario, discussionId, isDiscussionActive,
     } = this.props;
     const { showStarredPanel, showOverviewPanel } = this.state;
 
@@ -172,21 +173,34 @@ class DiscussionThread extends PureComponent {
         </Sidebar>
         <Sidebar.Pusher>
           <Segment
+            attached="top"
+            inverted={!isDiscussionActive}
+            tertiary={!isDiscussionActive}
+            color={isDiscussionActive ? undefined : 'grey'}
+          >
+            <Header size="huge">
+              {!isDiscussionActive && (
+                <Label
+                  content="Finished"
+                  ribbon="right"
+                  size="big"
+                />
+              )}
+              <Header.Content as={Container} fluid>
+                {scenario && scenario.title}
+              </Header.Content>
+              {scenario && <Header.Subheader content={scenario.description} />}
+            </Header>
+          </Segment>
+          <Segment
+            attached="bottom"
             as={Swipe}
             allowMouseEvents
             tolerance={250}
             onSwipeLeft={() => this.setState({ showOverviewPanel: true })}
             onSwipeRight={() => this.setState({ showStarredPanel: true })}
           >
-            {scenario && (
-              <Header
-                size="large"
-                attached="top"
-                content={scenario.title}
-                subheader={scenario.description}
-              />
-            )}
-            <Comment.Group threaded attached="bottom">
+            <Comment.Group threaded>
               <this.discussionComments
                 participants={participants}
                 discussionId={discussionId}
@@ -212,22 +226,33 @@ export default withTracker(({ match }) => {
   const discussion = Discussions.findOne(
     { _id: discussionId },
     {
-      fields: { scenarioId: 1 },
+      fields: {
+        scenarioId: 1,
+        groupId: 1,
+        status: 1,
+      },
+    },
+  );
+
+  const group = Groups.findOne(
+    { discussions: { $elemMatch: { discussionId } } },
+    {
+      fields: {
+        members: 1,
+        discussions: 1,
+      },
     },
   );
 
   return {
     discussionId,
-    scenario:
-      discussion
+    isDiscussionActive: !discussion || discussion.status !== 'finished',
+    scenario: discussion
       && Scenarios.findOne({ _id: discussion.scenarioId }),
-    participants:
-      discussion
+    participants: group
       && Meteor.users.find({
         _id: {
-          $in: Groups.findOne(
-            { discussions: { $elemMatch: { discussionId } } },
-          ).members,
+          $in: group.members,
         },
       }).fetch(),
   };
