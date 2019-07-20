@@ -1,259 +1,72 @@
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
+import { withTracker } from 'meteor/react-meteor-data';
 import {
-  Button, Comment, Container, Segment, Header, Sidebar, Label,
+  Comment,
 } from 'semantic-ui-react';
-import Swipe from 'react-easy-swipe';
-import { Meteor } from 'meteor/meteor';
+
 import Comments from '/imports/api/Comments';
 import Discussions from '/imports/api/Discussions';
-import Groups from '/imports/api/Groups';
-import Scenarios from '/imports/api/Scenarios';
-import { withTracker } from 'meteor/react-meteor-data';
-import PropTypes from 'prop-types';
 import CommentView from './CommentView';
-import CommentForm from './CommentForm';
-import StarredCommentView from './StarredCommentView';
-import DiscussionOverview from './DiscussionOverview';
-import {
-  UserPropType, ScenarioPropType,
-} from '/imports/types';
-import NotFoundPage from '/imports/ui/Error/NotFoundPage';
-import LoadingPage from '/imports/ui/Error/LoadingPage';
 
-const scrollToElement = require('scroll-to-element');
 
 class DiscussionThread extends PureComponent {
-  static defaultProps = {
-    participants: false,
-    scenario: false,
-  }
-
   static propTypes = {
-    discussionId: PropTypes.string.isRequired,
-    participants: PropTypes.oneOfType([PropTypes.arrayOf(UserPropType), PropTypes.bool]),
-    scenario: PropTypes.oneOfType([ScenarioPropType, PropTypes.bool]),
-    isDiscussionActive: PropTypes.bool.isRequired,
-  }
-
-  renderUserReplyingStatus = withTracker(({ discussionId }) => ({
-    discussion: Discussions.findOne(
-      { _id: discussionId },
-      {
-        fields: { activeReplies: 1 },
-      },
-    ),
-  }))(({ discussion, participants }) => {
-    const userList = discussion
-      ? discussion.activeReplies
-        .filter(reply => reply.userId !== Meteor.userId())
-        .map(reply => participants.find(user => user._id === reply.userId).username)
-      : [];
-
-    return userList.length > 0 && (
-      <Container>
-        <strong>
-          {`${userList.join(', ')} is commenting`}
-        </strong>
-      </Container>
-    );
-  });
-
-  renderCommentForm = withTracker(({ discussionId }) => ({
-    discussion: Discussions.findOne(
-      { _id: discussionId },
-      {
-        fields: {
-          activeReplies: 1,
-          commentLengthLimit: 1,
-        },
-      },
-    ),
-  }))(({ discussion }) => (
-    (discussion && discussion.activeReplies.some(reply => reply.userId === Meteor.userId()))
-      ? (
-        <CommentForm
-          discussion={discussion}
-          parentId=""
-        />
-      )
-      : (
-        <Button
-          onClick={() => Meteor.call('comments.reply', discussion._id, '')}
-          content="Post"
-          labelPosition="left"
-          icon="edit"
-          primary
-        />
-      )
-  ));
-
-  discussionComments = withTracker(({ discussionId }) => ({
-    discussion: Discussions.findOne(
-      { _id: discussionId },
-      {
-        fields: {
-          activeVote: 1,
-          commentLengthLimit: 1,
-          status: 1,
-        },
-      },
-    ),
-    rootComments: Comments.find(
-      {
-        discussionId,
-        parentId: '',
-      },
-      {
-        fields: { _id: 1 },
-        sort: { postedTime: 1 },
-      },
-    ).fetch(),
-  }))(({ discussion, participants, rootComments }) => discussion && rootComments.map(({ _id }) => (
-    <CommentView
-      key={_id}
-      discussion={discussion}
-      participants={participants}
-      commentId={_id}
-    />
-  )));
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      showStarredPanel: window.innerWidth > 1200,
-      showOverviewPanel: window.innerWidth > 1200,
-    };
-  }
-
-  scrollToComment = (commentId) => {
-    scrollToElement(`#${CSS.escape(commentId)}`, { align: 'top', offset: -120 });
+    discussion: PropTypes.shape({
+      status: PropTypes.string.isRequired,
+      commentLengthLimit: PropTypes.number,
+      activeVote: PropTypes.string,
+    }).isRequired,
+    participants: PropTypes.arrayOf(PropTypes.shape({
+      username: PropTypes.string.isRequired,
+      avatar: PropTypes.string,
+    })).isRequired,
+    rootComments: PropTypes.arrayOf(PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+    })).isRequired,
   }
 
   render() {
     const {
-      participants, scenario, discussionId, isDiscussionActive,
+      participants, discussion, rootComments,
     } = this.props;
-    const { showStarredPanel, showOverviewPanel } = this.state;
-
-    if (!scenario) {
-      return <NotFoundPage />;
-    }
 
     return (
-      <div>
-        <Sidebar
-          animation="overlay"
-          direction="right"
-          visible={showOverviewPanel}
-          as={Swipe}
-          allowMouseEvents
-          tolerance={100}
-          onSwipeRight={() => this.setState({ showOverviewPanel: false })}
-        >
-          <DiscussionOverview
-            discussionId={discussionId}
-            scrollToComment={this.scrollToComment}
-          />
-        </Sidebar>
-        <Sidebar
-          animation="overlay"
-          direction="left"
-          visible={showStarredPanel}
-          as={Swipe}
-          allowMouseEvents
-          tolerance={100}
-          onSwipeLeft={() => this.setState({ showStarredPanel: false })}
-        >
-          <StarredCommentView
-            discussionId={discussionId}
+      <Comment.Group threaded>
+        {rootComments.map(({ _id }) => (
+          <CommentView
+            key={_id}
+            discussion={discussion}
             participants={participants}
-            scrollToComment={this.scrollToComment}
+            commentId={_id}
           />
-        </Sidebar>
-        <Sidebar.Pusher>
-          <Segment
-            attached="top"
-            inverted={!isDiscussionActive}
-            tertiary={!isDiscussionActive}
-            color={isDiscussionActive ? undefined : 'grey'}
-          >
-            <Header size="huge">
-              {!isDiscussionActive && (
-                <Label
-                  content="Finished"
-                  ribbon="right"
-                  size="big"
-                />
-              )}
-              <Header.Content as={Container} fluid>
-                {scenario && scenario.title}
-              </Header.Content>
-              {scenario && <Header.Subheader content={scenario.description} />}
-            </Header>
-          </Segment>
-          <Segment
-            attached="bottom"
-            as={Swipe}
-            allowMouseEvents
-            tolerance={250}
-            onSwipeLeft={() => this.setState({ showOverviewPanel: true })}
-            onSwipeRight={() => this.setState({ showStarredPanel: true })}
-          >
-            <Comment.Group threaded>
-              <this.discussionComments
-                participants={participants}
-                discussionId={discussionId}
-              />
-              <this.renderUserReplyingStatus
-                participants={participants}
-                discussionId={discussionId}
-              />
-            </Comment.Group>
-            <this.renderCommentForm discussionId={discussionId} />
-          </Segment>
-        </Sidebar.Pusher>
-      </div>
+        ))}
+      </Comment.Group>
     );
   }
 }
 
-export default withTracker(({ match }) => {
-  const { discussionId } = match.params;
-  Meteor.subscribe('comments', discussionId);
-  Meteor.subscribe('votes', discussionId);
-
-  const discussion = Discussions.findOne(
+export default withTracker(({ discussionId }) => ({
+  discussion: Discussions.findOne(
     { _id: discussionId },
     {
       fields: {
-        scenarioId: 1,
-        groupId: 1,
+        activeVote: 1,
+        commentLengthLimit: 1,
         status: 1,
       },
     },
-  );
-
-  const group = Groups.findOne(
-    { discussions: { $elemMatch: { discussionId } } },
+  ) || { status: 'active' },
+  rootComments: Comments.find(
+    {
+      discussionId,
+      parentId: '',
+    },
     {
       fields: {
-        members: 1,
-        discussions: 1,
+        _id: 1,
       },
+      sort: { postedTime: 1 },
     },
-  );
-
-  return {
-    discussionId,
-    isDiscussionActive: !discussion || discussion.status !== 'finished',
-    scenario: discussion
-      && Scenarios.findOne({ _id: discussion.scenarioId }),
-    participants: group
-      && Meteor.users.find({
-        _id: {
-          $in: group.members,
-        },
-      }).fetch(),
-  };
-})(DiscussionThread);
+  ).fetch(),
+}))(DiscussionThread);

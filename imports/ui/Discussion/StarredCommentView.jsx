@@ -35,12 +35,15 @@ class StarredCommentView extends PureComponent {
       }),
       PropTypes.bool,
     ]).isRequired,
-    comments: PropTypes.arrayOf(PropTypes.shape({
-      authorId: PropTypes.string.isRequired,
-      userStars: PropTypes.arrayOf(PropTypes.shape({
-        userId: PropTypes.string.isRequired,
+    comments: PropTypes.oneOfType([
+      PropTypes.arrayOf(PropTypes.shape({
+        authorId: PropTypes.string.isRequired,
+        userStars: PropTypes.arrayOf(PropTypes.shape({
+          userId: PropTypes.string.isRequired,
+        })),
       })),
-    })).isRequired,
+      PropTypes.bool,
+    ]).isRequired,
     participants: PropTypes.arrayOf(UserPropType).isRequired,
     activeVote: PropTypes.oneOfType([VotePropType, PropTypes.bool]),
     scrollToComment: PropTypes.func.isRequired,
@@ -172,14 +175,14 @@ export default withTracker(({ discussionId }) => {
   const activeVoteCommentId = activeVote ? activeVote.commentId : '';
 
   return {
-    discussion,
-    comments: discussion && Comments.find({
+    discussion: discussion || false,
+    comments: (discussion && Comments.find({
       discussionId,
       $or: [
         { userStars: { $exists: true, $ne: [] } },
         { _id: activeVoteCommentId },
       ],
-    }).fetch(),
+    }).fetch()) || false,
     activeVote,
   };
 })(StarredCommentView);

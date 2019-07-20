@@ -12,7 +12,7 @@ import '/imports/api/Roles';
 
 import AccountsUIWrapper from '/imports/ui/AccountsUIWrapper';
 import NotFoundPage from '/imports/ui/Error/NotFoundPage';
-import DiscussionThread from '/imports/ui/Discussion/DiscussionThread';
+import DiscussionPage from '/imports/ui/Discussion/DiscussionPage';
 import GroupView from '/imports/ui/Group/GroupView';
 import CreateGroup from '/imports/ui/Group/CreateGroup';
 import UserProfile from '/imports/ui/User/UserProfile';
@@ -71,7 +71,7 @@ class App extends Component {
         </Menu>
         <Container className="wrapper content-width">
           <Switch>
-            <Route exact path="/discussion/:discussionId" component={DiscussionThread} />
+            <Route exact path="/discussion/:discussionId" component={DiscussionPage} />
             <Route exact path="/user/:userId" component={UserProfile} />
             <Route exact path="/user/:userId/edit" component={EditProfile} />
             <Route exact path="/user/enroll/:token" component={EnrollForm} />

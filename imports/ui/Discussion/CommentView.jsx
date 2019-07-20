@@ -1,21 +1,23 @@
 import React, { PureComponent } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
-import Comments from '/imports/api/Comments';
-import Votes from '/imports/api/Votes';
+import PropTypes from 'prop-types';
 import {
-  Comment, Icon, Divider, Container, Segment, List, Button, Item,
+  VotePropType,
+} from '/imports/types';
+import {
+  Segment, Comment, Icon, Divider, Button, Item,
 } from 'semantic-ui-react';
+import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
 import ReactMarkdown from 'react-markdown';
 import Linkify from 'react-linkify';
-import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import CommentForm from './CommentForm';
+
+import Comments from '/imports/api/Comments';
+import Votes from '/imports/api/Votes';
+
 import Vote from './Vote';
-import {
-  UserPropType, VotePropType,
-} from '/imports/types';
+import CommentForm from './CommentForm';
 
 class CommentViewTemplate extends PureComponent {
   static defaultProps = {
@@ -29,11 +31,29 @@ class CommentViewTemplate extends PureComponent {
       status: PropTypes.string.isRequired,
     }).isRequired,
     comment: PropTypes.shape({
-
+      _id: PropTypes.string.isRequired,
+      parentId: PropTypes.string.isRequired,
+      authorId: PropTypes.string.isRequired,
+      text: PropTypes.string.isRequired,
+      postedTime: PropTypes.objectOf(Date).isRequired,
+      activeReplies: PropTypes.arrayOf(PropTypes.shape({
+        userId: PropTypes.string.isRequired,
+        activeTime: PropTypes.objectOf(Date).isRequired,
+      })),
+      collapsedBy: PropTypes.arrayOf(PropTypes.string.isRequired),
+      userStars: PropTypes.arrayOf(PropTypes.shape({
+        userId: PropTypes.string.isRequired,
+        dateTime: PropTypes.objectOf(Date).isRequired,
+      })),
     }).isRequired,
     commentId: PropTypes.string.isRequired,
-    children: PropTypes.arrayOf(PropTypes.shape({ _id: PropTypes.string.isRequired })).isRequired,
-    participants: PropTypes.arrayOf(UserPropType).isRequired,
+    children: PropTypes.arrayOf(PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+    })).isRequired,
+    participants: PropTypes.arrayOf(PropTypes.shape({
+      username: PropTypes.string.isRequired,
+      avatar: PropTypes.string,
+    })).isRequired,
     vote: PropTypes.oneOfType([VotePropType, PropTypes.bool]),
   }
 
@@ -45,6 +65,74 @@ class CommentViewTemplate extends PureComponent {
   isCollapsed() {
     const { comment } = this.props;
     return comment.collapsedBy.includes(Meteor.userId());
+  }
+
+  listReplyingUsers() {
+    const { participants, comment } = this.props;
+    const replyingUsers = (comment.activeReplies || [])
+      .filter(reply => reply.userId !== Meteor.userId())
+      .map(reply => participants.find(user => user._id === reply.userId).username);
+
+    return replyingUsers.length > 0 && (
+      <strong>
+        {`${replyingUsers.join(', ')} is replying`}
+      </strong>
+    );
+  }
+
+  renderVoteButton(starredBy, userStarred) {
+    const {
+      participants, vote, discussion, comment,
+    } = this.props;
+
+    return (
+      <Button
+        disabled={!!discussion.activeVote
+          || userStarred
+          || !!vote
+          || discussion.status !== 'active'}
+        floated="right"
+        content="Call Vote"
+        color="green"
+        onClick={() => Meteor.call(
+          'votes.callVote',
+          discussion._id,
+          comment._id,
+          starredBy.map(star => star.userId),
+        )}
+        label={{
+          basic: true,
+          content: (
+            <Item.Group>
+              {
+                starredBy.map((star) => {
+                  const item = participants.find(user => user._id === star.userId);
+                  return (
+                    <Item
+                      key={item._id}
+                      as={Link}
+                      to={`/user/${star.userId}`}
+                    >
+                      <Item.Image
+                        inline
+                        avatar
+                        size="mini"
+                        src={item.avatar || '/avatar_default.png'}
+                      />
+                      <Item.Content
+                        verticalAlign="middle"
+                        content={item.username}
+                      />
+                    </Item>
+                  );
+                })
+              }
+            </Item.Group>
+          ),
+        }}
+        labelPosition="left"
+      />
+    );
   }
 
   renderChildren() {
@@ -65,137 +153,99 @@ class CommentViewTemplate extends PureComponent {
     );
   }
 
-  renderUserReplyingStatus() {
-    const { participants, comment } = this.props;
-    const userList = (comment.activeReplies || [])
-      .filter(reply => reply.userId !== Meteor.userId())
-      .map(reply => participants.find(user => user._id === reply.userId).username);
-
-    return userList.length > 0 && (
-      <strong>
-        {`${userList.join(', ')} is replying`}
-      </strong>
-    );
-  }
-
-  renderContent(starredBy) {
-    const {
-      participants, comment, discussion, vote,
-    } = this.props;
-    const author = participants.find(user => user._id === comment.authorId);
-    return (
-      <Container>
-        {
-          starredBy.length > 0 && (
-            <Button
-              disabled={!!discussion.activeVote
-                || !starredBy.some(star => star.userId === Meteor.userId())
-                || !!vote
-                || discussion.status !== 'active'}
-              floated="right"
-              content="Call Vote"
-              color="green"
-              onClick={() => Meteor.call('votes.callVote', discussion._id, comment._id, starredBy.map(star => star.userId))}
-              label={{
-                basic: true,
-                content: (
-                  <List>
-                    {
-                      starredBy.map((star) => {
-                        const item = participants.find(user => user._id === star.userId);
-                        return (
-                          <Item key={item._id} as={Link} to={`/user/${star.userId}`}>
-                            <Item.Image avatar size="mini" src={item.avatar || '/avatar_default.png'} />
-                            <Item.Content verticalAlign="middle" content={item.username} />
-                          </Item>
-                        );
-                      })
-                    }
-                  </List>
-                ),
-              }}
-              labelPosition="left"
-            />
-          )
-        }
-        <Icon
-          link
-          name={this.isCollapsed() ? 'chevron down' : 'minus'}
-          onClick={this.collapse}
-        />
-        <Comment.Avatar
-          as={Link}
-          to={`/user/${author._id}`}
-          src={author.avatar ? author.avatar : '/avatar_default.png'}
-        />
-        <Comment.Author as={Link} to={`/user/${author._id}`} content={author.username} />
-        <Comment.Metadata>
-          <div>
-            <Moment fromNow>{comment.postedTime}</Moment>
-            &nbsp;
-            {this.renderUserReplyingStatus()}
-          </div>
-        </Comment.Metadata>
-        <Comment.Text>
-          <Linkify properties={{ target: '_blank' }}>
-            <ReactMarkdown
-              source={comment.text}
-              disallowedTypes={['image', 'imageReference']}
-            />
-          </Linkify>
-        </Comment.Text>
-        <Comment.Actions>
-          <Comment.Action onClick={() => Meteor.call('comments.reply', discussion._id, comment._id)} content="Reply" />
-          {
-            starredBy.some(star => star.userId === Meteor.userId()) ? (
-              <Comment.Action onClick={() => Meteor.call('comments.unstar', discussion._id, comment._id)} content="Unstar" />
-            ) : (
-              <Comment.Action onClick={() => Meteor.call('comments.star', discussion._id, comment._id)} content="Star" />
-            )
-          }
-        </Comment.Actions>
-      </Container>
-    );
-  }
-
   render() {
     const {
       discussion, comment, vote, participants,
     } = this.props;
 
-    if (!discussion || !comment) {
+    if (!comment) {
       return '';
     }
 
+    const author = participants.find(user => user._id === comment.authorId);
+
     const starredBy = (comment.userStars || []);
+    const userStarred = starredBy.some(star => star.userId === Meteor.userId());
+    const styleAsSegment = !!vote || starredBy.length > 0;
+
     return (
       <Comment collapsed={this.isCollapsed()} id={comment._id}>
-        <Comment.Content>
-          {
-            (starredBy.length > 0 || vote) ? (
-              <Segment color="yellow" inverted={starredBy.length > 0} tertiary attached={vote && 'top'} clearing>
-                {this.renderContent(starredBy)}
-              </Segment>
-            ) : this.renderContent(starredBy)
-          }
-          {vote && (
-            <Vote
-              vote={vote}
-              participants={participants}
-              isActive={vote._id === discussion.activeVote}
+        <Comment.Content
+          as={styleAsSegment ? Segment : undefined}
+          className={styleAsSegment ? undefined : 'unstarred'}
+          color={styleAsSegment ? 'yellow' : undefined}
+          inverted={styleAsSegment ? (starredBy.length > 0) : undefined}
+          attached={vote ? 'top' : undefined}
+          tertiary={styleAsSegment ? true : undefined}
+          clearing={styleAsSegment ? true : undefined}
+        >
+          {starredBy.length > 0 && this.renderVoteButton(starredBy, userStarred)}
+          <Icon
+            link
+            name={this.isCollapsed() ? 'chevron down' : 'minus'}
+            onClick={this.collapse}
+          />
+          <Comment.Avatar
+            as={Link}
+            to={`/user/${author._id}`}
+            src={author.avatar || '/avatar_default.png'}
+          />
+          <Comment.Author
+            as={Link}
+            to={`/user/${author._id}`}
+            content={author.username}
+          />
+          <Comment.Metadata>
+            <div>
+              <Moment fromNow>{comment.postedTime}</Moment>
+              &nbsp;
+              {this.listReplyingUsers()}
+            </div>
+          </Comment.Metadata>
+          <Comment.Text>
+            <Linkify properties={{ target: '_blank' }}>
+              <ReactMarkdown
+                source={comment.text}
+                disallowedTypes={['image', 'imageReference']}
+              />
+            </Linkify>
+          </Comment.Text>
+          <Comment.Actions>
+            <Comment.Action
+              content="Reply"
+              onClick={() => Meteor.call(
+                'comments.reply',
+                discussion._id,
+                comment._id,
+              )}
             />
-          )}
-          {comment.activeReplies && comment.activeReplies.some(
-            reply => reply.userId === Meteor.userId(),
-          ) && (
-            <CommentForm
-              discussion={discussion}
-              parentId={comment._id}
+            <Comment.Action
+              content={userStarred ? 'Unstar' : 'Star'}
+              onClick={() => Meteor.call(
+                userStarred ? 'comments.unstar' : 'comments.star',
+                discussion._id,
+                comment._id,
+              )}
             />
-          )}
-          {this.renderChildren()}
-          {this.isCollapsed() && (<Divider clearing hidden />)}
+          </Comment.Actions>
         </Comment.Content>
+        {vote && (
+          <Vote
+            vote={vote}
+            participants={participants}
+            isActive={vote._id === discussion.activeVote}
+          />
+        )}
+        {comment.activeReplies && comment.activeReplies.some(
+          reply => reply.userId === Meteor.userId(),
+        ) && (
+          <CommentForm
+            discussion={discussion}
+            parentId={comment._id}
+          />
+        )}
+        {this.renderChildren()}
+        {this.isCollapsed() && (<Divider clearing hidden />)}
       </Comment>
     );
   }
