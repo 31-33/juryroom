@@ -180,10 +180,12 @@ Meteor.methods({
             activeReplies: { userId: this.userId },
           },
           $addToSet: {
-            userId: this.userId,
-            parentId,
-            dateTime: new Date(),
-            open: false,
+            actionReply: {
+              userId: this.userId,
+              parentId,
+              dateTime: new Date(),
+              open: false,
+            },
           },
         },
       );
@@ -200,10 +202,12 @@ Meteor.methods({
         { _id: discussionId },
         {
           $addToSet: {
-            userId: this.userId,
-            parentId,
-            dateTime: new Date(),
-            open: false,
+            actionReply: {
+              userId: this.userId,
+              parentId,
+              dateTime: new Date(),
+              open: false,
+            },
           },
         },
       );
