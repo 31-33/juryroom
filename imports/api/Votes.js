@@ -28,6 +28,7 @@ if (Meteor.isServer) {
           commentId: 1,
           userVotes: 1,
           calledAt: 1,
+          finished: 1,
         },
       },
     );
@@ -83,6 +84,7 @@ Meteor.methods({
       callerId: this.userId,
       starredBy: starredUsers,
       calledAt: new Date(),
+      finished: false,
     });
 
     Discussions.update(
@@ -156,6 +158,12 @@ Meteor.methods({
           $unset: {
             activeVote: '',
           },
+        },
+      );
+      Votes.update(
+        { _id: voteId },
+        {
+          $set: { finished: true },
         },
       );
       if (Object.entries(currVote.userVotes).every(

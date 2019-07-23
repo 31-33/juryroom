@@ -291,6 +291,7 @@ Represents a vote. Users may call for a vote upon comments they have starred, an
     callerId: String,
     starredBy: [String],
     dateTime: Date,
+    finished: Boolean,
 }
 ```
 
@@ -309,5 +310,7 @@ Represents a vote. Users may call for a vote upon comments they have starred, an
 `starredBy`: *A collection containing the ids of the users who had this comment starred at the time when a vote was called.*
 
 `calledAt`: *ISODate object storing the UTC time when this vote was called.*
+
+`finished`: *Boolean field to track whether this vote has been completed or not. `false` represents an in-progress vote, whereas `true` means the vote has finished (whether successful or not).*
 
 ---
