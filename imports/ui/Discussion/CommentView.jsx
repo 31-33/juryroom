@@ -88,7 +88,7 @@ class CommentViewTemplate extends PureComponent {
     return (
       <Button
         disabled={!!discussion.activeVote
-          || userStarred
+          || !userStarred
           || !!vote
           || discussion.status !== 'active'}
         floated="right"
