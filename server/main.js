@@ -12,5 +12,7 @@ import '/imports/startup/accounts-config';
 import '/imports/startup/default-data';
 
 Meteor.startup(() => {
+  UserPresence.start();
+  UserPresenceMonitor.start();
 
 });
