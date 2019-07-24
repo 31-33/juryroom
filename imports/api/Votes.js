@@ -3,6 +3,7 @@ import { Mongo } from 'meteor/mongo';
 import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import Groups from './Groups';
+import Comments from './Comments';
 import Discussions, { isDiscussionParticipant, startNext } from './Discussions';
 
 const Votes = new Mongo.Collection('votes');
@@ -36,10 +37,9 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  'votes.callVote'(discussionId, commentId, starredUsers) {
+  'votes.callVote'(discussionId, commentId) {
     check(discussionId, String);
     check(commentId, String);
-    check(starredUsers, Array);
 
     const group = Groups.findOne({
       members: this.userId,
@@ -59,8 +59,9 @@ Meteor.methods({
       throw new Meteor.Error('vote-already-in-progress');
     }
 
+    const comment = Comments.findOne({ _id: commentId });
     // Restrict calling of vote to starred_users
-    if (!starredUsers.includes(this.userId)) {
+    if (!comment.userStars.some(star => star.userId === this.userId)) {
       throw new Meteor.Error('not-starred');
     }
 
@@ -82,7 +83,7 @@ Meteor.methods({
       discussionId,
       userVotes,
       callerId: this.userId,
-      starredBy: starredUsers,
+      starredBy: comment.userStars.map(star => star.userId),
       calledAt: new Date(),
       finished: false,
     });

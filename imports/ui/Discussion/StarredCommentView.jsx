@@ -117,7 +117,7 @@ class StarredCommentView extends PureComponent {
                 icon="exclamation"
                 color="green"
                 content="Call Vote"
-                onClick={() => Meteor.call('votes.callVote', discussion._id, comment._id, comment.userStars.map(star => star.userId))}
+                onClick={() => Meteor.call('votes.callVote', discussion._id, comment._id)}
               />
             )}
             {isActiveVote && renderUserVotes(activeVote, participants)}

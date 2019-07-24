@@ -94,12 +94,7 @@ class CommentViewTemplate extends PureComponent {
         floated="right"
         content="Call Vote"
         color="green"
-        onClick={() => Meteor.call(
-          'votes.callVote',
-          discussion._id,
-          comment._id,
-          starredBy.map(star => star.userId),
-        )}
+        onClick={() => Meteor.call('votes.callVote', discussion._id, comment._id)}
         label={{
           basic: true,
           content: (
