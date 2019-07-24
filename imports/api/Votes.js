@@ -1,10 +1,17 @@
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
+import { Email } from 'meteor/email';
 import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
+
+import Scenarios from './Scenarios';
 import Groups from './Groups';
 import Comments from './Comments';
-import Discussions, { isDiscussionParticipant, startNext } from './Discussions';
+import Discussions, { startNext } from './Discussions';
+
+import VoteNotification from '/imports/ui/EmailTemplates/VoteNotification.jsx';
 
 const Votes = new Mongo.Collection('votes');
 export default Votes;
@@ -50,12 +57,9 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized');
     }
 
-    if (!isDiscussionParticipant(this.userId, discussionId)) {
-      throw new Meteor.Error('not-authorized');
-    }
-
+    const discussion = Discussions.findOne({ _id: discussionId });
     // Prevent vote if one is already active
-    if (Discussions.findOne({ _id: discussionId }).active_vote) {
+    if (discussion.activeVote) {
       throw new Meteor.Error('vote-already-in-progress');
     }
 
@@ -102,6 +106,27 @@ Meteor.methods({
         },
       },
     );
+
+    if (Meteor.isServer) {
+      this.unblock();
+      const participants = Meteor.users.find(
+        { _id: { $in: group.members } },
+      ).fetch();
+      const caller = participants.find(user => user._id === this.userId);
+      const author = participants.find(user => user._id === comment.authorId);
+      const scenario = Scenarios.findOne({ _id: discussion.scenarioId });
+
+      Email.send({
+        from: 'JuryRoom <no-reply@juryroom.com>',
+        bcc: group.members
+          .filter(userId => userId !== this.userId) // Send to all users except the caller of vote
+          .map(userId => participants.find(user => user._id === userId).emails[0]),
+        subject: 'Vote called on JuryRoom',
+        html: ReactDOMServer.renderToStaticMarkup(React.createElement(VoteNotification, {
+          discussionId, caller, comment, scenario, author,
+        })),
+      });
+    }
   },
   'votes.vote'(voteId, userVote) {
     check(voteId, String);
