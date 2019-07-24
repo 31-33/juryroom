@@ -1,10 +1,15 @@
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 import { Meteor } from 'meteor/meteor';
 import { Roles } from 'meteor/alanning:roles';
 import { Mongo } from 'meteor/mongo';
+import { Email } from 'meteor/email';
 import { check, Match } from 'meteor/check';
 import { LoremIpsum } from 'lorem-ipsum';
 import Discussions, { isDiscussionParticipant } from './Discussions';
 import Groups from './Groups';
+import Scenarios from './Scenarios';
+import CommentNotification from '/imports/ui/EmailTemplates/CommentNotification.jsx';
 
 const Comments = new Mongo.Collection('comments');
 export default Comments;
@@ -60,7 +65,7 @@ Meteor.methods({
       throw new Meteor.Error('max-length-exceeded');
     }
 
-    return Comments.insert({
+    const commentId = Comments.insert({
       discussionId,
       parentId,
       postedTime: new Date(),
@@ -68,6 +73,34 @@ Meteor.methods({
       text,
       collapsedBy: [],
     });
+
+    if (Meteor.isServer) {
+      this.unblock();
+      const group = Groups.findOne({
+        members: this.userId,
+        discussions: { $elemMatch: { discussionId } },
+      });
+      const participants = Meteor.users.find(
+        { _id: { $in: group.members } },
+      ).fetch();
+      const author = participants.find(user => user._id === this.userId);
+      const scenario = Scenarios.findOne({ _id: discussion.scenarioId });
+      const comment = Comments.findOne({ _id: commentId });
+
+      Email.send({
+        from: 'JuryRoom <no-reply@juryroom.com>',
+        bcc: group.members
+          .map(userId => participants.find(user => user._id === userId))
+          .filter(user => (user._id !== this.userId) && (user.statusConnection !== 'online'))
+          .map(user => user.emails[0]),
+        subject: 'New comment on JuryRoom',
+        html: ReactDOMServer.renderToStaticMarkup(React.createElement(CommentNotification, {
+          discussionId, comment, scenario, author,
+        })),
+      });
+    }
+
+    return commentId;
   },
   'comments.collapse'(discussionId, commentId, collapse) {
     check(discussionId, String);
