@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactDOMServer from 'react-dom/server';
+// import React from 'react';
+// import ReactDOMServer from 'react-dom/server';
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { Email } from 'meteor/email';
@@ -11,7 +11,7 @@ import Groups from './Groups';
 import Comments from './Comments';
 import Discussions, { startNext } from './Discussions';
 
-import VoteNotification from '/imports/ui/EmailTemplates/VoteNotification.jsx';
+// import VoteNotification from '/imports/ui/EmailTemplates/VoteNotification.jsx';
 
 const Votes = new Mongo.Collection('votes');
 export default Votes;
@@ -113,7 +113,7 @@ Meteor.methods({
         { _id: { $in: group.members } },
       ).fetch();
       const caller = participants.find(user => user._id === this.userId);
-      const author = participants.find(user => user._id === comment.authorId);
+      // const author = participants.find(user => user._id === comment.authorId);
       const scenario = Scenarios.findOne({ _id: discussion.scenarioId });
 
       Email.send({
@@ -122,9 +122,12 @@ Meteor.methods({
           .filter(userId => userId !== this.userId) // Send to all users except the caller of vote
           .map(userId => participants.find(user => user._id === userId).emails[0]),
         subject: 'Vote called on JuryRoom',
-        html: ReactDOMServer.renderToStaticMarkup(React.createElement(VoteNotification, {
-          discussionId, caller, comment, scenario, author,
-        })),
+        // html: ReactDOMServer.renderToStaticMarkup(React.createElement(VoteNotification, {
+        //   discussionId, caller, comment, scenario, author,
+        // })),
+        text: `${caller.username} has called a vote on the discussion '${scenario.title}'
+        Click the link below to view the discussion.
+        ${process.env.ROOT_URL}${discussionId}`,
       });
     }
   },

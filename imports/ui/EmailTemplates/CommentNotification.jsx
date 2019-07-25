@@ -29,6 +29,7 @@ class VoteNotification extends PureComponent {
     } = this.props;
     return (
       <Container>
+        {/* TODO: Embedd css in email */}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css" />
         <Segment attached="top">
           <Header
