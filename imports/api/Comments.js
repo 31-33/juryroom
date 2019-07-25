@@ -1,5 +1,5 @@
-// import React from 'react';
-// import ReactDOMServer from 'react-dom/server';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 import { Meteor } from 'meteor/meteor';
 import { Roles } from 'meteor/alanning:roles';
 import { Mongo } from 'meteor/mongo';
@@ -9,7 +9,7 @@ import { LoremIpsum } from 'lorem-ipsum';
 import Discussions, { isDiscussionParticipant } from './Discussions';
 import Groups from './Groups';
 import Scenarios from './Scenarios';
-// import CommentNotification from '/imports/ui/EmailTemplates/CommentNotification.jsx';
+import CommentNotification from '/imports/ui/EmailTemplates/CommentNotification.jsx';
 
 const Comments = new Mongo.Collection('comments');
 export default Comments;
@@ -85,7 +85,7 @@ Meteor.methods({
       ).fetch();
       const author = participants.find(user => user._id === this.userId);
       const scenario = Scenarios.findOne({ _id: discussion.scenarioId });
-      // const comment = Comments.findOne({ _id: commentId });
+      const comment = Comments.findOne({ _id: commentId });
 
       Email.send({
         from: 'JuryRoom <no-reply@juryroom.com>',
@@ -94,12 +94,9 @@ Meteor.methods({
           .filter(user => (user._id !== this.userId) && (user.statusConnection !== 'online'))
           .map(user => user.emails[0]),
         subject: 'New comment on JuryRoom',
-        text: `${author.username} posted a new comment on the discussion '${scenario.title}'
-        Click the link below to view
-        ${process.env.ROOT_URL}${discussionId}`,
-        // html: ReactDOMServer.renderToStaticMarkup(React.createElement(CommentNotification, {
-        //   discussionId, comment, scenario, author,
-        // })),
+        html: ReactDOMServer.renderToStaticMarkup(React.createElement(CommentNotification, {
+          discussionId, comment, scenario, author,
+        })),
       });
     }
 
