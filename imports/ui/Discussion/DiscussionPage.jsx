@@ -79,6 +79,9 @@ class DiscussionPage extends PureComponent {
   };
 
   static propTypes = {
+    location: PropTypes.shape({
+      hash: PropTypes.string,
+    }).isRequired,
     discussionId: PropTypes.string.isRequired,
     scenario: PropTypes.shape({
       title: PropTypes.string.isRequired,
@@ -112,7 +115,7 @@ class DiscussionPage extends PureComponent {
 
   render() {
     const { showStarredPanel, showOverviewPanel } = this.state;
-    const { discussionId, scenario } = this.props;
+    const { location, discussionId, scenario } = this.props;
     const { error, participants } = this.state;
 
     if (error) {
@@ -176,6 +179,8 @@ class DiscussionPage extends PureComponent {
             <DiscussionThread
               discussionId={discussionId}
               participants={participants}
+              scrollToComment={this.scrollToComment}
+              hash={location.hash.replace('#', '')}
             />
             <ListReplyingUsers
               discussionId={discussionId}

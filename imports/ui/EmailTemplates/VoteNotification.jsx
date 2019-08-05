@@ -78,7 +78,7 @@ class VoteNotification extends PureComponent {
             </p>
             <Container>
               <Linkify properties={{ target: '_blank' }}>
-                {`${process.env.ROOT_URL}discussion/${discussionId}`}
+                {`${process.env.ROOT_URL}discussion/${discussionId}#${comment._id}`}
               </Linkify>
             </Container>
           </Segment>

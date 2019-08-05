@@ -24,6 +24,17 @@ class DiscussionThread extends PureComponent {
     rootComments: PropTypes.arrayOf(PropTypes.shape({
       _id: PropTypes.string.isRequired,
     })).isRequired,
+    hash: PropTypes.string.isRequired,
+    scrollToComment: PropTypes.func.isRequired,
+  }
+
+  componentDidMount() {
+    const { hash, scrollToComment } = this.props;
+    if (hash) {
+      setTimeout(() => window.requestAnimationFrame(() => {
+        scrollToComment(hash);
+      }));
+    }
   }
 
   render() {
