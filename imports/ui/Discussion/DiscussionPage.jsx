@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import {
-  Sidebar, Container, Segment, Header, Button,
+  Sidebar, Container, Segment, Header, Button, Visibility,
 } from 'semantic-ui-react';
 import Swipe from 'react-easy-swipe';
 
@@ -115,7 +115,10 @@ class DiscussionPage extends PureComponent {
     }
 
     return (
-      <div>
+      <Visibility onUpdate={(e, { calculations }) => this.navbarRef.scrollByPercentage(
+        calculations.pixelsPassed / (calculations.height - window.innerHeight),
+      )}
+      >
         <Sidebar
           animation="overlay"
           direction="right"
@@ -128,6 +131,7 @@ class DiscussionPage extends PureComponent {
           <DiscussionOverview
             discussionId={discussionId}
             scrollToComment={this.scrollToComment}
+            ref={(e) => { this.navbarRef = e; }}
           />
         </Sidebar>
         <Sidebar
@@ -173,7 +177,7 @@ class DiscussionPage extends PureComponent {
             />
           </Segment>
         </Sidebar.Pusher>
-      </div>
+      </Visibility>
     );
   }
 }

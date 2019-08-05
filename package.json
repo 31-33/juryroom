@@ -29,6 +29,7 @@
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
     "react-rte": "^0.16.1",
+    "react-virtualized": "^9.21.1",
     "scroll-to-element": "^2.0.3",
     "semantic-ui-react": "^0.86.0"
   },
