@@ -8,7 +8,6 @@ import {
 import Swipe from 'react-easy-swipe';
 
 import Discussions from '/imports/api/Discussions';
-import Groups from '/imports/api/Groups';
 import Scenarios from '/imports/api/Scenarios';
 
 import StarredCommentView from './StarredCommentView';
@@ -16,6 +15,7 @@ import DiscussionOverview from './DiscussionOverview';
 import DiscussionThread from './DiscussionThread';
 import CommentForm from './CommentForm';
 import NotFoundPage from '/imports/ui/Error/NotFoundPage';
+import LoadingPage from '/imports/ui/Error/LoadingPage';
 
 const scrollToElement = require('scroll-to-element');
 
@@ -80,13 +80,6 @@ class DiscussionPage extends PureComponent {
 
   static propTypes = {
     discussionId: PropTypes.string.isRequired,
-    participants: PropTypes.oneOfType([
-      PropTypes.arrayOf(PropTypes.shape({
-        username: PropTypes.string.isRequired,
-        avatar: PropTypes.string,
-      })),
-      PropTypes.bool,
-    ]).isRequired,
     scenario: PropTypes.shape({
       title: PropTypes.string.isRequired,
       description: PropTypes.string.isRequired,
@@ -99,19 +92,35 @@ class DiscussionPage extends PureComponent {
     this.state = {
       showStarredPanel: window.innerWidth > 1200,
       showOverviewPanel: window.innerWidth > 1200,
+      participants: undefined,
+      error: false,
     };
+  }
+
+  componentDidMount() {
+    const { discussionId } = this.props;
+    Meteor.call('users.getMembersOfDiscussion', discussionId, (error, participants) => {
+      if (error) {
+        this.setState({ error });
+      } else {
+        this.setState({ participants });
+      }
+    });
   }
 
   scrollToComment = commentId => scrollToElement(`#${CSS.escape(commentId)}`, { align: 'top', offset: -120 });
 
   render() {
     const { showStarredPanel, showOverviewPanel } = this.state;
-    const {
-      discussionId, participants, scenario,
-    } = this.props;
+    const { discussionId, scenario } = this.props;
+    const { error, participants } = this.state;
+
+    if (error) {
+      return <NotFoundPage />;
+    }
 
     if (!participants) {
-      return <NotFoundPage />;
+      return <LoadingPage />;
     }
 
     return (
@@ -198,25 +207,10 @@ export default withTracker(({ match }) => {
     },
   );
 
-  const group = Groups.findOne(
-    { discussions: { $elemMatch: { discussionId } } },
-    {
-      fields: {
-        members: 1,
-        discussions: 1,
-      },
-    },
-  );
-
   return {
     discussionId,
     isDiscussionActive: !discussion || discussion.status !== 'finished',
     scenario: discussion
       && Scenarios.findOne({ _id: discussion.scenarioId }),
-    participants: (group && Meteor.users.find({
-      _id: {
-        $in: group.members,
-      },
-    }).fetch()) || false,
   };
 })(DiscussionPage);

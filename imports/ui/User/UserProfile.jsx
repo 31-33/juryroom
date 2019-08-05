@@ -1,32 +1,52 @@
 import React, { Component } from 'react';
-import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import {
   Segment, Header, Button, Item,
 } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { UserPropType } from '/imports/types';
 import ModifyUserPermissions from './ModifyUserPermissions';
 import NotFoundPage from '/imports/ui/Error/NotFoundPage';
+import LoadingPage from '/imports/ui/Error/LoadingPage';
 
 class UserProfile extends Component {
-  static defaultProps = {
-    user: false,
-  }
-
   static propTypes = {
-    user: PropTypes.oneOfType([UserPropType, PropTypes.bool]),
     location: PropTypes.shape({
       pathname: PropTypes.string.isRequired,
     }).isRequired,
+    match: PropTypes.shape({}).isRequired,
+  }
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      error: false,
+      user: undefined,
+    };
+  }
+
+  componentDidMount() {
+    const { match } = this.props;
+    Meteor.call('users.getProfile', match.params.userId, (error, user) => {
+      if (error) {
+        this.setState({ error });
+      } else {
+        this.setState({ user });
+      }
+    });
   }
 
   render() {
-    const { user, location } = this.props;
+    const { location } = this.props;
+    const { error, user } = this.state;
+
+    if (error) {
+      return <NotFoundPage />;
+    }
 
     if (!user) {
-      return <NotFoundPage />;
+      return <LoadingPage />;
     }
 
     const { _id, username, avatar } = user;
@@ -61,6 +81,4 @@ class UserProfile extends Component {
   }
 }
 
-export default withTracker(({ match }) => ({
-  user: Meteor.users.findOne({ _id: match.params.userId }),
-}))(UserProfile);
+export default UserProfile;

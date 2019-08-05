@@ -3,11 +3,11 @@ import { withTracker } from 'meteor/react-meteor-data';
 import { Link } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import {
-  Container, Segment, Header, List, Image,
+  Container, Segment, Header, List, Image, Dimmer, Loader,
 } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import {
-  GroupPropType, ScenarioPropType, DiscussionPropType, UserPropType,
+  GroupPropType, ScenarioPropType, DiscussionPropType,
 } from '/imports/types';
 import Groups from '/imports/api/Groups';
 import Scenarios from '/imports/api/Scenarios';
@@ -21,15 +21,32 @@ class Group extends Component {
 
   static propTypes = {
     group: PropTypes.oneOfType([GroupPropType, PropTypes.bool]),
-    members: PropTypes.arrayOf(UserPropType).isRequired,
     discussions: PropTypes.arrayOf(DiscussionPropType).isRequired,
     scenarios: PropTypes.arrayOf(ScenarioPropType).isRequired,
   }
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      members: undefined,
+    };
+  }
+
+  componentDidMount() {
+    const { group } = this.props;
+    Meteor.call('users.getMembersOfGroup', group._id, (err, members) => {
+      if (!err) {
+        this.setState({ members });
+      }
+    });
+  }
+
   render() {
     const {
-      group, members, discussions, scenarios,
+      group, discussions, scenarios,
     } = this.props;
+    const { members } = this.state;
 
     return group && (
       <Container>
@@ -47,12 +64,18 @@ class Group extends Component {
             divided
             relaxed="very"
           >
-            {members.map(user => (
-              <List.Item key={user._id} as={Link} to={`/user/${user._id}`}>
-                <Image avatar src={user.avatar} />
-                <List.Content header={user.username} />
-              </List.Item>
-            ))}
+            {members
+              ? members.map(user => (
+                <List.Item key={user._id} as={Link} to={`/user/${user._id}`}>
+                  <Image avatar src={user.avatar} />
+                  <List.Content header={user.username} />
+                </List.Item>
+              ))
+              : (
+                <Dimmer active inverted>
+                  <Loader />
+                </Dimmer>
+              )}
           </List>
           <Header attached="top" content="Discussions" />
           <List
@@ -90,9 +113,6 @@ export default withTracker(({ match }) => {
 
   return {
     group,
-    members: group ? Meteor.users.find(
-      { _id: { $in: group.members } },
-    ).fetch() : [],
     discussions: group ? Discussions.find(
       { _id: { $in: group.discussions.map(discussion => discussion.discussionId) } },
     ).fetch() : [],

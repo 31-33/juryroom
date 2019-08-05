@@ -37,7 +37,6 @@ class App extends Component {
     Meteor.subscribe('scenarios');
     Meteor.subscribe('discussions');
     Meteor.subscribe('groups');
-    Meteor.subscribe('users');
   }
 
   render() {

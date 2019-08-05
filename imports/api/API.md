@@ -146,6 +146,28 @@ Throws an error if the token is invalid, expired, or not an enrollment token.
 
 ---
 ```javascript
+'users.getMembersOfGroup'(groupId: String)
+```
+Returns an array containing the members of the specified group.
+
+Only the `username` and `avatar` fields of the user objects are contained in the array.
+
+---
+```javascript
+'users.getMembersOfDiscussion'(discussionId: String)
+```
+Returns an array containing the members of the group having the specified discussion.
+
+Only the `username` and `avatar` fields of the user objects are contained in the array.
+
+---
+```javascript
+'users.getProfile'(userId: String)
+```
+Returns the user object for the requested userId. The fields included in the result are only those made public by the specified user.
+
+---
+```javascript
 'roles.setAdmin'(userIds: String | Array<String>)
 ```
 Adds the `admin` role to each of the supplied users.
@@ -211,8 +233,11 @@ Meteor.subscribe('topics');
 
 ---
 ```javascript
-Meteor.subscribe('users');
+Meteor.subscribe('allUsers');
 ```
+Subscribes to all users registered on the system.
+
+An error will be thrown if the calling user is does not have either the `admin` or `create-group` role.
 
 ---
 ```javascript

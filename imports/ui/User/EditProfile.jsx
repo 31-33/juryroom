@@ -7,19 +7,14 @@ import {
 import PropTypes from 'prop-types';
 import DayPickerInput from 'react-day-picker/DayPickerInput';
 import 'react-day-picker/lib/style.css';
-import { UserPropType } from '/imports/types';
 import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
+import LoadingPage from '/imports/ui/Error/LoadingPage';
 import AvatarEditor from './AvatarEditor';
 
 class EditProfile extends Component {
   avatarEditor = null;
 
-  static defaultProps = {
-    user: false,
-  };
-
   static propTypes = {
-    user: PropTypes.oneOfType([UserPropType, PropTypes.bool]),
     userId: PropTypes.string.isRequired,
     history: PropTypes.shape({
       push: PropTypes.func.isRequired,
@@ -30,34 +25,20 @@ class EditProfile extends Component {
     super(props);
 
     this.state = {
-
+      error: false,
+      user: undefined,
     };
   }
 
-  componentDidUpdate(prevProps) {
-    const { user } = this.props;
-    if (prevProps.user.profileInfo === undefined && user.profileInfo) {
-      const {
-        firstname,
-        lastname,
-        gender,
-        dateofbirth,
-        ethnicity,
-        religion,
-        about,
-      } = user.profileInfo;
-
-      // eslint-disable-next-line react/no-did-update-set-state
-      this.setState({
-        firstname: firstname.value,
-        lastname: lastname.value,
-        gender: gender.value,
-        dateofbirth: dateofbirth.value,
-        ethnicity: ethnicity.value,
-        religion: religion.value,
-        about: about.value,
-      });
-    }
+  componentDidMount() {
+    const { userId } = this.props;
+    Meteor.call('users.getProfile', userId, (error, user) => {
+      if (error) {
+        this.setState({ error });
+      } else {
+        this.setState({ user, ...user.profileInfo });
+      }
+    });
   }
 
   saveProfile = () => {
@@ -73,13 +54,13 @@ class EditProfile extends Component {
     } = this.state;
 
     const profileInfo = {
-      firstname: { value: firstname, public: true },
-      lastname: { value: lastname, public: true },
-      gender: { value: gender, public: true },
-      dateofbirth: { value: dateofbirth, public: true },
-      ethnicity: { value: ethnicity, public: true },
-      religion: { value: religion, public: true },
-      about: { value: about, public: true },
+      firstname,
+      lastname,
+      gender,
+      dateofbirth,
+      ethnicity,
+      religion,
+      about,
     };
 
     Meteor.call(
@@ -92,14 +73,26 @@ class EditProfile extends Component {
     );
   }
 
-  handleChange = (e, { name, value }) => this.setState({ [name]: value });
+  handleChange = (e, { name, value }) => {
+    this.setState({
+      [name]: {
+        public: false,
+        value,
+      },
+    });
+  }
 
   render() {
-    const { user, userId } = this.props;
+    const { userId } = this.props;
+    const { error, user } = this.state;
     const { username } = user || {};
 
-    if (userId !== Meteor.userId()) {
+    if (userId !== Meteor.userId() || error) {
       return <NotAuthorizedPage />;
+    }
+
+    if (!user) {
+      return <LoadingPage />;
     }
 
     const {
@@ -126,13 +119,13 @@ class EditProfile extends Component {
                   <Form.Input
                     label="First Name"
                     name="firstname"
-                    defaultValue={firstname}
+                    defaultValue={firstname.value}
                     onChange={this.handleChange}
                   />
                   <Form.Input
                     label="Last Name"
                     name="lastname"
-                    defaultValue={lastname}
+                    defaultValue={lastname.value}
                     onChange={this.handleChange}
                   />
                 </Form.Group>
@@ -140,7 +133,7 @@ class EditProfile extends Component {
                   <Form.Input
                     label="Gender"
                     name="gender"
-                    defaultValue={gender}
+                    defaultValue={gender.value}
                     onChange={this.handleChange}
                   />
                   <Form.Field
@@ -149,7 +142,7 @@ class EditProfile extends Component {
                     format="DD/MM/YYYY"
                     placeholder="DD/MM/YYYY"
                     name="dateofbirth"
-                    defaultValue={dateofbirth}
+                    defaultValue={dateofbirth.value}
                     onChange={this.handleChange}
                   />
                 </Form.Group>
@@ -157,13 +150,13 @@ class EditProfile extends Component {
                   <Form.Input
                     label="Ethnicity"
                     name="ethnicity"
-                    defaultValue={ethnicity}
+                    defaultValue={ethnicity.value}
                     onChange={this.handleChange}
                   />
                   <Form.Input
                     label="Religion"
                     name="religion"
-                    defaultValue={religion}
+                    defaultValue={religion.value}
                     onChange={this.handleChange}
                   />
                 </Form.Group>
@@ -180,7 +173,7 @@ class EditProfile extends Component {
             <Form.TextArea
               label="About"
               name="about"
-              value={about}
+              defaultValue={about.value}
               onChange={this.handleChange}
             />
             <Form.Button onClick={this.saveProfile}>Save</Form.Button>
@@ -195,6 +188,5 @@ export default withTracker(({ match }) => {
   const { userId } = match.params;
   return {
     userId,
-    user: Meteor.users.findOne({ _id: userId }),
   };
 })(EditProfile);

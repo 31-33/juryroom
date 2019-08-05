@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Segment, List, Image, Grid, Divider,
+  Segment, List, Image, Grid, Divider, Dimmer, Loader,
 } from 'semantic-ui-react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
 import {
-  GroupPropType, ScenarioSetPropType, UserPropType, DiscussionPropType,
+  GroupPropType, ScenarioSetPropType, DiscussionPropType,
 } from '/imports/types';
 import ScenarioSets from '/imports/api/ScenarioSets';
 import Discussions from '/imports/api/Discussions';
@@ -21,14 +21,31 @@ class GroupSummary extends Component {
   static propTypes = {
     group: GroupPropType.isRequired,
     scenarioSet: PropTypes.oneOfType([ScenarioSetPropType, PropTypes.bool]),
-    participants: PropTypes.arrayOf(UserPropType).isRequired,
     discussions: PropTypes.arrayOf(DiscussionPropType).isRequired,
+  }
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      participants: undefined,
+    };
+  }
+
+  componentDidMount() {
+    const { group } = this.props;
+    Meteor.call('users.getMembersOfGroup', group._id, (err, participants) => {
+      if (!err) {
+        this.setState({ participants });
+      }
+    });
   }
 
   render() {
     const {
-      group, scenarioSet, participants, discussions,
+      group, scenarioSet, discussions,
     } = this.props;
+    const { participants } = this.state;
     return (
       <List.Item key={group._id}>
         <Segment clearing size="large">
@@ -50,15 +67,21 @@ class GroupSummary extends Component {
               <List selection size="tiny">
                 <List.Header content="Members" />
                 <Divider fitted />
-                {group.members.map((memberId) => {
-                  const member = participants.find(user => user._id === memberId);
-                  return member && (
-                    <List.Item key={member._id} as={Link} to={`/user/${member._id}`}>
-                      <Image avatar src={member.avatar || '/avatar_default.png'} />
-                      <List.Content content={member.username} verticalAlign="middle" />
-                    </List.Item>
-                  );
-                })}
+                {participants
+                  ? group.members.map((memberId) => {
+                    const member = participants.find(user => user._id === memberId);
+                    return member && (
+                      <List.Item key={member._id} as={Link} to={`/user/${member._id}`}>
+                        <Image avatar src={member.avatar || '/avatar_default.png'} />
+                        <List.Content content={member.username} verticalAlign="middle" />
+                      </List.Item>
+                    );
+                  })
+                  : (
+                    <Dimmer active inverted>
+                      <Loader />
+                    </Dimmer>
+                  )}
               </List>
             </Grid.Column>
           </Grid>
@@ -68,7 +91,6 @@ class GroupSummary extends Component {
   }
 }
 export default withTracker(({ group }) => ({
-  participants: Meteor.users.find({ _id: { $in: group.members } }).fetch(),
   scenarioSet: ScenarioSets.findOne({ _id: group.scenarioSetId }),
   discussions: Discussions.find(
     { groupId: group._id },

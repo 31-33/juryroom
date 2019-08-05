@@ -141,7 +141,10 @@ class CreateGroup extends Component {
   }
 }
 
-export default withTracker(() => ({
-  users: Meteor.users.find({}).fetch(),
-  scenarioSets: ScenarioSets.find({}).fetch() || [],
-}))(CreateGroup);
+export default withTracker(() => {
+  Meteor.subscribe('allUsers');
+  return {
+    users: Meteor.users.find({}).fetch(),
+    scenarioSets: ScenarioSets.find({}).fetch() || [],
+  };
+})(CreateGroup);

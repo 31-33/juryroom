@@ -3,20 +3,28 @@ import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import { Accounts } from 'meteor/accounts-base';
 
+import Groups from '/imports/api/Groups';
+
 if (Meteor.isServer) {
-  Meteor.publish('users', () => Meteor.users.find(
-    { },
-    // Publish only selected fields
-    {
-      fields: {
-        username: 1,
-        emails: 1,
-        avatar: 1,
-        roles: 1,
-        profileInfo: 1,
+  Meteor.publish('allUsers', () => {
+    if (!Roles.userIsInRole(this.userId, ['admin', 'create-group'])) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    return Meteor.users.find(
+      { },
+      // Publish only selected fields
+      {
+        fields: {
+          username: 1,
+          emails: 1,
+          avatar: 1,
+          roles: 1,
+          profileInfo: 1,
+        },
       },
-    },
-  ));
+    );
+  });
 
   Meteor.methods({
     'users.updateProfile'(avatar, profileInfo) {
@@ -110,6 +118,63 @@ if (Meteor.isServer) {
       }
 
       Accounts.setUsername(user._id, username);
+    },
+    'users.getMembersOfGroup'(groupId) {
+      check(groupId, String);
+
+      const group = Groups.findOne({ _id: groupId });
+
+      // if (!group.members.includes(this.userId) && !Roles.userIsInRole(this.userId, 'admin')) {
+      //   throw new Meteor.Error('not-authorized');
+      // }
+
+      return Meteor.users.find(
+        { _id: { $in: group.members } },
+        {
+          fields: {
+            username: 1,
+            avatar: 1,
+          },
+        },
+      ).fetch();
+    },
+    'users.getMembersOfDiscussion'(discussionId) {
+      check(discussionId, String);
+
+      const group = Groups.findOne(
+        { discussions: { $elemMatch: { discussionId } } },
+        {
+          fields: {
+            members: 1,
+          },
+        },
+      );
+
+      return Meteor.users.find(
+        { _id: { $in: group.members } },
+        {
+          fields: {
+            username: 1,
+            avatar: 1,
+          },
+        },
+      ).fetch();
+    },
+    'users.getProfile'(userId) {
+      check(userId, String);
+
+      return Meteor.users.findOne(
+        { _id: userId },
+        {
+          fields: {
+            username: 1,
+            avatar: 1,
+            roles: 1,
+            profileInfo: this.userId === userId ? 1 : 0,
+            // TODO: filter/transform profileInfo data to only publish public sub-fields
+          },
+        },
+      );
     },
   });
 }
