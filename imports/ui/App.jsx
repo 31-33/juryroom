@@ -37,9 +37,25 @@ class App extends Component {
     Meteor.subscribe('scenarios');
     Meteor.subscribe('discussions');
     Meteor.subscribe('groups');
+
+    this.state = {
+      roles: [],
+    };
+  }
+
+  componentDidMount() {
+    if (Meteor.userId()) {
+      Meteor.call('users.getProfile', Meteor.userId(), (error, user) => {
+        if (!error) {
+          this.setState({ roles: user.roles });
+        }
+      });
+    }
   }
 
   render() {
+    const { roles } = this.state;
+
     return (
       <Router history={this.browserHistory}>
         <Menu fixed="top" inverted>
@@ -48,24 +64,29 @@ class App extends Component {
               <Icon size="big" name="balance scale" />
               JuryRoom
             </Menu.Item>
-            <Dropdown item text="Browse">
-              <Dropdown.Menu>
-                <Dropdown.Item content="Scenarios" as={Link} to="/scenarios" />
-                <Dropdown.Item content="Sets" as={Link} to="/sets" />
-              </Dropdown.Menu>
-            </Dropdown>
-            <Menu inverted floated="right">
-              {
-                Meteor.userId() && (
-                  <Menu.Item as={Link} to={`/user/${Meteor.userId()}`}>
-                    Profile
-                  </Menu.Item>
-                )
-              }
-              <Menu.Item as="a">
+            {roles.includes('admin') && (
+              <Dropdown item text="Browse">
+                <Dropdown.Menu>
+                  <Dropdown.Item content="Scenarios" as={Link} to="/scenarios" />
+                  <Dropdown.Item content="Sets" as={Link} to="/sets" />
+                </Dropdown.Menu>
+              </Dropdown>
+            )}
+            <Menu.Menu
+              position="right"
+            >
+              {Meteor.userId() && (
+                <Menu.Item
+                  as={Link}
+                  to={`/user/${Meteor.userId()}`}
+                >
+                  Profile
+                </Menu.Item>
+              )}
+              <Menu.Item>
                 <AccountsUIWrapper />
               </Menu.Item>
-            </Menu>
+            </Menu.Menu>
           </Container>
         </Menu>
         <Container className="wrapper content-width">
