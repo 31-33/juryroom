@@ -163,18 +163,32 @@ if (Meteor.isServer) {
     'users.getProfile'(userId) {
       check(userId, String);
 
-      return Meteor.users.findOne(
+      const user = Meteor.users.findOne(
         { _id: userId },
         {
           fields: {
             username: 1,
             avatar: 1,
             roles: 1,
-            profileInfo: this.userId === userId ? 1 : 0,
-            // TODO: filter/transform profileInfo data to only publish public sub-fields
+            profileInfo: 1,
           },
         },
       );
+
+      let profileInfo = {};
+      if (user.profileInfo) {
+        if (this.userId === userId) {
+          profileInfo = user.profileInfo;
+        } else {
+          profileInfo = Object.entries(user.profileInfo)
+            .filter(entry => entry[1].public === true)
+            .reduce((prev, curr) => { prev[curr[0]] = curr[1]; return prev; }, {});
+        }
+      }
+      return {
+        ...user,
+        profileInfo,
+      };
     },
   });
 }
