@@ -25,4 +25,5 @@ jquery
 alanning:roles
 force-ssl
 konecty:user-presence
+percolate:synced-cron
 email

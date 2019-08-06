@@ -6,6 +6,7 @@ import {
   Sidebar, Container, Segment, Header, Button, Visibility,
 } from 'semantic-ui-react';
 import Swipe from 'react-easy-swipe';
+import Moment from 'react-moment';
 
 import Discussions from '/imports/api/Discussions';
 import Scenarios from '/imports/api/Scenarios';
@@ -83,6 +84,14 @@ class DiscussionPage extends PureComponent {
       hash: PropTypes.string,
     }).isRequired,
     discussionId: PropTypes.string.isRequired,
+    discussion: PropTypes.oneOfType([
+      PropTypes.shape({
+        scenarioId: PropTypes.string.isRequired,
+        status: PropTypes.string.isRequired,
+        deadline: PropTypes.objectOf(Date),
+      }),
+      PropTypes.bool,
+    ]).isRequired,
     scenario: PropTypes.shape({
       title: PropTypes.string.isRequired,
       description: PropTypes.string.isRequired,
@@ -114,9 +123,12 @@ class DiscussionPage extends PureComponent {
   scrollToComment = commentId => scrollToElement(`#${CSS.escape(commentId)}`, { align: 'top', offset: -120 });
 
   render() {
-    const { showStarredPanel, showOverviewPanel } = this.state;
-    const { location, discussionId, scenario } = this.props;
-    const { error, participants } = this.state;
+    const {
+      location, discussionId, scenario, discussion,
+    } = this.props;
+    const {
+      showStarredPanel, showOverviewPanel, error, participants,
+    } = this.state;
 
     if (error) {
       return <NotFoundPage />;
@@ -168,12 +180,20 @@ class DiscussionPage extends PureComponent {
           onSwipeRight={() => this.setState({ showStarredPanel: true })}
           allowMouseEvents
         >
-          <Segment attached="top">
+          <Segment attached="top" clearing>
             <Header
               size="huge"
+              floated="left"
               content={scenario && scenario.title}
               subheader={scenario && scenario.description}
             />
+            {discussion.deadline && discussion.status === 'active' && (
+              <Header floated="right" size="small">
+                Discussion ends
+                {' '}
+                <Moment fromNow>{discussion.deadline}</Moment>
+              </Header>
+            )}
           </Segment>
           <Segment attached="bottom">
             <DiscussionThread
@@ -208,13 +228,14 @@ export default withTracker(({ match }) => {
         scenarioId: 1,
         groupId: 1,
         status: 1,
+        deadline: 1,
       },
     },
   );
 
   return {
     discussionId,
-    isDiscussionActive: !discussion || discussion.status !== 'finished',
+    discussion: discussion || false,
     scenario: discussion
       && Scenarios.findOne({ _id: discussion.scenarioId }),
   };

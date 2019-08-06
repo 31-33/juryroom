@@ -13,7 +13,8 @@ Represents a collection (i.e. group) of users. A group may participate in multip
     scenarioSetId: String,
     discussions: [String],
     createdAt: Date,
-    createdBy: [String],
+    createdBy: String,
+    maxDiscussionDuration: Number?,
 }
 ```
 
@@ -30,6 +31,8 @@ Represents a collection (i.e. group) of users. A group may participate in multip
 `createdBy`: *The userId of the user who created this group.*
 
 `commentLengthLimit`: *The maximum number of characters that can be in a single comment, for this groups discussions. This value is then copied onto each new discussion as they are created.*
+
+`maxDiscussionDuration`: *The maximum duration of a discussion conducted by this group, `in milliseconds`. If set, this field will be used to apply a deadline to all discussions created under this group.*
 
 ---
 ## User
@@ -120,6 +123,7 @@ Represents a discussion thread. A discussion is a conversation between a group o
     activeVote: String?,
     status: String,
     commentLengthLimit: Number,
+    deadline: Date?
 }
 ```
 
@@ -146,6 +150,8 @@ Represents a discussion thread. A discussion is a conversation between a group o
 `status`: *String representing the state the discussion is currently in. Possible values are `active` when discussion is in progress, `voting` when a vote is in progress (this should restrict other actions), and `finished` when the discussion is completed.*
 
 `commentLengthLimit`: *The maximum number of characters that a comment on this discussion may contain.*
+
+`deadline`: *If set, the discussion must be finished before the supplied value. If the discussion has not reached a consensus by this time, a hung-jury will be declared, and the discussion will end.*
 
 ---
 ## Topic

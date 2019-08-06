@@ -1,6 +1,7 @@
+/* eslint-disable no-undef */
 import { Meteor } from 'meteor/meteor';
 import '/imports/api/Comments';
-import '/imports/api/Discussions';
+import Discussions, { startNext } from '/imports/api/Discussions';
 import '/imports/api/Users';
 import '/imports/api/Groups';
 import '/imports/api/Votes';
@@ -15,4 +16,31 @@ Meteor.startup(() => {
   UserPresence.start();
   UserPresenceMonitor.start();
 
+  SyncedCron.add({
+    name: 'checkDiscussionDeadline',
+    schedule(parser) {
+      return parser.recur().on(0).minute();
+    },
+    job(dateTime) {
+      Discussions.find(
+        {
+          status: 'active',
+          deadline: { $lte: dateTime },
+        },
+      ).fetch().forEach((discussion) => {
+        Discussions.update(
+          { _id: discussion._id },
+          {
+            $set: {
+              status: 'hung',
+              activeReplies: [],
+            },
+          },
+        );
+        startNext(discussion.groupId);
+      });
+    },
+  });
+
+  SyncedCron.start();
 });

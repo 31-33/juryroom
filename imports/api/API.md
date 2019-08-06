@@ -25,9 +25,14 @@ Throws an error if the user is not an admin, and a member of the specified discu
 
 ---
 ```javascript
-'groups.create'(members: Array<String>, scenarioSetId: String)
+'groups.create'(members: Array<String>, scenarioSetId: String, options: Object?)
 ```
 Creates a new group, with the supplied `members` array of userId's as members of the group. The supplied `scenarioSetId` specifies the collection of discussions that this group shall discuss.
+
+The (optional) `options` parameter may contain additional configuration information, including:
+
+- `commentLengthLimit`: The maximum number of characters, including markdown, that may be included in a single comment. If this is not supplied, the default value will be used.
+- `maxDiscussionDuration`: The maximum duration, specified in milliseconds, for discussions created under this group. After the specified amount of time has passed, if the discussion has not yet finished a 'hung jury' is declared and the discussion is ended. If not specified, there is no limit on the duration of discussions.
 
 Throws error if user calling this method does not have required permissions (i.e. `admin` or `create-group` role)
 

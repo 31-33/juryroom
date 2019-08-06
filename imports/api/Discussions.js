@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import _ from 'lodash';
 import ScenarioSets from '/imports/api/ScenarioSets';
@@ -24,6 +24,7 @@ if (Meteor.isServer) {
           activeVote: 1,
           status: 1,
           commentLengthLimit: 1,
+          deadline: 1,
         },
       },
     );
@@ -53,6 +54,13 @@ export function startNext(groupId) {
     scenario => !group.discussions.some(discussion => discussion.scenarioId === scenario),
   );
 
+  let deadline;
+  if (group.maxDiscussionDuration) {
+    deadline = new Date();
+    deadline.setMinutes(0);
+    deadline.setSeconds(group.maxDiscussionDuration);
+  }
+
   if (remainingScenarios.length === 0) {
     // TODO: handle last discussion in set completed...
   } else {
@@ -70,6 +78,7 @@ export function startNext(groupId) {
       votes: [],
       status: 'active',
       commentLengthLimit: group.commentLengthLimit,
+      deadline,
     });
 
     Groups.update(
@@ -87,10 +96,23 @@ export function startNext(groupId) {
 }
 
 Meteor.methods({
-  'groups.create'(members, scenarioSetId, commentLengthLimit) {
+  'groups.create'(members, scenarioSetId, options) {
     check(members, Array);
     check(scenarioSetId, String);
-    check(commentLengthLimit, Number);
+    check(options, Match.Where((config) => {
+      if (typeof config !== 'object') return false;
+
+      if (config.commentLengthLimit !== undefined
+        && typeof config.commentLengthLimit !== 'number') {
+        return false;
+      }
+      if (config.maxDiscussionDuration !== undefined
+        && typeof config.maxDiscussionDuration !== 'number') {
+        return false;
+      }
+
+      return true;
+    }));
 
     if (!Roles.userIsInRole(this.userId, ['admin', 'create-group'])) {
       throw new Meteor.Error('not-authorized');
@@ -102,7 +124,8 @@ Meteor.methods({
       discussions: [],
       createdAt: new Date(),
       createdBy: this.userId,
-      commentLengthLimit,
+      commentLengthLimit: options.commentLengthLimit,
+      maxDiscussionDuration: options.maxDiscussionDuration,
     });
 
     if (Meteor.isServer) {

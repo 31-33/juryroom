@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { ScenarioSetPropType } from '/imports/types';
 import ScenarioSets from '/imports/api/ScenarioSets';
 import {
-  Container, Segment, Form, Modal,
+  Container, Segment, Form, Modal, Radio,
 } from 'semantic-ui-react';
 import { Roles } from 'meteor/alanning:roles';
 import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
@@ -35,6 +35,8 @@ class CreateGroup extends Component {
       members: [],
       commentLengthLimit: MAX_COMMENT_LENGTH,
       showCreateUserModal: false,
+      enforceMaxDuration: false,
+      maxDiscussionDuration: 7,
     };
   }
 
@@ -43,7 +45,9 @@ class CreateGroup extends Component {
   render() {
     const { scenarioSets, users, history } = this.props;
     const {
-      members, selectedSet, commentLengthLimit, showCreateUserModal,
+      members, selectedSet, showCreateUserModal,
+      commentLengthLimit,
+      maxDiscussionDuration, enforceMaxDuration,
     } = this.state;
 
     if (!Meteor.user() === null && !Roles.userIsInRole(Meteor.userId(), ['admin', 'create-group'])) {
@@ -116,14 +120,35 @@ class CreateGroup extends Component {
               />
             </Modal>
           </Form.Field>
-          <Form.Input
-            label="Max Comment Length"
-            type="number"
-            value={commentLengthLimit}
-            onInput={({ target }) => this.setState({
-              commentLengthLimit: parseInt(target.value, 10) || commentLengthLimit,
-            })}
-          />
+          <Form.Group>
+            <Form.Input
+              label="Max Comment Length"
+              type="number"
+              value={commentLengthLimit}
+              onInput={({ target }) => this.setState({
+                commentLengthLimit: parseInt(target.value, 10) || commentLengthLimit,
+              })}
+            />
+            <Form.Field
+              control={Form.Group}
+              label="Enforce Max Discussion Duration (days)"
+            >
+              <Form.Field
+                control={Radio}
+                toggle
+                onChange={(_, toggle) => this.setState({ enforceMaxDuration: toggle.checked })}
+              />
+              {enforceMaxDuration && (
+                <Form.Input
+                  type="number"
+                  value={maxDiscussionDuration}
+                  onInput={({ target }) => this.setState({
+                    maxDiscussionDuration: parseInt(target.value, 10),
+                  })}
+                />
+              )}
+            </Form.Field>
+          </Form.Group>
           <Form.Button
             content="Submit"
             onClick={() => selectedSet && members.length > 1
@@ -131,7 +156,12 @@ class CreateGroup extends Component {
                 'groups.create',
                 members,
                 selectedSet,
-                commentLengthLimit,
+                {
+                  commentLengthLimit,
+                  maxDiscussionDuration: enforceMaxDuration
+                    ? 60 * 60 * 24 * maxDiscussionDuration
+                    : undefined,
+                },
                 (event, groupId) => history.push(`/groups/${groupId}`),
               )}
           />
