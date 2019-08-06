@@ -6,7 +6,7 @@ import { Accounts } from 'meteor/accounts-base';
 import Groups from '/imports/api/Groups';
 
 if (Meteor.isServer) {
-  Meteor.publish('allUsers', () => {
+  Meteor.publish('allUsers', function() {
     if (!Roles.userIsInRole(this.userId, ['admin', 'create-group'])) {
       throw new Meteor.Error('not-authorized');
     }
