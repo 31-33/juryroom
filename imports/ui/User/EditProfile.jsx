@@ -27,6 +27,35 @@ class EditProfile extends Component {
     this.state = {
       error: false,
       user: undefined,
+
+      firstname: {
+        value: '',
+        public: false,
+      },
+      lastname: {
+        value: '',
+        public: false,
+      },
+      gender: {
+        value: '',
+        public: false,
+      },
+      dateofbirth: {
+        value: '',
+        public: false,
+      },
+      ethnicity: {
+        value: '',
+        public: false,
+      },
+      religion: {
+        value: '',
+        public: false,
+      },
+      about: {
+        value: '',
+        public: false,
+      },
     };
   }
 
