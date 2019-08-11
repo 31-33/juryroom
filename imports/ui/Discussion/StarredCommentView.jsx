@@ -107,19 +107,20 @@ class StarredCommentView extends PureComponent {
                 }
               />
             )}
-            {!isActiveVote && (
-              <Button
-                disabled={!!discussion.activeVote
-                || !comment.userStars.some(star => star.userId === Meteor.userId())
-                || discussion.votes.some(vote => vote.commentId === comment._id)
-                || discussion.status !== 'active'}
-                attached="bottom"
-                icon="exclamation"
-                color="green"
-                content="Call Vote"
-                onClick={() => Meteor.call('votes.callVote', discussion._id, comment._id)}
-              />
-            )}
+            {!isActiveVote
+              && comment.userStars.some(star => star.userId === Meteor.userId())
+              && !discussion.votes.some(vote => vote.commentId === comment._id)
+              && discussion.status === 'active'
+              && (
+                <Button
+                  disabled={!!discussion.activeVote}
+                  attached="bottom"
+                  icon="exclamation"
+                  color="green"
+                  content="Call Vote"
+                  onClick={() => Meteor.call('votes.callVote', discussion._id, comment._id)}
+                />
+              )}
             {isActiveVote && renderUserVotes(activeVote, participants)}
           </Comment.Actions>
         </Comment.Content>

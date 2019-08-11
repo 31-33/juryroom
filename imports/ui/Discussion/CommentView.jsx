@@ -80,54 +80,61 @@ class CommentViewTemplate extends PureComponent {
     );
   }
 
-  renderVoteButton(starredBy, userStarred) {
-    const {
-      participants, vote, discussion, comment,
-    } = this.props;
+  renderUserList(userIds) {
+    const { participants } = this.props;
 
     return (
-      <Button
-        disabled={!!discussion.activeVote
-          || !userStarred
-          || !!vote
-          || discussion.status !== 'active'}
-        floated="right"
-        content="Call Vote"
-        color="green"
-        onClick={() => Meteor.call('votes.callVote', discussion._id, comment._id)}
-        label={{
-          basic: true,
-          content: (
-            <Item.Group>
-              {
-                starredBy.map((star) => {
-                  const item = participants.find(user => user._id === star.userId);
-                  return (
-                    <Item
-                      key={item._id}
-                      as={Link}
-                      to={`/user/${star.userId}`}
-                    >
-                      <Item.Image
-                        inline
-                        avatar
-                        size="mini"
-                        src={item.avatar || '/avatar_default.png'}
-                      />
-                      <Item.Content
-                        verticalAlign="middle"
-                        content={item.username}
-                      />
-                    </Item>
-                  );
-                })
-              }
-            </Item.Group>
-          ),
-        }}
-        labelPosition="left"
-      />
+      <Item.Group>
+        {
+          userIds.map((id) => {
+            const item = participants.find(user => user._id === id);
+            return (
+              <Item
+                key={item._id}
+                as={Link}
+                to={`/user/${id}`}
+              >
+                <Item.Image
+                  inline
+                  avatar
+                  size="mini"
+                  src={item.avatar || '/avatar_default.png'}
+                />
+                <Item.Content
+                  verticalAlign="middle"
+                  content={item.username}
+                />
+              </Item>
+            );
+          })
+        }
+      </Item.Group>
     );
+  }
+
+  renderVoteButton(starredBy, userStarred) {
+    const { vote, discussion, comment } = this.props;
+
+    return userStarred && !vote && discussion.status === 'active'
+      ? (
+        <Button
+          disabled={!!discussion.activeVote}
+          floated="right"
+          content="Call Vote"
+          color="green"
+          onClick={() => Meteor.call('votes.callVote', discussion._id, comment._id)}
+          label={{
+            basic: true,
+            content: this.renderUserList(starredBy.map(star => star.userId)),
+          }}
+          labelPosition="left"
+        />
+      )
+      : (
+        <Segment floated="right">
+          {this.renderUserList(starredBy.map(star => star.userId))}
+        </Segment>
+      );
   }
 
   renderChildren() {
