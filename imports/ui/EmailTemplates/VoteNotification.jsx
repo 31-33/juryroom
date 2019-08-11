@@ -32,18 +32,46 @@ class VoteNotification extends PureComponent {
     } = this.props;
     return (
       <html lang="en">
-        <head>
-          {/* <style>{Assets.getText('semantic.min.css')}</style> */}
-        </head>
-        <Container as="body">
-          {/* <Segment attached="top">
+        <Container
+          as="body"
+          style={{
+            display: 'block',
+            margin: 'auto',
+          }}
+        >
+          <Segment
+            style={{
+              padding: '1em',
+              border: '1px solid #d4d4d5',
+              margin: 0,
+            }}
+          >
             <Header
-              size="huge"
-              content="JuryRoom"
-              icon="balance scale"
-            />
-          </Segment> */}
-          <Segment attached="bottom">
+              style={{
+                fontSize: '2em',
+                padding: '0',
+                fontWeight: '700',
+              }}
+            >
+              <img
+                src={`${process.env.ROOT_URL}/favicon.ico`}
+                style={{ verticalAlign: 'middle' }}
+                width="30px"
+                height="30px"
+                alt="JuryRoom Logo"
+              />
+              {' '}
+              JuryRoom
+            </Header>
+          </Segment>
+          <Segment
+            style={{
+              padding: '1em',
+              border: '1px solid #d4d4d5',
+              borderTop: 'none',
+              margin: 0,
+            }}
+          >
             <p>
               <em>{caller.username}</em>
               {' '}
@@ -51,13 +79,32 @@ class VoteNotification extends PureComponent {
               {' '}
               <em>{`'${scenario.title}'`}</em>
             </p>
-            {/* <Segment raised>
+            <Segment
+              style={{
+                boxShadow: '0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.15)',
+                fontSize: '1rem',
+                border: '1px solid rgba(34,36,38,.15)',
+                borderRadius: '0.3rem',
+                margin: '1rem 0',
+              }}
+            >
               <Comment.Group>
                 <Comment>
                   <Comment.Content>
-                    <Comment.Avatar src={author.avatar || `${process.env.ROOT_URL}/avatar_default.png`} style={{ height: '2.5em' }} />
-                    <Comment.Author content={author.username} />
-                    <Comment.Text>
+                    {/* <Comment.Avatar src={author.avatar || `${process.env.ROOT_URL}/avatar_default.png`} style={{ height: '2.5em' }} /> */}
+                    <Comment.Author
+                      content={author.username}
+                      style={{
+                        fontWeight: 700,
+                        padding: '1em',
+                        fontSize: '1em',
+                      }}
+                    />
+                    <Comment.Text
+                      style={{
+                        padding: '1em',
+                      }}
+                    >
                       <Linkify properties={{ target: '_blank' }}>
                         <ReactMarkdown
                           source={comment.text}
@@ -68,11 +115,11 @@ class VoteNotification extends PureComponent {
                   </Comment.Content>
                 </Comment>
               </Comment.Group>
-            </Segment> */}
+            </Segment>
             <p>
               Click
               {' '}
-              <a href={`${process.env.ROOT_URL}discussion/${discussionId}`}>here</a>
+              <a href={`${process.env.ROOT_URL}discussion/${discussionId}#${comment._id}`}>here</a>
               {' '}
               to view the discussion.
             </p>
