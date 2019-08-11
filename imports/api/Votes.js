@@ -171,27 +171,14 @@ Meteor.methods({
       },
     );
 
-    // Check if everyone has voted
-
     // TODO: move this to on-update method on Votes collection
     // Potential of check-then-act race condition when server is scaled out
+
+    // Check if everyone has voted
     if (Object.entries(currVote.userVotes).every(
       vote => (vote[0] === this.userId && userVote !== null) || vote[1] !== null,
     )) {
-      Discussions.update(
-        { _id: currVote.discussionId },
-        {
-          $unset: {
-            activeVote: '',
-          },
-        },
-      );
-      Votes.update(
-        { _id: voteId },
-        {
-          $set: { finished: true },
-        },
-      );
+      // Check if vote was successful
       if (Object.entries(currVote.userVotes).every(
         vote => (vote[0] === this.userId && userVote === true) || vote[1] === true,
       )) {
@@ -205,6 +192,21 @@ Meteor.methods({
           },
         );
         startNext(group._id);
+      } else {
+        Discussions.update(
+          { _id: currVote.discussionId },
+          {
+            $unset: {
+              activeVote: '',
+            },
+          },
+        );
+        Votes.update(
+          { _id: voteId },
+          {
+            $set: { finished: true },
+          },
+        );
       }
     }
   },
