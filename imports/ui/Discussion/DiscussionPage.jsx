@@ -194,6 +194,13 @@ class DiscussionPage extends PureComponent {
                 <Moment fromNow>{discussion.deadline}</Moment>
               </Header>
             )}
+            {discussion.status !== 'active' && (
+              <Header
+                floated="right"
+                content={discussion.status === 'finished' ? 'Finished' : 'Hung Jury'}
+                size="small"
+              />
+            )}
           </Segment>
           <Segment attached="bottom">
             <DiscussionThread
