@@ -24,18 +24,28 @@ class DiscussionSummary extends Component {
 
   render() {
     const { discussion, scenario, commentCount } = this.props;
-    const isActive = discussion.status !== 'finished';
+
+    let color = 'grey';
+    let description = 'In Progress';
+    if (discussion.status === 'finished') {
+      color = 'green';
+      description = 'Finished';
+    } else if (discussion.status === 'hung') {
+      color = 'red';
+      description = 'Hung Jury';
+    }
+
     return (
       <List.Item as={Link} to={`/discussion/${discussion._id}`}>
         <List.Content
           as={Segment}
           basic
-          color={isActive ? 'green' : 'grey'}
+          color={color}
         >
           <List.Header content={scenario.title} />
           <List.Description content={scenario.description} />
           <List.Content floated="left" content={`Comments: ${commentCount}`} />
-          <List.Content floated="right" description={isActive ? 'In Progress' : 'Finished'} />
+          <List.Content floated="right" description={description} />
         </List.Content>
       </List.Item>
     );
