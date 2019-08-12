@@ -6,6 +6,7 @@ import {
 } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import DayPickerInput from 'react-day-picker/DayPickerInput';
+import { formatDate, parseDate } from 'react-day-picker/moment';
 import 'react-day-picker/lib/style.css';
 import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
 import LoadingPage from '/imports/ui/Error/LoadingPage';
@@ -167,12 +168,21 @@ class EditProfile extends Component {
                   />
                   <Form.Field
                     label="Date of Birth"
-                    control={DayPickerInput}
-                    format="DD/MM/YYYY"
-                    placeholder="DD/MM/YYYY"
                     name="dateofbirth"
-                    defaultValue={dateofbirth.value}
-                    onChange={this.handleChange}
+                    control={DayPickerInput}
+                    value={dateofbirth.value}
+                    format="DD/MM/YYYY"
+                    formatDate={formatDate}
+                    parseDate={parseDate}
+                    placeholder="DD/MM/YYYY"
+                    onDayChange={(date) => {
+                      this.setState({
+                        dateofbirth: {
+                          public: false,
+                          value: date,
+                        },
+                      });
+                    }}
                   />
                 </Form.Group>
                 <Form.Group widths="equal">
