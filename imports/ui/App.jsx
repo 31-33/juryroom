@@ -64,7 +64,7 @@ class App extends Component {
               <Icon size="big" name="balance scale" />
               JuryRoom
             </Menu.Item>
-            {roles.includes('admin') && (
+            {roles && roles.includes('admin') && (
               <Dropdown item text="Browse">
                 <Dropdown.Menu>
                   <Dropdown.Item content="Scenarios" as={Link} to="/scenarios" />
