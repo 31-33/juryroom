@@ -8,18 +8,20 @@ class HeaderWithInfoMessage extends Component {
   static defaultProps = {
     subheader: false,
     infoMessage: false,
+    hideHelpDefault: true,
   }
 
   static propTypes = {
     header: PropTypes.string.isRequired,
     subheader: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     infoMessage: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+    hideHelpDefault: PropTypes.bool,
   }
 
   constructor(props) {
     super(props);
     this.state = {
-      hideHelp: true,
+      hideHelp: props.hideHelpDefault,
     };
   }
 
@@ -28,24 +30,26 @@ class HeaderWithInfoMessage extends Component {
     const { header, subheader, infoMessage } = this.props;
 
     return (
-      <Header size="huge">
-        <Header.Content as={Container} fluid>
-          {infoMessage && (
-            <Button
-              floated="right"
-              circular
-              color="blue"
-              size="massive"
-              icon="help circle"
-              onClick={() => this.setState({ hideHelp: !hideHelp })}
-            />
-          )}
-          {header}
-        </Header.Content>
-        {subheader && <Header.Subheader content={subheader} />}
+      <>
+        <Header size="huge">
+          <Header.Content as={Container} fluid>
+            {infoMessage && (
+              <Button
+                floated="right"
+                circular
+                color="blue"
+                size="massive"
+                icon="help circle"
+                onClick={() => this.setState({ hideHelp: !hideHelp })}
+              />
+            )}
+            {header}
+          </Header.Content>
+          {subheader && <Header.Subheader content={subheader} />}
+        </Header>
         {infoMessage && (
           <Message
-            size="mini"
+            size="big"
             info
             hidden={hideHelp}
             onDismiss={() => this.setState({ hideHelp: true })}
@@ -57,7 +61,7 @@ class HeaderWithInfoMessage extends Component {
             </Message.Content>
           </Message>
         )}
-      </Header>
+      </>
     );
   }
 }
