@@ -1,5 +1,8 @@
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 import { Accounts } from 'meteor/accounts-base';
 import { Meteor } from 'meteor/meteor';
+import EmailInvite from '/imports/ui/EmailTemplates/EmailInvite.jsx';
 
 if (Meteor.isClient) {
   Accounts.ui.config({
@@ -57,6 +60,11 @@ if (Meteor.isServer) {
       
       Please click the link below to register your account.
       ${url}`;
+    },
+    html(user, url) {
+      return ReactDOMServer.renderToStaticMarkup(React.createElement(EmailInvite, {
+        user, url,
+      }));
     },
   };
 
