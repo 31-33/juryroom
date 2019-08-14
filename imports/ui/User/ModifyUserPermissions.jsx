@@ -27,7 +27,7 @@ class ModifyUserPermissions extends Component {
                 <Checkbox
                   toggle
                   label="Create Scenarios"
-                  checked={Roles.userIsInRole(user._id, 'create-scenario')}
+                  defaultChecked={Roles.userIsInRole(user, 'create-scenario')}
                   onClick={(event, button) => Meteor.call('roles.setPermission_createScenario', user._id, button.checked)}
                 />
               </List.Item>
@@ -35,7 +35,7 @@ class ModifyUserPermissions extends Component {
                 <Checkbox
                   toggle
                   label="Create Scenario Sets"
-                  checked={Roles.userIsInRole(user._id, 'create-scenario-set')}
+                  defaultChecked={Roles.userIsInRole(user, 'create-scenario-set')}
                   onClick={(event, button) => Meteor.call('roles.setPermission_createScenarioSet', user._id, button.checked)}
                 />
               </List.Item>
@@ -43,7 +43,7 @@ class ModifyUserPermissions extends Component {
                 <Checkbox
                   toggle
                   label="Create Groups"
-                  checked={Roles.userIsInRole(user._id, 'create-group')}
+                  defaultChecked={Roles.userIsInRole(user, 'create-group')}
                   onClick={(event, button) => Meteor.call('roles.setPermission_createGroup', user._id, button.checked)}
                 />
               </List.Item>
