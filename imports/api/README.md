@@ -251,7 +251,8 @@ Represents a single post within a discussion thread. May be posted at the root l
             dateTime: Date,
         },
     ],
-    authorId: String,
+    authorId: String?,
+    submitterId: String,
     text: String,
     collapsedBy: [String],
 }
@@ -269,7 +270,9 @@ Represents a single post within a discussion thread. May be posted at the root l
 
 `userStars`: *Stores the `userId`s for the users who currently have this comment starred.*
 
-`authorId`: *Stores the unique identifier for the user who posted this comment.*
+`authorId`: *Stores the unique identifier for the user who posted this comment. If the user posted the comment anonymously, this field will be null.*
+
+`submitterId`: *Stores the unique identifier for the user who posted this comment. Unlike `authorId`, this field is not published to users, and stores the `userId` of the poster even if the comment was submitted anonymously.*
 
 `text`: *Stores the text/content of this comment. **Note: maximum length can be configured within `/imports/api/Comments.js`, currently set to 280 characters.***
 
