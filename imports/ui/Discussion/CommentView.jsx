@@ -33,7 +33,7 @@ class CommentViewTemplate extends PureComponent {
     comment: PropTypes.shape({
       _id: PropTypes.string.isRequired,
       parentId: PropTypes.string.isRequired,
-      authorId: PropTypes.string.isRequired,
+      authorId: PropTypes.string,
       text: PropTypes.string.isRequired,
       postedTime: PropTypes.objectOf(Date).isRequired,
       activeReplies: PropTypes.arrayOf(PropTypes.shape({
@@ -164,7 +164,8 @@ class CommentViewTemplate extends PureComponent {
       return '';
     }
 
-    const author = participants.find(user => user._id === comment.authorId);
+    const anonymousPoster = comment.authorId === null;
+    const author = !anonymousPoster && participants.find(user => user._id === comment.authorId);
 
     const starredBy = (comment.userStars || []);
     const userStarred = starredBy.some(star => star.userId === Meteor.userId());
@@ -187,16 +188,25 @@ class CommentViewTemplate extends PureComponent {
             name={this.isCollapsed() ? 'chevron down' : 'minus'}
             onClick={this.collapse}
           />
-          <Comment.Avatar
-            as={Link}
-            to={`/user/${author._id}`}
-            src={author.avatar || '/avatar_default.png'}
-          />
-          <Comment.Author
-            as={Link}
-            to={`/user/${author._id}`}
-            content={author.username}
-          />
+          {anonymousPoster ? (
+            <>
+              <Comment.Avatar src="/avatar_default.png" />
+              <Comment.Author style={{ display: 'inline' }} content="Anonymous" />
+            </>
+          ) : (
+            <>
+              <Comment.Avatar
+                as={Link}
+                to={`/user/${author._id}`}
+                src={author.avatar || '/avatar_default.png'}
+              />
+              <Comment.Author
+                as={Link}
+                to={`/user/${author._id}`}
+                content={author.username}
+              />
+            </>
+          )}
           <Comment.Metadata>
             <div>
               <Moment fromNow>{comment.postedTime}</Moment>

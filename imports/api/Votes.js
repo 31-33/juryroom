@@ -113,7 +113,9 @@ Meteor.methods({
         { _id: { $in: group.members } },
       ).fetch();
       const caller = participants.find(user => user._id === this.userId);
-      const author = participants.find(user => user._id === comment.authorId);
+      const author = comment.authorId === null
+        ? { username: 'Anonymous' }
+        : participants.find(user => user._id === comment.authorId);
       const scenario = Scenarios.findOne({ _id: discussion.scenarioId });
 
       Email.send({

@@ -21,6 +21,7 @@ class CommentForm extends PureComponent {
 
     this.state = {
       commentContent: RichTextEditor.createEmptyValue(),
+      isAnonymous: false,
     };
   }
 
@@ -31,9 +32,16 @@ class CommentForm extends PureComponent {
   }
 
   submitComment = () => {
-    const { commentContent } = this.state;
+    const { commentContent, isAnonymous } = this.state;
     const { discussion, parentId } = this.props;
-    Meteor.call('comments.insert', discussion._id, parentId || '', commentContent.toString('markdown'));
+
+    Meteor.call(
+      'comments.insert',
+      discussion._id,
+      parentId || '',
+      commentContent.toString('markdown'),
+      isAnonymous,
+    );
 
     this.setState({
       commentContent: RichTextEditor.createEmptyValue(),
@@ -51,6 +59,8 @@ class CommentForm extends PureComponent {
     const { commentContent } = this.state;
     const commentLengthLimit = discussion.commentLengthLimit || MAX_COMMENT_LENGTH;
     const currCommentLength = commentContent.toString('markdown').length;
+
+    const user = Meteor.user();
 
     return (
       <Form>
@@ -84,6 +94,32 @@ class CommentForm extends PureComponent {
               { label: 'Blockquote', style: 'blockquote' },
             ],
           }}
+          customControls={[
+            <div style={{ float: 'right' }} key="postingAs">
+              <Form.Dropdown
+                inline
+                label="Posting as"
+                selection
+                defaultValue={user._id}
+                options={[
+                  {
+                    key: user._id,
+                    text: user.username,
+                    value: user._id,
+                    image: { avatar: true, src: user.avatar || '/avatar_default.png' },
+                  },
+                  {
+                    key: 'Anonymous',
+                    text: 'Anonymous',
+                    value: 'Anonymous',
+                    image: { avatar: true, src: '/avatar_default.png' },
+                  },
+                ]}
+                upward={false}
+                onChange={(_, { value }) => { this.setState({ isAnonymous: value !== user._id }); }}
+              />
+            </div>,
+          ]}
         />
         <Statistic
           floated="right"

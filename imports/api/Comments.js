@@ -47,10 +47,11 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  'comments.insert'(discussionId, parentId, text) {
+  'comments.insert'(discussionId, parentId, text, postAnonymously) {
     check(discussionId, String);
     check(parentId, String);
     check(text, String);
+    check(postAnonymously, Boolean);
 
     const discussion = Discussions.findOne({ _id: discussionId });
     if (!discussion || discussion.status !== 'active') {
@@ -69,7 +70,8 @@ Meteor.methods({
       discussionId,
       parentId,
       postedTime: new Date(),
-      authorId: this.userId,
+      authorId: postAnonymously ? null : this.userId,
+      submitterId: this.userId,
       text,
       collapsedBy: [],
     });
@@ -83,7 +85,9 @@ Meteor.methods({
       const participants = Meteor.users.find(
         { _id: { $in: group.members } },
       ).fetch();
-      const author = participants.find(user => user._id === this.userId);
+      const author = postAnonymously
+        ? { username: 'Anonymous' }
+        : participants.find(user => user._id === this.userId);
       const scenario = Scenarios.findOne({ _id: discussion.scenarioId });
       const comment = Comments.findOne({ _id: commentId });
 

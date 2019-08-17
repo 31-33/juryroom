@@ -37,7 +37,7 @@ class StarredCommentView extends PureComponent {
     ]).isRequired,
     comments: PropTypes.oneOfType([
       PropTypes.arrayOf(PropTypes.shape({
-        authorId: PropTypes.string.isRequired,
+        authorId: PropTypes.string,
         userStars: PropTypes.arrayOf(PropTypes.shape({
           userId: PropTypes.string.isRequired,
         })),
@@ -54,16 +54,24 @@ class StarredCommentView extends PureComponent {
       participants, discussion, activeVote, scrollToComment,
     } = this.props;
 
-    const author = participants.find(user => user._id === comment.authorId);
+    const anonymousPoster = comment.authorId === null;
+    const author = !anonymousPoster && participants.find(user => user._id === comment.authorId);
+
     const isStarred = comment.userStars.some(star => star.userId === Meteor.userId());
     const isActiveVote = activeVote && activeVote.commentId === comment._id;
 
     return (
       <Comment key={comment._id}>
         <Comment.Content>
-          <Comment.Author as={Link} to={`/user/${author._id}`}>
-            {author.username}
-          </Comment.Author>
+          {anonymousPoster ? (
+            <Comment.Author style={{ display: 'inline' }} content="Anonymous" />
+          ) : (
+            <Comment.Author
+              as={Link}
+              to={`/user/${author._id}`}
+              content={author.username}
+            />
+          )}
           <Comment.Metadata style={{ display: 'inline' }}>
             <Moment fromNow>{comment.postedTime}</Moment>
             <Button

@@ -26,6 +26,17 @@ if (Meteor.isServer) {
     );
   });
 
+  Meteor.publish(null, function() {
+    return Meteor.users.find(
+      { _id: this.userId },
+      {
+        fields: {
+          avatar: 1,
+        },
+      },
+    );
+  });
+
   Meteor.methods({
     'users.updateProfile'(avatar, profileInfo) {
       check(avatar, String);
