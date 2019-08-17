@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-  Segment, Header, List, Container, Button, Message, Icon,
+  Segment, Header, List, Container, Button, Message, Icon, Divider,
 } from 'semantic-ui-react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
@@ -54,6 +54,7 @@ class Dashboard extends Component {
               {' '}
               About JuryRoom
             </Message.Header>
+            <Divider horizontal hidden />
             <Message.Content>
               JuryRoom is a digital environment designed to host discussions with a focus on reaching a consensus.
             </Message.Content>
@@ -62,21 +63,25 @@ class Dashboard extends Component {
             </Message.Content>
             <Message.List>
               <Message.Item>
-                Participate in discussions by posting comments
+                Participate in discussions by posting comments.
               </Message.Item>
               <Message.Item>
-                Star comments that you think best answer the discussion topic. You may have one comment starred at a time per discussion
+                Star comments that you think best answer the discussion topic. You may have one comment starred at a time per discussion.
               </Message.Item>
               <Message.Item>
-                You may call for a vote on a comment you have starred. There can only be one vote active at a time
+                You may call for a vote on a comment you have starred. There can only be one vote active at a time.
               </Message.Item>
               <Message.Item>
-                On an active vote, indicate whether you agree or disagree. If everyone agrees, the discussion is closed
+                On an active vote, indicate whether you agree or disagree. If everyone agrees, the discussion is closed.
               </Message.Item>
               <Message.Item>
-                If the group is unable to reach a consensus, a 'hung jury' will be declared
+                If the group is unable to reach a consensus, a 'hung jury' will be declared.
               </Message.Item>
             </Message.List>
+            <Divider horizontal hidden />
+            <Message.Content>
+              You will gain points for contributing to discussions, and lose points if the group fails to reach a consensus within the allotted time.
+            </Message.Content>
           </Message>
         </Segment>
         {groups.length > 0 && (
