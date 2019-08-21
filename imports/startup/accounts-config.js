@@ -17,7 +17,7 @@ if (Meteor.isServer) {
   });
 
   Accounts.emailTemplates.siteName = 'JuryRoom';
-  Accounts.emailTemplates.from = 'JuryRoom Admin <no-reply@juryroom.com>';
+  Accounts.emailTemplates.from = 'JuryRoom Admin <juryrooms@gmail.com>';
 
   Accounts.emailTemplates.verifyEmail = {
     subject(user) {
