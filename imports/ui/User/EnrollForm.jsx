@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import PropTypes from 'prop-types';
 import {
-  Modal, Form, Segment, Header, Container,
+  Modal, Form, Segment, Header, Container, Message,
 } from 'semantic-ui-react';
 import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
 
@@ -31,7 +31,10 @@ class EnrollForm extends PureComponent {
       if (error) {
         this.setState({ error });
       }
-      this.setState({ user });
+      this.setState({
+        user,
+        username: user.username || '',
+      });
     });
   }
 
@@ -77,12 +80,18 @@ class EnrollForm extends PureComponent {
                   username: value,
                   validUsername: null,
                 });
-                Meteor.call('users.doesUsernameExist', value,
-                  (_, usernameExists) => this.setState({ validUsername: !usernameExists }));
+                if (user.username === value) {
+                  this.setState({ validUsername: true });
+                } else {
+                  Meteor.call('users.doesUsernameExist', value,
+                    (_, usernameExists) => this.setState({ validUsername: !usernameExists }));
+                }
               }}
+              value={username || ''}
               loading={validUsername === null}
               error={validUsername === false}
             />
+            <Message info content="For maximum anonymity, JuryRoom has generated a random username. You may also choose to create your own username." />
             <Form.Input
               label="Password"
               type="password"
@@ -106,7 +115,12 @@ class EnrollForm extends PureComponent {
               }
               onClick={() => {
                 Meteor.call('users.setUsernameOnEnroll', token, username,
-                  err => !err && Accounts.resetPassword(token, password, () => history.push('/')));
+                  (err) => {
+                    if (!err) {
+                      Accounts.resetPassword(token, password, () => history.push('/'));
+                      Accounts.verifyEmail(token);
+                    }
+                  });
               }}
             />
           </Form>

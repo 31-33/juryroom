@@ -2,8 +2,9 @@ import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import { Accounts } from 'meteor/accounts-base';
-
 import Groups from '/imports/api/Groups';
+
+const chance = require('chance').Chance();
 
 if (Meteor.isServer) {
   Meteor.publish('allUsers', function() {
@@ -73,7 +74,13 @@ if (Meteor.isServer) {
         throw new Meteor.Error('not-authorized');
       }
 
-      const userId = Accounts.createUser({ email: emailAddress });
+      let username = '';
+      do {
+        username = chance.animal({ type: 'ocean' });
+        // Generate new names until one that does not exist is found
+      } while (Meteor.users.findOne({ username }));
+
+      const userId = Accounts.createUser({ email: emailAddress, username });
       Accounts.sendEnrollmentEmail(userId);
       return userId;
     },
@@ -102,6 +109,7 @@ if (Meteor.isServer) {
 
       return {
         _id: user._id,
+        username: user.username,
         emails: user.emails,
       };
     },
@@ -128,7 +136,16 @@ if (Meteor.isServer) {
         throw new Meteor.Error(403, 'Token expired');
       }
 
-      Accounts.setUsername(user._id, username);
+      // Store whether user kept their assigned (anonymous) username
+      const isAnonymous = user.username === username;
+      Meteor.users.update(
+        { _id: user._id },
+        { $set: { isAnonymous } },
+      );
+
+      if (!isAnonymous) {
+        Accounts.setUsername(user._id, username);
+      }
     },
     'users.getMembersOfGroup'(groupId) {
       check(groupId, String);
