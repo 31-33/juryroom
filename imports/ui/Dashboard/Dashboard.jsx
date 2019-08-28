@@ -25,7 +25,6 @@ class Dashboard extends Component {
   render() {
     const { groups } = this.props;
     const { showInfo } = this.state;
-
     return (
       <Container>
         <Segment attached="top" clearing>
@@ -88,7 +87,9 @@ class Dashboard extends Component {
           <Segment attached="bottom">
             <Header content="Groups" />
             <List relaxed size="huge">
-              {groups.map(group => <GroupSummary key={group._id} group={group} />)}
+              {groups
+                .sort((groupA, groupB) => groupB.createdAt - groupA.createdAt)
+                .map(group => <GroupSummary key={group._id} group={group} />)}
             </List>
           </Segment>
         )}
