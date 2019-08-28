@@ -91,7 +91,7 @@ class EnrollForm extends PureComponent {
               loading={validUsername === null}
               error={validUsername === false}
             />
-            <Message info content="For maximum anonymity, JuryRoom has generated a random username. You may also choose to create your own username." />
+            <Message info content="For improved anonymity, JuryRoom has generated a random username. You may also choose to create your own username." />
             <Form.Input
               label="Password"
               type="password"
