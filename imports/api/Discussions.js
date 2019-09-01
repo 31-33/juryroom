@@ -1,10 +1,15 @@
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
+import { Email } from 'meteor/email';
 import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import _ from 'lodash';
 import ScenarioSets from '/imports/api/ScenarioSets';
 import Groups from '/imports/api/Groups';
+import NewDiscussionNotification from '/imports/ui/EmailTemplates/NewDiscussionNotification.jsx';
+import Scenarios from './Scenarios';
 
 const Discussions = new Mongo.Collection('discussions');
 export default Discussions;
@@ -92,6 +97,21 @@ export function startNext(groupId) {
         },
       },
     );
+
+    // Send email
+    const participants = Meteor.users.find(
+      { _id: { $in: group.members } },
+    ).fetch();
+
+    Email.send({
+      from: 'JuryRoom <no-reply@juryroom.com>',
+      bcc: group.members.map(userId => participants.find(user => user._id === userId).emails[0]),
+      subject: 'New Discussion on JuryRoom',
+      html: ReactDOMServer.renderToStaticMarkup(React.createElement(NewDiscussionNotification, {
+        discussionId: newDiscussionId,
+        scenario: Scenarios.findOne({ _id: newScenarioId }),
+      })),
+    });
   }
 }
 
