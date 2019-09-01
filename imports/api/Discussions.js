@@ -105,7 +105,10 @@ export function startNext(groupId) {
 
     Email.send({
       from: 'JuryRoom <no-reply@juryroom.com>',
-      bcc: group.members.map(userId => participants.find(user => user._id === userId).emails[0]),
+      bcc: group.members
+        .map(userId => participants.find(user => user._id === userId))
+        .filter(user => user.emails[0].verified === true)
+        .map(user => user.emails[0]),
       subject: 'New Discussion on JuryRoom',
       html: ReactDOMServer.renderToStaticMarkup(React.createElement(NewDiscussionNotification, {
         discussionId: newDiscussionId,
