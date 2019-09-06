@@ -98,7 +98,7 @@ class Vote extends PureComponent {
               />
             </Button.Group>
           )}
-          {userVote !== undefined && renderUserVotes(vote, participants, isActive)}
+          {renderUserVotes(vote, participants, isActive)}
         </Segment>
       );
     }

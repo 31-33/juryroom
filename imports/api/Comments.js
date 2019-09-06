@@ -17,7 +17,6 @@ export default Comments;
 export const MAX_COMMENT_LENGTH = 500;
 
 if (Meteor.isServer) {
-  // TODO: ensure current user is within group associated with discussion_id
   Meteor.publish('comments', function(discussionId) {
     check(discussionId, String);
 
