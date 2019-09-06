@@ -57,7 +57,8 @@ class CommentForm extends PureComponent {
     const { discussion } = this.props;
     const { commentContent } = this.state;
     const commentLengthLimit = discussion.commentLengthLimit || MAX_COMMENT_LENGTH;
-    const currCommentLength = commentContent.toString('markdown').length;
+    const currentContent = commentContent.getEditorState().getCurrentContent();
+    const currCommentLength = currentContent.getPlainText().length;
 
     return (
       <Form>
@@ -101,7 +102,7 @@ class CommentForm extends PureComponent {
         />
         <Form.Group>
           <Form.Field
-            disabled={currCommentLength > commentLengthLimit}
+            disabled={currCommentLength > commentLengthLimit || !currentContent.hasText()}
             control={Button}
             onClick={this.submitComment}
             content="Add Reply"

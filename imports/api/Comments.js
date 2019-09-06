@@ -6,6 +6,7 @@ import { Mongo } from 'meteor/mongo';
 import { Email } from 'meteor/email';
 import { check, Match } from 'meteor/check';
 import { LoremIpsum } from 'lorem-ipsum';
+import RichTextEditor from 'react-rte';
 import Discussions, { isDiscussionParticipant } from './Discussions';
 import Groups from './Groups';
 import Scenarios from './Scenarios';
@@ -61,7 +62,7 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized');
     }
 
-    if (text.length > MAX_COMMENT_LENGTH) {
+    if (RichTextEditor.createValueFromString(text, 'markdown').getEditorState().getCurrentContent().getPlainText().length > MAX_COMMENT_LENGTH) {
       throw new Meteor.Error('max-length-exceeded');
     }
 
