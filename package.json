@@ -12,6 +12,7 @@
     "@babel/runtime": "^7.3.4",
     "bcrypt": "^0.8.7",
     "chance": "^1.0.18",
+    "draft-js-import-markdown": "^1.4.0",
     "history": "^4.9.0",
     "lorem-ipsum": "^2.0.3",
     "meteor-node-stubs": "^0.4.1",
