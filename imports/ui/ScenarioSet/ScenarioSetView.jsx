@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import {
-  Container, Segment, Header, List,
+  Container, Segment, Header, List, Dimmer, Loader,
 } from 'semantic-ui-react';
 import {
   ScenarioSetPropType, ScenarioPropType, TopicPropType, GroupPropType,
@@ -58,10 +58,21 @@ class ScenarioSetView extends Component {
             divided
             relaxed="very"
           >
-            {scenarios.map(scenario => renderScenarioSummary(
-              scenario,
-              topics.find(topic => topic._id === scenario.topicId),
-            ))}
+            {scenarioSet.scenarios
+              .map(scenarioId => ({
+                scenarioId,
+                scenario: scenarios.find(scenario => scenario._id === scenarioId),
+              }))
+              .map(tuple => (tuple.scenario === undefined
+                ? (
+                  <Dimmer active inverted key={tuple.scenarioId}>
+                    <Loader />
+                  </Dimmer>
+                ) : renderScenarioSummary(
+                  tuple.scenario,
+                  topics.find(topic => topic._id === tuple.scenario.topicId),
+                )))
+            }
           </List>
 
           <Header
