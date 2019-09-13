@@ -31,6 +31,7 @@ const ListReplyingUsers = withTracker(({ discussionId }) => ({
   if (!discussion || !discussion.activeReplies) return '';
   const activePosters = discussion.activeReplies
     .filter(reply => reply.userId !== Meteor.userId())
+    .filter(reply => new Date() - reply.activeTime < 5 * 60 * 1000)
     .map((reply) => {
       const participant = participants.find(user => user._id === reply.userId);
       return participant ? participant.username : '';
