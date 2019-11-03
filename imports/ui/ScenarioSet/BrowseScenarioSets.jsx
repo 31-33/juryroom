@@ -30,11 +30,10 @@ class BrowseScenarioSets extends Component {
 
   static propTypes = {
     scenarioSets: PropTypes.oneOfType([PropTypes.arrayOf(ScenarioSetPropType), PropTypes.bool]),
-    canCreateNew: PropTypes.bool.isRequired,
   }
 
   render() {
-    const { scenarioSets, canCreateNew } = this.props;
+    const { scenarioSets } = this.props;
 
     return (
       <Container>
@@ -43,7 +42,7 @@ class BrowseScenarioSets extends Component {
             header="Browse Scenario Sets"
             infoMessage="This page contains the list of Scenario Sets."
           />
-          {canCreateNew && (
+          {Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario-set']) && (
             <Button content="Create New" as={Link} to="/sets/create" color="green" />
           )}
         </Segment>
@@ -62,5 +61,4 @@ class BrowseScenarioSets extends Component {
 
 export default withTracker(() => ({
   scenarioSets: ScenarioSets.find({ status: 'active' }).fetch(),
-  canCreateNew: Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario-set']),
 }))(BrowseScenarioSets);

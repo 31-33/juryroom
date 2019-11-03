@@ -32,7 +32,6 @@ class BrowseScenario extends Component {
   }
 
   static propTypes = {
-    canCreateNew: PropTypes.bool.isRequired,
     scenarios: PropTypes.oneOfType([PropTypes.arrayOf(ScenarioPropType), PropTypes.bool]),
     topics: PropTypes.oneOfType([PropTypes.arrayOf(TopicPropType), PropTypes.bool]),
   }
@@ -45,7 +44,7 @@ class BrowseScenario extends Component {
   }
 
   render() {
-    const { canCreateNew, scenarios, topics } = this.props;
+    const { scenarios, topics } = this.props;
     const { selectedTopics } = this.state;
     return (
       <Container>
@@ -56,7 +55,7 @@ class BrowseScenario extends Component {
           />
           <Grid>
             <Grid.Column floated="left" width={4} verticalAlign="bottom">
-              {canCreateNew && (
+              {Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario']) && (
                 <Button
                   content="Create New"
                   as={Link}
@@ -107,5 +106,4 @@ class BrowseScenario extends Component {
 export default withTracker(() => ({
   topics: Topics.find({}).fetch(),
   scenarios: Scenarios.find({ status: 'active' }).fetch(),
-  canCreateNew: Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario']),
 }))(BrowseScenario);

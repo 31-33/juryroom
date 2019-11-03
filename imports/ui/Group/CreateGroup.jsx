@@ -7,8 +7,6 @@ import ScenarioSets from '/imports/api/ScenarioSets';
 import {
   Container, Segment, Form, Modal, Radio,
 } from 'semantic-ui-react';
-import { Roles } from 'meteor/alanning:roles';
-import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
 import { MAX_COMMENT_LENGTH } from '/imports/api/Comments';
 import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 import SendUserInvite from '/imports/ui/User/SendUserInvite';
@@ -49,10 +47,6 @@ class CreateGroup extends Component {
       commentLengthLimit,
       maxDiscussionDuration, enforceMaxDuration,
     } = this.state;
-
-    if (!Meteor.user() === null && !Roles.userIsInRole(Meteor.userId(), ['admin', 'create-group'])) {
-      return <NotAuthorizedPage />;
-    }
 
     return (
       <Container>

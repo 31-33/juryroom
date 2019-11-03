@@ -7,8 +7,6 @@ import {
 import PropTypes from 'prop-types';
 import { TopicPropType } from '/imports/types';
 import Topics from '/imports/api/Topics';
-import { Roles } from 'meteor/alanning:roles';
-import NotAuthorizedPage from '/imports/ui/Error/NotAuthorizedPage';
 import HeaderWithInfoMessage from '/imports/ui/Error/HeaderWithInfoMessage';
 
 class CreateScenario extends Component {
@@ -37,10 +35,6 @@ class CreateScenario extends Component {
   render() {
     const { topics, history } = this.props;
     const { title, description, selectedTopic } = this.state;
-
-    if (!Meteor.user() === null && !Roles.userIsInRole(Meteor.userId(), ['admin', 'create-scenario'])) {
-      return <NotAuthorizedPage />;
-    }
 
     return (
       <Container>
