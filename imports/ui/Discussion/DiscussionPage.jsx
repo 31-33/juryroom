@@ -69,7 +69,7 @@ const RenderPostForm = withTracker(({ discussionId }) => ({
     ) : (
       <Button
         onClick={() => Meteor.call('comments.reply', discussion._id, '')}
-        content="Postss"
+        content="Post"
         labelPosition="left"
         icon="edit"
         primary
