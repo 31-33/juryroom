@@ -45,6 +45,10 @@ const ListReplyingUsers = withTracker(({ discussionId }) => ({
   );
 });
 
+
+{/* ########################################################################
+Contains the 'Post' button for for posting a comment.
+Calls 'comments.reply' Meteor Method when clicked */}
 const RenderPostForm = withTracker(({ discussionId }) => ({
   discussion: Discussions.findOne(
     { _id: discussionId },
@@ -65,7 +69,7 @@ const RenderPostForm = withTracker(({ discussionId }) => ({
     ) : (
       <Button
         onClick={() => Meteor.call('comments.reply', discussion._id, '')}
-        content="Post"
+        content="Postss"
         labelPosition="left"
         icon="edit"
         primary
@@ -214,6 +218,9 @@ class DiscussionPage extends PureComponent {
               discussionId={discussionId}
               participants={participants}
             />
+            
+            {/* ########################################################################
+            Post button */}
             <RenderPostForm
               discussionId={discussionId}
             />
