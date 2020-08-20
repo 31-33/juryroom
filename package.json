@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.4",
-    "bcrypt": "^0.8.7",
+    "bcrypt": "^5.0.0",
     "chance": "^1.0.18",
     "draft-js-import-markdown": "^1.4.0",
     "history": "^4.9.0",
